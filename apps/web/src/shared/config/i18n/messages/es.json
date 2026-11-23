@@ -59,6 +59,7 @@
     "cutDayRange": "El día de corte debe estar entre 1 y 31"
   },
   "nav": {
+    "main": "Navegación principal",
     "summary": "Resumen",
     "envelopes": "Sobres",
     "categories": "Categorías",

@@ -86,7 +86,7 @@ export function AccountView() {
             value={section}
             onValueChange={(value) => setSection(value as SectionValue)}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger aria-label={t("menu")} className="w-full">
               <SelectValue>
                 {(value: string) => {
                   const current = SECTIONS.find((s) => s.value === value);
@@ -118,8 +118,8 @@ export function AccountView() {
           </Select>
         </div>
 
-        {/* !h-auto overrides TabsList's variant-scoped h-9; flex-wrap avoids Base UI's horizontal scroll clipping. */}
-        <TabsList className="hidden !h-auto w-fit max-w-full flex-wrap items-center gap-1.5 rounded-2xl border border-border/60 bg-card/50 p-2.5 md:flex">
+        {/* h-auto! overrides TabsList's variant-scoped h-9; flex-wrap avoids Base UI's horizontal scroll clipping. */}
+        <TabsList className="hidden h-auto! w-fit max-w-full flex-wrap items-center gap-1.5 rounded-2xl border border-border/60 bg-card/50 p-2.5 md:flex">
           {SECTIONS.map((s) => (
             <TabsTrigger
               key={s.value}
@@ -128,9 +128,9 @@ export function AccountView() {
                 "shrink-0 gap-2 rounded-full border-none px-4 py-2.5 text-sm font-medium text-muted-foreground shadow-none transition-colors",
                 "hover:bg-muted hover:text-foreground",
                 "data-active:bg-primary/15 data-active:font-semibold data-active:text-primary data-active:shadow-sm dark:data-active:border-transparent dark:data-active:bg-primary/15 dark:data-active:text-primary",
-                // ! overrides TabsTrigger's four idle/hover/active/dark text variants in one rule.
+                // Important modifiers override TabsTrigger's idle/hover/active/dark text variants in one rule.
                 s.value === "danger" &&
-                  "!text-destructive hover:!bg-destructive/10 data-active:!bg-destructive/10 dark:data-active:!border-transparent dark:data-active:!bg-destructive/20",
+                  "text-destructive! hover:bg-destructive/10! data-active:bg-destructive/10! dark:data-active:border-transparent! dark:data-active:bg-destructive/20!",
               )}
             >
               <s.icon className="size-4" />

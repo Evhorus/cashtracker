@@ -84,11 +84,14 @@ export default async function Home() {
             {t("heroBody")}
           </p>
           <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
-            <Link href="/sign-in">
-              <Button size="lg" className="w-full sm:w-auto">
-                {t("ctaStart")}
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              nativeButton={false}
+              className="w-full sm:w-auto"
+              render={<Link href="/sign-in" />}
+            >
+              {t("ctaStart")}
+            </Button>
           </div>
         </div>
       </section>
@@ -174,11 +177,15 @@ export default async function Home() {
                     {t("readyTitle")}
                   </p>
                   <p className="mb-6 text-white/80">{t("readyBody")}</p>
-                  <Link href="/sign-in">
-                    <Button size="lg" variant="secondary" className="w-full">
-                      {t("ctaCreateAccount")}
-                    </Button>
-                  </Link>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    nativeButton={false}
+                    className="w-full"
+                    render={<Link href="/sign-in" />}
+                  >
+                    {t("ctaCreateAccount")}
+                  </Button>
                 </div>
               </div>
             </div>
@@ -190,11 +197,14 @@ export default async function Home() {
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <h2 className="text-3xl font-bold md:text-4xl">{t("finalTitle")}</h2>
           <p className="text-lg text-muted-foreground">{t("finalBody")}</p>
-          <Link href="/sign-in">
-            <Button size="lg" className="mt-6">
-              {t("ctaNow")}
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            nativeButton={false}
+            className="mt-6"
+            render={<Link href="/sign-in" />}
+          >
+            {t("ctaNow")}
+          </Button>
         </div>
       </section>
 

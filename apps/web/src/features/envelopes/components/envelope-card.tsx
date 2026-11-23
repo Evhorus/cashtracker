@@ -17,6 +17,7 @@ import {
   ActionsDrawer,
   type ActionItem,
 } from "@/shared/components/common/actions-drawer";
+import { LocalDate } from "@/shared/components/common/local-date";
 import { Text } from "@/shared/components/common/typography";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -95,7 +96,13 @@ export const EnvelopeCard = ({
             </CardTitle>
             {/* Expense date span (falling back to creation month) disambiguates reused envelope names. */}
             <Text className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
-              <span>{EnvelopeHelpers.formatPeriod(envelope, locale)}</span>
+              <span>
+                {envelope.expenseDateRange ? (
+                  EnvelopeHelpers.formatPeriod(envelope, locale)
+                ) : (
+                  <LocalDate value={envelope.createdAt} variant="monthYear" />
+                )}
+              </span>
               {envelope.category && (
                 <>
                   <span aria-hidden="true">·</span>

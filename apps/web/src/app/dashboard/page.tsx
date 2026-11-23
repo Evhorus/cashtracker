@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { TriangleAlert, Wallet } from "lucide-react";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { AlertEnvelopes } from "@/features/dashboard/components/alert-envelopes";
 import { DashboardSummarySkeleton } from "@/features/dashboard/components/dashboard-summary-skeleton";
@@ -14,10 +14,10 @@ import { DashboardService } from "@/features/dashboard/services/dashboard.servic
 import { CreateEnvelopeDialog } from "@/features/envelopes/components/create-envelope-dialog";
 import { EnvelopesService } from "@/features/envelopes/services/envelopes.service";
 import { EmptyState } from "@/shared/components/common/empty-state";
+import { LocalDate } from "@/shared/components/common/local-date";
 import { Heading } from "@/shared/components/common/typography";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
-import { formatDate } from "@/shared/utils/date-helpers";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,13 +29,12 @@ const ALERT_ENVELOPES_LIMIT = 100;
 
 export default async function DashboardPage() {
   await auth.protect();
-  const locale = await getLocale();
 
   return (
     <div className="space-y-6">
       <div>
         <p className="font-mono text-xs font-medium tracking-wider text-muted-foreground uppercase">
-          {formatDate(new Date(), locale)}
+          <LocalDate />
         </p>
         <Suspense fallback={<Skeleton className="mt-0.5 h-9 w-56" />}>
           <Greeting />

@@ -24,6 +24,7 @@ function ExpensesEmptyState() {
   const search = searchParams.get("search");
   const hasDateFilter =
     searchParams.has("startDate") || searchParams.has("endDate");
+  const hasMethodFilter = Boolean(searchParams.get("methods"));
 
   if (search) {
     return (
@@ -35,12 +36,22 @@ function ExpensesEmptyState() {
     );
   }
 
-  if (hasDateFilter) {
+  if (hasDateFilter && !hasMethodFilter) {
     return (
       <EmptyState
         icon={SearchX}
         title={t("noDateRangeTitle")}
         description={t("noDateRangeBody")}
+      />
+    );
+  }
+
+  if (hasMethodFilter) {
+    return (
+      <EmptyState
+        icon={SearchX}
+        title={t("noFilterResultsTitle")}
+        description={t("noFilterResultsBody")}
       />
     );
   }

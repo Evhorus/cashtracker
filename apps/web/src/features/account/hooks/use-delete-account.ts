@@ -42,7 +42,7 @@ export function useDeleteAccount() {
       }
 
       const { globalErrors } = mapClerkError(err, {}, t("unexpected"));
-      const message = globalErrors[0] ?? "No se pudo eliminar la cuenta";
+      const message = globalErrors[0] ?? t("deleteAccountFailed");
       setError(message);
       return { error: message };
     }

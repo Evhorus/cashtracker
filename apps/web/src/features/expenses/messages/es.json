@@ -55,6 +55,8 @@
       "noResultsBody": "Prueba con otro nombre.",
       "noDateRangeTitle": "Sin gastos en este periodo",
       "noDateRangeBody": "Prueba con otro rango de fechas.",
+      "noFilterResultsTitle": "Sin gastos con estos filtros",
+      "noFilterResultsBody": "Prueba cambiando o quitando los filtros activos.",
       "firstRunTitle": "Aún no hay gastos",
       "firstRunBody": "Registra el primero con «Agregar Gasto» y verás aquí en qué se va el dinero de este sobre."
     },

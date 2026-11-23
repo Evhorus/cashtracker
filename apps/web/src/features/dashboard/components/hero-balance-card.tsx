@@ -34,10 +34,9 @@ export function HeroBalanceCard({
   const t = useTranslations("dashboard");
   const tStats = useTranslations("statistics");
   const config = CURRENCY_MAP[currency];
-  const percentage =
-    totalAssigned > 0
-      ? Math.min((totalSpentCapped / totalAssigned) * 100, 100)
-      : 0;
+  const rawPercentage =
+    totalAssigned > 0 ? (totalSpentCapped / totalAssigned) * 100 : 0;
+  const progressValue = Math.min(rawPercentage, 100);
   // Uncapped spend is shown on its own line so budget progress stays consistent with totalAvailable.
   const unlimitedSpent = totalSpent - totalSpentCapped;
   const isOverBudget = totalSpentCapped > totalAssigned;
@@ -71,7 +70,7 @@ export function HeroBalanceCard({
         <>
           {/* Show red when aggregate capped spend exceeds totalAssigned. */}
           <Progress
-            value={percentage}
+            value={progressValue}
             className={cn(
               "mt-4 h-1.5 rounded-full",
               isOverBudget
@@ -87,7 +86,7 @@ export function HeroBalanceCard({
               </b>
             </span>
             <span>
-              {percentage.toFixed(0)}
+              {rawPercentage.toFixed(0)}
               {t("percentOfBudget")}
             </span>
           </div>

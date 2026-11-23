@@ -55,6 +55,8 @@
       "noResultsBody": "Try another name.",
       "noDateRangeTitle": "No expenses in this period",
       "noDateRangeBody": "Try another date range.",
+      "noFilterResultsTitle": "No expenses match these filters",
+      "noFilterResultsBody": "Try changing or clearing your active filters.",
       "firstRunTitle": "No expenses yet",
       "firstRunBody": "Add the first one with \"Add Expense\" and you'll see where this envelope's money goes."
     },

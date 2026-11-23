@@ -220,9 +220,11 @@ This is a Next.js 16 project using the App Router and TypeScript.
   - `services/`: API client wrappers and external service logic.
   - `types/`: TypeScript type definitions for the domain.
   - `mappers/`: Data transformation logic between API and UI.
-  - `data/`: `server-only` read functions for SSR (caching + auth check), delegating to
-    `services/`. Deliberately not Server Actions: a `"use server"` read compiles to a
-    public POST endpoint, which is attack surface given away for nothing.
+  - `data/`: `server-only` request-scoped `React.cache()` read helpers (`get-envelope-by-id`,
+    `get-expense-by-id`, `get-categories`, `get-category-options`, `get-payment-methods`)
+    shared across metadata/layout/page renders. One-shot reads call `services/` directly rather
+    than adding pass-through wrappers. Deliberately not Server Actions: a `"use server"` read
+    compiles to a public POST endpoint, which is attack surface given away for nothing.
   - `constants/`, `providers/`, `lib/`: where a feature needs them (e.g.
     `features/dashboard/constants/nav-items.ts`, `features/categories/providers/`).
   - Not every feature has every folder — `auth` deliberately has no `services/`; it uses
@@ -240,7 +242,8 @@ This is a Next.js 16 project using the App Router and TypeScript.
     Key Technical Choices). Regenerable via `shadcn add --overwrite`; `components.json`
     points its aliases here.
   - `src/shared/components/common/`: composition primitives with no domain knowledge
-    (`FormInput`, `SubmitButton`, `PriceInput`, `EmptyState`, `SearchInput`, `Typography`…).
+    (`FormInput`, `SubmitButton`, `PriceInput`, `EmptyState`, `SearchInput`, `Typography`,
+    `ConfirmDeleteDialog`, `ColorSwatchPicker`, `RankedBarList`, `LocalDate`…).
     The test for admission is a dependency, not a vibe: **if only one feature uses it, it
     belongs to that feature — even if it is "reusable in theory"**, and if it names a
     business concept (`CurrencySelector`, `HeroBalanceCard`) it belongs to the feature even
@@ -369,7 +372,8 @@ This is a Next.js 16 project using the App Router and TypeScript.
   (`src/features/dashboard/lib/refresh-dashboard.ts`), which revalidates the whole `/dashboard` layout -
   the server render and the client router cache - so no page can be missed. The same test
   fails if a `*.action.ts` (other than locale) does not call it.
-- **UI Feedback**: Use `useActionWithToast` (`src/shared/hooks/useActionWithToast.tsx`) to handle success/error notifications and trigger `router.refresh()`.
+- **UI Feedback**: Use `useActionWithToast` (`src/shared/hooks/useActionWithToast.ts`) and `useActionDialog` (`src/shared/hooks/useActionDialog.ts`) for toast notifications and dialog lifecycle. `router.refresh()` is opt-in (`refreshOnSuccess`), because write Server Actions already call `refreshDashboard()`.
+- **List-Level Dialogs**: Mount edit/delete dialogs once at list level (`EnvelopesGrid`, `ExpensesList`, `CategoriesSection`, `PaymentMethodsSection`) rather than once per row/card.
 
 #### Domain Organization
 
@@ -381,7 +385,7 @@ This is a Next.js 16 project using the App Router and TypeScript.
 - **Styling**: Tailwind 4 CSS with Base UI (`@base-ui/react`) primitives (via shadcn/ui) — not Radix.
 - **Validation**: Zod 4 is used for all schema validations and is integrated with React Hook Form 7.
 - **State Management**: Primarily relies on Next.js Server Components and Server Actions for data flow.
-- **Date Handling**: `date-fns` 4 for date manipulation and formatting (utilizing `@date-fns/utc` for consistent UTC handling).
+- **Date Handling**: `date-fns` 4 with `@date-fns/tz` for UTC-anchored calendar dates (`expense.date`) and client-mounted `<LocalDate>` (`src/shared/components/common/local-date.tsx`) for visitor-timezone timestamps (`today`, `createdAt`, `updatedAt`).
 - **Charts**: `recharts` 3 for data visualization.
 - **UI Feedback**: `sonner` 2 for toast notifications.
 - **UI Components**: Drawers (`src/shared/components/ui/drawer.tsx`) use Base UI's own `Drawer` primitive, not `vaul`.

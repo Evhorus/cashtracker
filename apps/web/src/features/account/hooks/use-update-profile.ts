@@ -40,7 +40,7 @@ export function useUpdateProfile() {
       );
       setFieldErrors(fields);
       setGlobalErrors(globals);
-      return { error: globals[0] ?? "No se pudo actualizar el perfil" };
+      return { error: globals[0] ?? t("profileUpdateFailed") };
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -57,7 +57,7 @@ export function useUpdateProfile() {
     } catch {
       // setProfileImage's own failures (bad format, too large) don't map
       // cleanly to a single param_name - a flat message covers it.
-      const message = "No se pudo actualizar la foto de perfil";
+      const message = t("photoUpdateFailed");
       setPhotoError(message);
       return { error: message };
     } finally {

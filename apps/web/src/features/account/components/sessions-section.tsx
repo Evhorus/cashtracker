@@ -51,7 +51,7 @@ export function SessionsSection() {
                   <div className="min-w-0">
                     {/* Wraps instead of truncating so users can inspect full session details. */}
                     <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
-                      {session.browser} ·{" "}
+                      {session.browser || t("unknownBrowser")} ·{" "}
                       {t(session.isMobile ? "mobile" : "desktop")}
                       {session.isCurrent && (
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
@@ -60,7 +60,7 @@ export function SessionsSection() {
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {session.location} ·{" "}
+                      {session.location || t("unknownLocation")} ·{" "}
                       {t("lastActive", {
                         when: formatRelativeTime(session.lastActiveAt, locale),
                       })}

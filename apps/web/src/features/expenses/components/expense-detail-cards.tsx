@@ -12,6 +12,7 @@ import type { Envelope } from "@/features/envelopes/types";
 import { ExpenseHelpers } from "@/features/expenses/lib/expense-helpers";
 import type { Expense } from "@/features/expenses/types";
 import { PaymentMethodBadge } from "@/features/payment-methods/components/payment-method-badge";
+import { LocalDate } from "@/shared/components/common/local-date";
 import { Text } from "@/shared/components/common/typography";
 import {
   Card,
@@ -20,7 +21,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import type { SupportedLocale } from "@/shared/config/i18n/config";
-import { formatCalendarDate, formatDate } from "@/shared/utils/date-helpers";
+import { formatCalendarDate } from "@/shared/utils/date-helpers";
 import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
 
 export async function ExpenseHighlightCard({
@@ -92,10 +93,9 @@ export async function ExpenseHighlightCard({
 
 export async function ExpenseSystemInfoCard({
   expense,
-  locale,
 }: {
   expense: Expense;
-  locale: SupportedLocale;
+  locale?: SupportedLocale;
 }) {
   const t = await getTranslations("expenses");
 
@@ -107,11 +107,15 @@ export async function ExpenseSystemInfoCard({
       <CardContent className="grid grid-cols-1 gap-6 text-sm sm:grid-cols-2">
         <div className="space-y-1">
           <Text>{t("detail.createdAt")}</Text>
-          <p className="font-medium">{formatDate(expense.createdAt, locale)}</p>
+          <p className="font-medium">
+            <LocalDate value={expense.createdAt} />
+          </p>
         </div>
         <div className="space-y-1">
           <Text>{t("detail.updatedAt")}</Text>
-          <p className="font-medium">{formatDate(expense.updatedAt, locale)}</p>
+          <p className="font-medium">
+            <LocalDate value={expense.updatedAt} />
+          </p>
         </div>
       </CardContent>
     </Card>

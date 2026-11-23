@@ -58,11 +58,7 @@ export const EnvelopeChart = ({ spent, total, status }: EnvelopeChartProps) => {
     },
   } satisfies ChartConfig;
 
-  const spentDotClass = isExceeded
-    ? "bg-destructive"
-    : isWarning
-      ? "bg-amber-500"
-      : "bg-chart-1";
+  const spentDotClass = isWarning ? "bg-amber-500" : "bg-chart-1";
   const percentageTextClass = isExceeded
     ? "fill-destructive"
     : isWarning

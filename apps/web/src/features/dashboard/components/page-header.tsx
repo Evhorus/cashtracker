@@ -51,15 +51,15 @@ export const PageHeader = ({
         >
           {backUrl && (
             // Mobile-only: desktop navigates back via sidebar or breadcrumb.
-            <Link href={backUrl} aria-label={t("back")} className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 shrink-0 rounded-full border border-border/60 bg-card/50 text-muted-foreground transition-colors hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              nativeButton={false}
+              className="h-10 w-10 shrink-0 rounded-full border border-border/60 bg-card/50 text-muted-foreground transition-colors hover:border-primary/30 hover:bg-primary/10 hover:text-primary md:hidden"
+              render={<Link href={backUrl} aria-label={t("back")} />}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
           )}
 
           {icon && <div className="shrink-0">{icon}</div>}

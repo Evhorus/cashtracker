@@ -7,7 +7,10 @@ import { useTranslations } from "next-intl";
 
 import { AccountMenu } from "@/features/account/components/account-menu";
 import { useAccountUser } from "@/features/account/hooks/use-account-user";
-import { MAIN_NAV_ITEMS } from "@/features/dashboard/constants/nav-items";
+import {
+  MAIN_NAV_ITEMS,
+  isNavItemActive,
+} from "@/features/dashboard/constants/nav-items";
 import { Logo } from "@/shared/components/common/logo";
 import {
   Avatar,
@@ -28,16 +31,14 @@ export function DashboardSidebar() {
         <Logo href="/dashboard" />
       </div>
 
-      <nav className="mt-8 flex flex-col gap-1">
+      <nav aria-label={t("main")} className="mt-8 flex flex-col gap-1">
         {MAIN_NAV_ITEMS.map((item) => {
-          const isActive =
-            item.href === "/dashboard"
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+          const isActive = isNavItemActive(item.href, pathname);
           return (
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex items-center gap-2.5 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors",
                 isActive

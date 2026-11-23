@@ -78,7 +78,7 @@ spec is never silently left out.
 
 Domain-driven. Rather than a literal tree that goes stale with every feature, this is the
 pattern each business domain repeats — today `envelopes`, `expenses`, `categories`,
-`dashboard`, `auth`, `account`, `home`, `locale`:
+`payment-methods`, `dashboard`, `auth`, `account`, `home`, `locale`:
 
 ```
 src/
@@ -90,7 +90,7 @@ src/
 │   └── <domain>/           # One module per business domain, same shape throughout:
 │       ├── actions/        # Server Actions (orchestration)
 │       ├── components/     # Domain-specific components
-│       ├── data/           # server-only read functions for SSR
+│       ├── data/           # server-only React.cache() reads shared across renders
 │       ├── schemas/        # Zod validation
 │       ├── services/       # API calls and external logic
 │       │                   #   (auth uses hooks/ instead: its provider exposes

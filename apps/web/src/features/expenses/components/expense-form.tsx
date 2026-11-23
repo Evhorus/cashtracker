@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
@@ -31,7 +30,11 @@ import {
 import { Textarea } from "@/shared/components/ui/textarea";
 import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import { cn } from "@/shared/lib/utils";
-import { formatDate, getToday } from "@/shared/utils/date-helpers";
+import {
+  DATE_FNS_LOCALES,
+  formatDate,
+  getToday,
+} from "@/shared/utils/date-helpers";
 import {
   CURRENCY_MAP,
   type CurrencyCode,
@@ -163,7 +166,7 @@ export const ExpenseForm = ({
                             field.onChange(date);
                             setIsCalendarOpen(false);
                           }}
-                          locale={es}
+                          locale={DATE_FNS_LOCALES[locale]}
                           captionLayout="dropdown"
                           autoFocus
                         />

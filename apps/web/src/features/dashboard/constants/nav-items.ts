@@ -13,3 +13,15 @@ export const DASHBOARD_NAV_ITEMS = [
 export const MAIN_NAV_ITEMS = DASHBOARD_NAV_ITEMS.filter(
   (item) => item.key !== "account",
 );
+
+/** Matches `/dashboard/envelope/[id]` (singular) under the Envelopes nav item. */
+export function isNavItemActive(itemHref: string, pathname: string): boolean {
+  if (itemHref === "/dashboard") return pathname === itemHref;
+  if (itemHref === "/dashboard/envelopes") {
+    return (
+      pathname.startsWith("/dashboard/envelopes") ||
+      pathname.startsWith("/dashboard/envelope/")
+    );
+  }
+  return pathname.startsWith(itemHref);
+}

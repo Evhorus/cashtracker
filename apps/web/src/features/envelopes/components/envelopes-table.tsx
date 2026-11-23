@@ -10,6 +10,7 @@ import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import { Envelope } from "@/features/envelopes/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
+import { LocalDate } from "@/shared/components/common/local-date";
 import {
   Table,
   TableBody,
@@ -90,7 +91,14 @@ export function EnvelopesTable({
                         {envelope.name}
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {EnvelopeHelpers.formatPeriod(envelope, locale)}
+                        {envelope.expenseDateRange ? (
+                          EnvelopeHelpers.formatPeriod(envelope, locale)
+                        ) : (
+                          <LocalDate
+                            value={envelope.createdAt}
+                            variant="monthYear"
+                          />
+                        )}
                       </span>
                     </span>
                   </Link>

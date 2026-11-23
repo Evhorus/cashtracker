@@ -6,7 +6,7 @@ export const ExpenseCardSkeleton = () => {
   return (
     <Card size="sm" className="overflow-hidden">
       <CardContent className="flex items-center gap-3">
-        <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+        <Skeleton className="hidden h-9 w-9 shrink-0 rounded-full sm:block" />
         <div className="flex-1 space-y-1.5">
           <Skeleton className="h-4 w-32 md:w-48" />
           <Skeleton className="h-3 w-20" />

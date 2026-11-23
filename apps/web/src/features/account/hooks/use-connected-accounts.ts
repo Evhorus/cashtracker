@@ -71,7 +71,7 @@ export function useConnectedAccounts() {
     } catch (err) {
       setConnectingProvider(null);
       if (!isReverificationCancelledError(err)) {
-        setError("No se pudo conectar la cuenta");
+        setError(t("connectAccountFailed"));
       }
     }
   }
@@ -85,7 +85,7 @@ export function useConnectedAccounts() {
     try {
       await account.destroy();
     } catch {
-      setError("No se pudo desconectar la cuenta");
+      setError(t("disconnectAccountFailed"));
     } finally {
       setDisconnectingId(null);
     }

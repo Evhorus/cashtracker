@@ -59,6 +59,7 @@
     "cutDayRange": "The cut-off day must be between 1 and 31"
   },
   "nav": {
+    "main": "Main navigation",
     "summary": "Overview",
     "envelopes": "Envelopes",
     "categories": "Categories",
