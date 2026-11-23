@@ -9,11 +9,11 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CategoriesService } from './categories.service';
+import { CategoryResponseDto } from './dto/category-response.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { CategoryResponseDto } from './dto/category-response.dto';
-import { CategoriesService } from './categories.service';
 
 @Controller('categories')
 export class CategoriesController {
@@ -25,19 +25,12 @@ export class CategoriesController {
     return CategoryResponseDto.fromEntities(categories);
   }
 
-  /**
-   * Registered before any ':categoryId' route would be, so "usage" is
-   * never parsed as an id.
-   */
+  // Registered before `:categoryId` routes so `"usage"` is never parsed as a UUID.
   @Get('usage')
   countEnvelopesByCategory(@CurrentUser('id') userId: string) {
     return this.categoriesService.countEnvelopesByCategory(userId);
   }
 
-  // Static (same for every user) - registered before the userId-scoped
-  // GET routes below would matter if there were a GET(':categoryId'),
-  // but there isn't one, so ordering relative to those doesn't actually
-  // matter here. Kept next to findAll() anyway since both are read paths.
   @Get('options')
   getOptions() {
     return this.categoriesService.getOptions();

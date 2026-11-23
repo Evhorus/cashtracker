@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { Envelope } from '../../envelopes/entities/envelope.entity';
 import { Expense } from '../../expenses/entities/expense.entity';
 
@@ -24,12 +25,7 @@ interface RecentExpenseRow {
   envelopeName: string;
 }
 
-/**
- * Read-only aggregate queries for the dashboard. Kept separate from
- * EnvelopesRepository (which owns envelope CRUD) - this is reporting,
- * a different responsibility that may one day need to reach across
- * entities (e.g. expenses) that plain envelope CRUD never will.
- */
+/** Read-only reporting queries for the dashboard (separate from CRUD repos). */
 @Injectable()
 export class DashboardRepository {
   constructor(
@@ -39,24 +35,7 @@ export class DashboardRepository {
     private readonly expenseRepository: Repository<Expense>,
   ) {}
 
-  /**
-   * Shared base for the four "breakdown" queries (category, envelope,
-   * name, total) - all four group the same underlying set of expenses,
-   * just along a different axis, so they all start from one query.
-   *
-   * Filters by each expense's own `date`, not the envelope's
-   * `createdAt` - an envelope in
-   * this app can carry expenses spanning several months (e.g. a rent
-   * envelope created in September with expenses dated back to
-   * February), so scoping a period-filtered breakdown to the envelope's
-   * creation date would silently exclude expenses that are genuinely
-   * inside the requested period, and include ones that aren't.
-   *
-   * An exact range (startDate/endDate) wins over `year` when somehow
-   * both are present - the frontend never sends both (see
-   * BreakdownQueryDto), but a range is the more specific instruction
-   * either way. All three omitted means all-time.
-   */
+  /** Explicit startDate/endDate bounds take precedence over the year shortcut. */
   private resolveDateBounds(filters: {
     year?: number;
     startDate?: string;
@@ -74,6 +53,7 @@ export class DashboardRepository {
     return {};
   }
 
+  /** Base query scoped by user, currency, and each expense's own calendar date. */
   private withUserCurrencyAndDateRange(
     userId: string,
     currency: string,
@@ -96,27 +76,6 @@ export class DashboardRepository {
     return qb;
   }
 
-  /**
-   * Aggregate query grouped by category: sum of expense amounts and how
-   * many expenses contributed, one row per category the user actually
-   * has spending in during the requested period. Scoped to a single
-   * currency, for the same reason the chart is - summing money across
-   * currencies is meaningless.
-   *
-   * Exists so the breakdown doesn't have to fetch every envelope and
-   * reduce over it client-side, which was capped at the list endpoint's
-   * 100 and silently dropped categories for a large account.
-   *
-   * Groups by the category's id now that it is a real relation. When it
-   * was free text this grouped by the string, so two spellings of one
-   * category were two rows and the client had to re-merge them - that
-   * whole step is gone. Envelopes with no category group into a single
-   * `category: null` row; the caller decides how to label it.
-   *
-   * The label/colour/icon come back with each row so the caller can
-   * render the chip without a second lookup, matching how envelope
-   * responses embed their category.
-   */
   async getCategoryBreakdown(
     userId: string,
     currency: string,
@@ -162,12 +121,6 @@ export class DashboardRepository {
     }));
   }
 
-  /**
-   * Aggregate query grouped by envelope: sum of expense amounts and how
-   * many expenses contributed, one row per envelope with spending in
-   * the requested period/currency. Same date-scoping as
-   * getCategoryBreakdown above.
-   */
   async getEnvelopeBreakdown(
     userId: string,
     currency: string,
@@ -182,8 +135,7 @@ export class DashboardRepository {
       .addSelect('envelope.name', 'envelopeName')
       .addSelect('COALESCE(SUM(expense.amount), 0)', 'spent')
       .addSelect('COUNT(*)', 'expenseCount')
-      // `::text` keeps them YYYY-MM-DD - see
-      // EnvelopesRepository.findExpenseDateRanges.
+      // Cast to text so pg returns YYYY-MM-DD instead of a server-local Date.
       .addSelect('MIN(expense.date)::text', 'firstExpenseDate')
       .addSelect('MAX(expense.date)::text', 'lastExpenseDate')
       .groupBy('envelope.id')
@@ -208,19 +160,7 @@ export class DashboardRepository {
     }));
   }
 
-  /**
-   * Aggregate query grouped by the expense's own name: sum of amounts
-   * and how many expenses share it, one row per distinct name with
-   * spending in the requested period/currency - surfaces recurring
-   * expenses (e.g. "Arriendo" paid every month) as a single total.
-   * `normalizeString` only trims/collapses whitespace on save, it never
-   * touches casing - "Mercaldas" and "MERCALDAS" are both valid stored
-   * values for the same merchant (typing habits, bulk imports from a
-   * bank export, ...). Grouping on `LOWER(expense.name)` instead of the
-   * raw column keeps those from splitting into separate rows here; the
-   * row shows the most recent spelling, so it reads the way the user
-   * writes it now.
-   */
+  /** Groups case-insensitively by expense name and displays the latest casing. */
   async getNameBreakdown(
     userId: string,
     currency: string,
@@ -248,16 +188,6 @@ export class DashboardRepository {
     }));
   }
 
-  /**
-   * The grand total across every matching expense - the same set of
-   * rows the three breakdowns above each group differently, collapsed
-   * to one number. Its own query rather than summing one of the other
-   * three client-side, so the total is right even when every breakdown
-   * happens to be empty (e.g. every expense's envelope has no category,
-   * which would make getCategoryBreakdown return a single `null`-
-   * category row - correct, but an easy thing to get wrong summing over
-   * client-side).
-   */
   async getBreakdownTotal(
     userId: string,
     currency: string,
@@ -278,22 +208,7 @@ export class DashboardRepository {
     };
   }
 
-  /**
-   * The current state of the user's envelopes, one row per currency
-   * (money in different currencies is never one unit). Deliberately not
-   * date-filtered: an envelope's limit and spent are its state today,
-   * whether it covers one month or collects every month's expenses.
-   *
-   * - totalAssigned: sum of limits (unlimited envelopes have none).
-   * - totalSpent: every envelope's spent, unlimited ones included.
-   * - cappedSpent: spent within limited envelopes only.
-   * - totalAvailable: what is still left in envelopes under their limit.
-   * - totalExceeded: how far envelopes over their limit went past it.
-   *
-   * Available and exceeded are kept apart on purpose. Netting them (limit
-   * minus spent across all envelopes) showed one small number that hid
-   * both "there is room here" and "this one is over".
-   */
+  /** Per-currency envelope totals; available and exceeded are tracked separately (not netted). */
   async getSummaryAggregate(userId: string) {
     const rows = await this.repository
       .createQueryBuilder('envelope')
@@ -315,8 +230,7 @@ export class DashboardRepository {
         'totalExceeded',
       )
       .groupBy('envelope.currency')
-      // Most-used currency first (by envelope count), with alphabetical
-      // currency tie-breaker so primaryCurrency stays deterministic.
+      // Most-used currency first, with alphabetical tie-breaker for deterministic primaryCurrency.
       .orderBy('count', 'DESC')
       .addOrderBy('envelope.currency', 'ASC')
       .getRawMany<SummaryAggregateRow>();
@@ -332,17 +246,7 @@ export class DashboardRepository {
     }));
   }
 
-  /**
-   * Spending per calendar month of each expense's own date, most recent
-   * `limit` months, returned oldest first. Scoped to one currency, so a
-   * bar never adds pesos to dollars.
-   *
-   * By expense date, not envelope creation date: people organise
-   * envelopes differently - one per month ("Octubre - Davi Scoti") or one
-   * long-lived envelope per purpose ("Aseo") - and only the expense date
-   * charts both correctly. Grouping by envelope.createdAt put a whole
-   * year of a long-lived envelope into the month it was created.
-   */
+  /** Returns the latest `limit` months of spending by expense date, ordered oldest first. */
   async getMonthlySpending(
     userId: string,
     year: number | undefined,
@@ -364,10 +268,6 @@ export class DashboardRepository {
       .reverse();
   }
 
-  /**
-   * Distinct calendar years the user has expenses in, most recent first -
-   * the year picker's options, by the same expense dates the chart uses.
-   */
   async getAvailableYears(userId: string): Promise<number[]> {
     const rows = await this.expenseRepository
       .createQueryBuilder('expense')
@@ -380,14 +280,6 @@ export class DashboardRepository {
     return rows.map((row) => Number(row.year));
   }
 
-  /**
-   * The `limit` most recent expenses across every envelope the user
-   * owns, most recent first (by date, then createdAt as a tiebreaker for
-   * same-day expenses) - powers the "Actividad reciente" widget on the
-   * Resumen page. Scoped via an inner join on envelope.userId rather
-   * than a separate envelope-ids-first query, same join style as
-   * getSummaryAggregate above.
-   */
   async getRecentExpenses(userId: string, limit: number) {
     const rows = await this.expenseRepository
       .createQueryBuilder('expense')
@@ -397,8 +289,7 @@ export class DashboardRepository {
       .addSelect('expense.name', 'name')
       .addSelect('expense.amount', 'amount')
       .addSelect('expense.currency', 'currency')
-      // Cast to text so pg returns the plain calendar date ("YYYY-MM-DD")
-      // instead of a server-local midnight Date serialized as a timestamp.
+      // Cast to text so pg returns YYYY-MM-DD instead of a server-local Date.
       .addSelect('expense.date::text', 'date')
       .addSelect('envelope.id', 'envelopeId')
       .addSelect('envelope.name', 'envelopeName')

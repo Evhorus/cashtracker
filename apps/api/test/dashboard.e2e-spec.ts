@@ -1,10 +1,15 @@
+import {
+  type ExecutionContext,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { assertSafeTestDatabase } from './assert-safe-test-database';
 import { DataSource } from 'typeorm';
+
+import { AppModule } from '../src/app.module';
 import { ClerkAuthGuard } from '../src/auth/guards/clerk-auth.guard';
+import { assertSafeTestDatabase } from './assert-safe-test-database';
 
 /**
  * The category breakdown is a GROUP BY, so only a real database proves
@@ -28,7 +33,7 @@ describe('Dashboard category breakdown (e2e)', () => {
     })
       .overrideProvider(ClerkAuthGuard)
       .useValue({
-        canActivate: (context) => {
+        canActivate: (context: ExecutionContext) => {
           const req = context.switchToHttp().getRequest();
           req.user = mockUser;
           return true;
@@ -333,7 +338,7 @@ describe('Dashboard name breakdown (e2e)', () => {
     })
       .overrideProvider(ClerkAuthGuard)
       .useValue({
-        canActivate: (context) => {
+        canActivate: (context: ExecutionContext) => {
           const req = context.switchToHttp().getRequest();
           req.user = mockUser;
           return true;
@@ -458,7 +463,7 @@ describe('Dashboard summary (e2e)', () => {
     })
       .overrideProvider(ClerkAuthGuard)
       .useValue({
-        canActivate: (context) => {
+        canActivate: (context: ExecutionContext) => {
           const req = context.switchToHttp().getRequest();
           req.user = mockUser;
           return true;

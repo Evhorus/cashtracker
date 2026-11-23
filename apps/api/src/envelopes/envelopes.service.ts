@@ -4,15 +4,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 import { PaginatedResponseDto } from 'src/common/dto/paginated-response.dto';
-import { EnvelopeResponseDto } from './dto/envelope-response.dto';
-import type { EnvelopeListFilters } from './repositories/envelopes.repository';
-import { EnvelopeWithExpensesResponseDto } from './dto/envelope-with-expenses-response.dto';
-import { CreateEnvelopeDto } from './dto/create-envelope.dto';
-import { UpdateEnvelopeDto } from './dto/update-envelope.dto';
-import { EnvelopesRepository } from './repositories/envelopes.repository';
 import { CategoriesRepository } from '../categories/repositories/categories.repository';
+import { CreateEnvelopeDto } from './dto/create-envelope.dto';
+import { EnvelopeResponseDto } from './dto/envelope-response.dto';
+import { EnvelopeWithExpensesResponseDto } from './dto/envelope-with-expenses-response.dto';
+import { UpdateEnvelopeDto } from './dto/update-envelope.dto';
+import {
+  type EnvelopeListFilters,
+  EnvelopesRepository,
+} from './repositories/envelopes.repository';
 
 @Injectable()
 export class EnvelopesService {
@@ -22,13 +25,6 @@ export class EnvelopesService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   * Envelopes reference categories by id now, so a well-formed uuid
-   * belonging to another user has to be rejected here - the DTO can
-   * validate the shape but not who is asking. `null` clears the
-   * category and is always allowed; `undefined` means "leave it alone"
-   * on an update and is passed through untouched.
-   */
   private async assertCategoryIsUsable(
     userId: string,
     categoryId: string | null | undefined,
@@ -59,12 +55,6 @@ export class EnvelopesService {
     };
   }
 
-  /**
-   * Find all envelopes without expenses (light query for list view),
-   * paginated (page is 1-indexed). `filters.search` optionally filters
-   * by name/category; `filters.status` by derived spending status, in
-   * SQL, so `total` reflects the filtered set.
-   */
   async findAllLight(
     userId: string,
     page: number,
@@ -115,17 +105,6 @@ export class EnvelopesService {
     return EnvelopeWithExpensesResponseDto.fromEntity(envelope);
   }
 
-  /**
-   * `spent` is a sum of expenses in the envelope's currency, so once it
-   * has expenses the currency is fixed: relabelling COP 100.000 as USD
-   * 100.000 would be silently wrong. Re-sending the same currency (the
-   * edit form always sends it) is not a change.
-   *
-   * When the currency actually changes, the check and update run under
-   * the same `SELECT ... FOR UPDATE` row lock that ExpensesService.create
-   * takes, so a concurrent expense in the old currency cannot land
-   * between `hasExpenses()` and `update()`.
-   */
   async update(
     userId: string,
     id: string,
@@ -139,23 +118,12 @@ export class EnvelopesService {
       nextCurrency !== undefined && nextCurrency !== envelope.currency;
 
     if (isCurrencyChange) {
-      await this.dataSource.transaction(async (manager) => {
-        const locked = await this.envelopesRepository.findOwnedByIdForUpdate(
-          userId,
-          id,
-          manager,
-        );
-        if (!locked) {
-          throw new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND);
-        }
-        if (
-          nextCurrency !== locked.currency &&
-          (await this.envelopesRepository.hasExpenses(id, manager))
-        ) {
-          throw new ConflictException(ERROR_MESSAGES.ENVELOPE_CURRENCY_LOCKED);
-        }
-        await this.envelopesRepository.update(id, updateEnvelopeDto, manager);
-      });
+      await this.updateWithCurrencyLock(
+        userId,
+        id,
+        nextCurrency,
+        updateEnvelopeDto,
+      );
     } else {
       await this.envelopesRepository.update(id, updateEnvelopeDto);
     }
@@ -163,6 +131,33 @@ export class EnvelopesService {
     return {
       message: 'Sobre actualizado',
     };
+  }
+
+  /** Serializes currency changes with `FOR UPDATE` so concurrent expenses cannot land in the old currency. */
+  private async updateWithCurrencyLock(
+    userId: string,
+    id: string,
+    nextCurrency: string,
+    updateEnvelopeDto: UpdateEnvelopeDto,
+  ) {
+    await this.dataSource.transaction(async (manager) => {
+      const locked = await this.envelopesRepository.findOwnedByIdForUpdate(
+        userId,
+        id,
+        manager,
+      );
+      if (!locked) {
+        throw new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND);
+      }
+      const currencyChanged = nextCurrency !== locked.currency;
+      if (
+        currencyChanged &&
+        (await this.envelopesRepository.hasExpenses(id, manager))
+      ) {
+        throw new ConflictException(ERROR_MESSAGES.ENVELOPE_CURRENCY_LOCKED);
+      }
+      await this.envelopesRepository.update(id, updateEnvelopeDto, manager);
+    });
   }
 
   async remove(userId: string, id: string) {

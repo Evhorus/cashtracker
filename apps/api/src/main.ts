@@ -1,6 +1,6 @@
 import { ValidationPipe, Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
@@ -11,13 +11,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Global prefix
   app.setGlobalPrefix('api');
-
-  // Security
   app.use(helmet());
 
-  // CORS - Allow Next.js frontend
   app.enableCors({
     origin: configService.get<string>('CLIENT_URL'),
     credentials: true,
@@ -33,15 +29,9 @@ async function bootstrap() {
     }),
   );
 
-  // Let Nest close TypeORM's pool (and any other OnModuleDestroy hook)
-  // cleanly on SIGTERM/SIGINT instead of the process being cut off mid-query
-  // when an orchestrator (Docker, k8s) stops the container.
+  // Close TypeORM pools cleanly on SIGTERM/SIGINT during container shutdown.
   app.enableShutdownHooks();
 
-  // PORT is already validated with a default by env.validation.ts - read it
-  // through ConfigService instead of process.env directly so there's one
-  // source of truth for it instead of two (this used to default to 3000
-  // here vs. 4000 in the validated config).
   const port = configService.get<number>('PORT', 4000);
 
   await app.listen(port);

@@ -3,16 +3,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 import { isUniqueViolation } from 'src/common/utils/postgres-errors';
-import { PaymentMethodsRepository } from './repositories/payment-methods.repository';
-import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
-import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
 import {
   TYPES_WITH_CUT_DAY,
   type PaymentMethodType,
 } from './constants/payment-method-types';
+import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
+import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
+import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
+import { PaymentMethodsRepository } from './repositories/payment-methods.repository';
 
 @Injectable()
 export class PaymentMethodsService {
@@ -32,11 +33,7 @@ export class PaymentMethodsService {
     return method;
   }
 
-  /**
-   * A cut-off day only means something for a credit card; for any other
-   * type it is dropped rather than rejected, so switching a card to
-   * "debit" never leaves a stale day behind.
-   */
+  // Drop cutDay for non-credit types so changing type clears stale statement days.
   private cutDayFor(type: PaymentMethodType, cutDay?: number | null) {
     return TYPES_WITH_CUT_DAY.includes(type) ? (cutDay ?? null) : null;
   }

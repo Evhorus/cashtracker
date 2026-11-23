@@ -10,10 +10,10 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { CreateEnvelopeDto } from './dto/create-envelope.dto';
-import { UpdateEnvelopeDto } from './dto/update-envelope.dto';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CreateEnvelopeDto } from './dto/create-envelope.dto';
 import { GetEnvelopesFilterDto } from './dto/get-envelopes-filter.dto';
+import { UpdateEnvelopeDto } from './dto/update-envelope.dto';
 import { EnvelopesService } from './envelopes.service';
 
 @Controller('envelopes')

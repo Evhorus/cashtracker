@@ -1,10 +1,4 @@
-/**
- * Curated icon keys a Category can use. Kept as a fixed whitelist (rather
- * than freeform text) so every category renders a real, known icon on the
- * client - the frontend maps each key to a LucideIcon component in
- * `src/features/categories/lib/icon-registry.ts`, together with the words its
- * search matches. Keep both lists in sync. The first 15 are the original set.
- */
+/** Whitelisted Lucide icon keys — keep in sync with the frontend's `icon-registry.ts`. */
 export const ICON_KEYS = [
   'house',
   'car',

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 const KEEP_ALIVE_TIMEOUT_MS = 5000;
 
@@ -10,15 +10,13 @@ export class HealthCheckService {
 
   constructor(private readonly configService: ConfigService) {}
 
-  /**
-   * Keep-alive ping to prevent Render from hibernating the server.
-   * Runs every 5 minutes (Render free tier suspends after ~15 minutes of
-   * inactivity) and requests the app's own public URL so it registers as
-   * inbound traffic. Uses Node's built-in fetch, so no HTTP client
-   * dependency is needed for this one call.
-   */
+  /** Self-pings the public URL every 5 min in production to prevent Render free-tier hibernation. */
   @Cron(CronExpression.EVERY_5_MINUTES)
   async keepAlive() {
+    if (this.configService.get<string>('NODE_ENV') !== 'production') {
+      return;
+    }
+
     const url = `${this.configService.getOrThrow<string>('API_URL')}/health-check`;
 
     try {

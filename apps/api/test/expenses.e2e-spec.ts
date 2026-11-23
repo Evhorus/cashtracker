@@ -1,10 +1,15 @@
+import {
+  type ExecutionContext,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { assertSafeTestDatabase } from './assert-safe-test-database';
 import { DataSource } from 'typeorm';
+
+import { AppModule } from '../src/app.module';
 import { ClerkAuthGuard } from '../src/auth/guards/clerk-auth.guard';
+import { assertSafeTestDatabase } from './assert-safe-test-database';
 
 describe('Expenses (e2e)', () => {
   let app: INestApplication;
@@ -23,7 +28,7 @@ describe('Expenses (e2e)', () => {
     })
       .overrideProvider(ClerkAuthGuard)
       .useValue({
-        canActivate: (context) => {
+        canActivate: (context: ExecutionContext) => {
           const req = context.switchToHttp().getRequest();
           req.user = mockUser;
           return true;

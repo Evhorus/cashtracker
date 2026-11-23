@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { Envelope } from '../../envelopes/entities/envelope.entity';
 import { PaymentMethod } from '../../payment-methods/entities/payment-method.entity';
 

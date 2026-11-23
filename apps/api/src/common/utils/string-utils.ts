@@ -1,10 +1,4 @@
-/**
- * The only change made to text a user types: spaces trimmed at the
- * start and end of each line, and runs of spaces or tabs inside a line
- * collapsed to one. Casing and line breaks are kept - the app shows
- * text exactly as it was written. (Names used to be lowercased on save
- * and re-capitalised for display, which lost how the user wrote them.)
- */
+/** Trims each line and collapses horizontal whitespace while preserving casing and line breaks. */
 export const normalizeString = (value: unknown): unknown => {
   if (typeof value !== 'string') return value;
 
@@ -14,3 +8,7 @@ export const normalizeString = (value: unknown): unknown => {
     .join('\n')
     .trim();
 };
+
+/** Escapes SQL LIKE wildcards (`\`, `%`, `_`) for literal matching with `ESCAPE '\'`. */
+export const escapeLikePattern = (value: string): string =>
+  value.replace(/[\\%_]/g, '\\$&');

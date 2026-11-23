@@ -3,40 +3,27 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 import { isUniqueViolation } from 'src/common/utils/postgres-errors';
+import { ICON_KEYS } from './constants/icon-keys';
+import { PRESET_COLORS } from './constants/preset-colors';
+import { CategoryUsageDto } from './dto/category-usage-response.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoriesRepository } from './repositories/categories.repository';
-import { CategoryUsageDto } from './dto/category-usage-response.dto';
-import { ICON_KEYS } from './constants/icon-keys';
-import { PRESET_COLORS } from './constants/preset-colors';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly categoriesRepository: CategoriesRepository) {}
 
-  /**
-   * The curated icon/color whitelist CreateCategoryDto/UpdateCategoryDto
-   * already validate against (IsIn(ICON_KEYS)/IsIn(PRESET_COLORS)) -
-   * exposed here too so the frontend's create-category form can render
-   * the same grid instead of hardcoding its own duplicate copy of these
-   * lists that would silently drift out of sync with what the backend
-   * actually accepts.
-   */
   getOptions() {
     return { icons: ICON_KEYS, colors: PRESET_COLORS };
   }
 
-  /**
-   * The user's own categories. The first call for an account also gives
-   * them their copy of the predefined set (see seedDefaultsFor), so every
-   * category here can be renamed or deleted - none is shared.
-   */
   async findAllForUser(userId: string) {
     const owned = await this.categoriesRepository.findAllOwned(userId);
-    // Only seeded copies carry isDefault = true, so their presence proves
-    // the account was already seeded without a second query to category_seed.
+    // Any isDefault row proves the account was already seeded, skipping category_seed lookup.
     if (owned.some((category) => category.isDefault)) {
       return owned;
     }
@@ -48,32 +35,32 @@ export class CategoriesService {
   }
 
   private async ensureSeeded(userId: string) {
-    // The cheap read first: the transaction only runs for the one request
-    // that actually needs it.
     if (await this.categoriesRepository.hasBeenSeeded(userId)) return;
     await this.categoriesRepository.seedDefaultsFor(userId);
   }
 
-  /**
-   * Envelope counts per category - see
-   * CategoriesRepository.countEnvelopesByCategory for why this is
-   * separate from findAllForUser and from the dashboard breakdown.
-   */
+  private async assertLabelAvailable(
+    userId: string,
+    label: string,
+    excludeCategoryId?: string,
+  ) {
+    // Seed first so predefined labels cannot collide with a category created before first list load.
+    await this.ensureSeeded(userId);
+    const existing = await this.categoriesRepository.findOwnedByLabel(
+      userId,
+      label,
+    );
+    if (existing && existing.id !== excludeCategoryId) {
+      throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
+    }
+  }
+
   async countEnvelopesByCategory(userId: string): Promise<CategoryUsageDto[]> {
     return this.categoriesRepository.countEnvelopesByCategory(userId);
   }
 
   async create(userId: string, createCategoryDto: CreateCategoryDto) {
-    // Before the duplicate check, so a name the predefined set would have
-    // brought in is not silently taken by a category created first.
-    await this.ensureSeeded(userId);
-    const existing = await this.categoriesRepository.findOwnedByLabel(
-      userId,
-      createCategoryDto.label,
-    );
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
-    }
+    await this.assertLabelAvailable(userId, createCategoryDto.label);
 
     try {
       const created = await this.categoriesRepository.create({
@@ -111,16 +98,7 @@ export class CategoriesService {
     const category = await this.findOneOwned(userId, id);
 
     if (updateCategoryDto.label && updateCategoryDto.label !== category.label) {
-      // Seeded first, so a name the predefined set brings in (differing
-      // only by case) is rejected like any other duplicate.
-      await this.ensureSeeded(userId);
-      const existing = await this.categoriesRepository.findOwnedByLabel(
-        userId,
-        updateCategoryDto.label,
-      );
-      if (existing && existing.id !== category.id) {
-        throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
-      }
+      await this.assertLabelAvailable(userId, updateCategoryDto.label, id);
     }
 
     try {

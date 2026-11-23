@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsIn, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+
 import { normalizeString } from 'src/common/utils/string-utils';
 import { ICON_KEYS } from '../constants/icon-keys';
 import type { IconKey } from '../constants/icon-keys';

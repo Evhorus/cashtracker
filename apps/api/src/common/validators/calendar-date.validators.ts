@@ -6,18 +6,12 @@ import {
   type ValidationArguments,
   type ValidationOptions,
 } from 'class-validator';
+
 import { ERROR_MESSAGES } from '../constants/error-messages';
 
 const CALENDAR_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-/**
- * A calendar date as `YYYY-MM-DD` - nothing more.
- *
- * `@IsDateString()` alone also accepts full timestamps
- * (`2026-11-16T23:00:00-05:00`), which Postgres then casts to a `date`
- * in its own timezone and can move to the next or previous day. The
- * strict ISO check is what rejects impossible days like 2026-02-30.
- */
+/** Strict `YYYY-MM-DD` calendar date (rejects timestamps that Postgres would shift by TZ, and invalid days like Feb 30). */
 export function IsCalendarDate(validationOptions?: ValidationOptions) {
   return applyDecorators(
     Matches(CALENDAR_DATE, {
@@ -31,12 +25,7 @@ export function IsCalendarDate(validationOptions?: ValidationOptions) {
   );
 }
 
-/**
- * The end of a range may not fall before its start (`property`). A
- * reversed range used to be accepted and silently matched nothing.
- * Either side missing is left to the other validators. `YYYY-MM-DD`
- * strings compare correctly as plain strings.
- */
+/** Rejects ranges where this `YYYY-MM-DD` field precedes `property` (lexicographical comparison matches chronological order). */
 export function IsNotBefore(
   property: string,
   validationOptions?: ValidationOptions,

@@ -8,15 +8,18 @@ import {
   IsString,
   IsUUID,
   Max,
+  MaxLength,
 } from 'class-validator';
-import { normalizeString } from 'src/common/utils/string-utils';
-import { Currency } from 'src/common/enums/currency.enum';
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+
 import { MAX_AMOUNT } from 'src/common/constants/amounts';
+import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+import { Currency } from 'src/common/enums/currency.enum';
+import { normalizeString } from 'src/common/utils/string-utils';
 
 export class CreateEnvelopeDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   @Transform(({ value }) => normalizeString(value))
   name: string;
 
@@ -32,19 +35,11 @@ export class CreateEnvelopeDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   @Transform(({ value }) => normalizeString(value))
   description?: string;
 
-  /**
-   * A category id, not a label - `envelope.category` used to be free
-   * text, which meant renaming a category silently detached every
-   * envelope using it (see migration 1787950000000). `null` explicitly
-   * clears it; omitted leaves it unchanged on an update.
-   *
-   * Ownership is checked in the service, not here: a well-formed uuid
-   * belonging to somebody else must be rejected, and a DTO can't see who
-   * is asking.
-   */
+  /** `null` clears the category; omitted leaves it unchanged on update. Ownership is enforced in the service. */
   @IsOptional()
   @IsUUID()
   @Transform(({ value }: { value: unknown }) =>

@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EnvelopesRepository } from './envelopes.repository';
-import { Envelope } from '../entities/envelope.entity';
+
 import { Category } from '../../categories/entities/category.entity';
+import { Envelope } from '../entities/envelope.entity';
 import { ENVELOPE_WARNING_THRESHOLD } from '../utils/envelope-status';
+import { EnvelopesRepository } from './envelopes.repository';
 
 describe('EnvelopesRepository', () => {
   let repository: EnvelopesRepository;
@@ -144,13 +145,13 @@ describe('EnvelopesRepository', () => {
 
       // Act
       await repository.findByUserIdLight('user-123', 1, 20, {
-        search: 'grocer',
+        search: '100%_grocer',
       });
 
       // Assert
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        '(LOWER(envelope.name) LIKE LOWER(:search) OR LOWER(category.label) LIKE LOWER(:search))',
-        { search: '%grocer%' },
+        "(LOWER(envelope.name) LIKE LOWER(:search) ESCAPE '\\' OR LOWER(category.label) LIKE LOWER(:search) ESCAPE '\\')",
+        { search: '%100\\%\\_grocer%' },
       );
     });
 

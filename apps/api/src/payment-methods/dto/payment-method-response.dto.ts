@@ -1,5 +1,5 @@
-import { PaymentMethod } from '../entities/payment-method.entity';
 import type { PaymentMethodType } from '../constants/payment-method-types';
+import { PaymentMethod } from '../entities/payment-method.entity';
 
 export class PaymentMethodResponseDto {
   id: string;

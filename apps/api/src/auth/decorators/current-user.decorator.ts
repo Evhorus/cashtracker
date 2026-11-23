@@ -4,6 +4,7 @@ import {
   type ExecutionContext,
 } from '@nestjs/common';
 import { Request } from 'express';
+
 import { AuthUser } from '../types/auth-user.type';
 
 export const CurrentUser = createParamDecorator(

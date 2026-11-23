@@ -9,11 +9,12 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { normalizeString } from 'src/common/utils/string-utils';
+
 import {
   PRESET_COLORS,
   type PresetColor,
 } from 'src/categories/constants/preset-colors';
+import { normalizeString } from 'src/common/utils/string-utils';
 import {
   PAYMENT_METHOD_TYPES,
   type PaymentMethodType,

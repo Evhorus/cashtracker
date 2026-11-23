@@ -1,11 +1,16 @@
+import {
+  type ExecutionContext,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
+
 import { AppModule } from '../src/app.module';
 import { ClerkAuthGuard } from '../src/auth/guards/clerk-auth.guard';
-import { assertSafeTestDatabase } from './assert-safe-test-database';
 import { seedExistingAccounts } from '../src/database/seed-existing-accounts';
+import { assertSafeTestDatabase } from './assert-safe-test-database';
 
 interface CategoryBody {
   id: string;
@@ -29,7 +34,7 @@ describe('Categories (e2e)', () => {
     })
       .overrideProvider(ClerkAuthGuard)
       .useValue({
-        canActivate: (context) => {
+        canActivate: (context: ExecutionContext) => {
           context.switchToHttp().getRequest().user = user;
           return true;
         },

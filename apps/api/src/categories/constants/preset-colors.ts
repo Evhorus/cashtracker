@@ -1,11 +1,4 @@
-/**
- * Curated color swatches a Category can use - all share the app's
- * `--primary` lightness/chroma (0.7 0.13), only hue varies, so any
- * combination stays inside the same "family of accents" the rest of the
- * app's category colors already follow. Fixed whitelist (not freeform)
- * for the same reason icon is - keeps the create-category form to a
- * simple swatch picker instead of a full color picker.
- */
+/** Whitelisted `oklch()` swatches sharing the app's accent lightness/chroma so only hue varies. */
 export const PRESET_COLORS = [
   'oklch(0.72 0.14 153)', // hogar / primary
   'oklch(0.7 0.13 211)', // transporte

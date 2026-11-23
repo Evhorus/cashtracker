@@ -1,9 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
+
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { DashboardService } from './dashboard.service';
+import { BreakdownQueryDto } from './dto/breakdown-query.dto';
 import { DashboardQueryDto } from './dto/dashboard-query.dto';
 import { RecentExpensesQueryDto } from './dto/recent-expenses-query.dto';
-import { BreakdownQueryDto } from './dto/breakdown-query.dto';
-import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
 export class DashboardController {

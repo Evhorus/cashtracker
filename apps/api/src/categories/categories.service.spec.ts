@@ -1,10 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { QueryFailedError } from 'typeorm';
-import { CategoriesService } from './categories.service';
-import { CategoriesRepository } from './repositories/categories.repository';
-import { Category } from './entities/category.entity';
+
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+import { CategoriesService } from './categories.service';
+import { Category } from './entities/category.entity';
+import { CategoriesRepository } from './repositories/categories.repository';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;

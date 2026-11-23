@@ -3,17 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource, EntityManager } from 'typeorm';
+
+import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 import { Envelope } from 'src/envelopes/entities/envelope.entity';
 import { EnvelopesRepository } from 'src/envelopes/repositories/envelopes.repository';
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { DataSource, EntityManager } from 'typeorm';
+import { PaymentMethodsRepository } from '../payment-methods/repositories/payment-methods.repository';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { ExpenseResponseDto } from './dto/expense-response.dto';
 import { ExpensesPaginatedResponseDto } from './dto/expenses-paginated-response.dto';
 import { GetExpensesFilterDto } from './dto/get-expenses-filter.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { ExpensesRepository } from './repositories/expenses.repository';
-import { PaymentMethodsRepository } from '../payment-methods/repositories/payment-methods.repository';
 
 @Injectable()
 export class ExpensesService {
@@ -24,11 +25,6 @@ export class ExpensesService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   * Verifies ownership and locks the envelope for the rest of the
-   * transaction in a single query - see
-   * EnvelopesRepository.findOwnedByIdForUpdate.
-   */
   private async lockOwnedEnvelope(
     userId: string,
     envelopeId: string,
@@ -47,22 +43,12 @@ export class ExpensesService {
     return envelope;
   }
 
-  /**
-   * An envelope's `spent` is a sum in its own currency, so every expense
-   * in it must share that currency. The web form already locks the
-   * field, but the API is the boundary that has to hold. `undefined`
-   * (an update that doesn't touch the currency) is always fine.
-   */
   private assertSameCurrency(envelope: Envelope, currency?: string) {
     if (currency !== undefined && currency !== envelope.currency) {
       throw new BadRequestException(ERROR_MESSAGES.EXPENSE_CURRENCY_MISMATCH);
     }
   }
 
-  /**
-   * Reads the expense inside the locked transaction, ensuring it still
-   * exists and belongs to the target envelope.
-   */
   private async findExpenseInEnvelope(
     envelopeId: string,
     expenseId: string,
@@ -81,12 +67,6 @@ export class ExpensesService {
     return expense;
   }
 
-  /**
-   * A payment method id is a well-formed uuid by the time it gets here,
-   * but it must also belong to the envelope's owner - someone else's is
-   * a 404, the same as one that doesn't exist. null/undefined (clear /
-   * leave unchanged) is always fine.
-   */
   private async assertPaymentMethodIsUsable(
     userId: string,
     paymentMethodId: string | null | undefined,

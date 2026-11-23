@@ -1,37 +1,24 @@
-import { Envelope } from '../entities/envelope.entity';
-import { EnvelopeCategoryDto } from './envelope-category.dto';
 import { ExpenseResponseDto } from '../../expenses/dto/expense-response.dto';
+import { Envelope } from '../entities/envelope.entity';
 import {
   deriveEnvelopeStatus,
   type EnvelopeProgressStatus,
 } from '../utils/envelope-status';
+import { EnvelopeCategoryDto } from './envelope-category.dto';
 
-/**
- * Response DTO for Envelope with expenses
- * Used for detail views that need expense data
- */
 export class EnvelopeWithExpensesResponseDto {
   id: string;
   name: string;
   amount: number | null;
   currency: string;
   spent: number;
-  /** See EnvelopeResponseDto.status - same field, so a client never has
-   * to derive it for one endpoint and read it from another. */
   status: EnvelopeProgressStatus;
-  /** The whole category, or null when unclassified - see
-   * EnvelopeCategoryDto. */
   category: EnvelopeCategoryDto | null;
   description?: string;
   expenses: ExpenseResponseDto[];
   createdAt: Date;
   updatedAt: Date;
 
-  /**
-   * Transform Envelope entity with expenses to response DTO
-   * @param envelope Envelope entity with expenses relation loaded
-   * @returns EnvelopeWithExpensesResponseDto for API response
-   */
   static fromEntity(envelope: Envelope): EnvelopeWithExpensesResponseDto {
     return {
       id: envelope.id,

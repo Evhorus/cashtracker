@@ -9,8 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Expense } from '../../expenses/entities/expense.entity';
+
 import { Category } from '../../categories/entities/category.entity';
+import { Expense } from '../../expenses/entities/expense.entity';
 
 @Entity()
 export class Envelope {
@@ -26,23 +27,14 @@ export class Envelope {
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   amount: number | null;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ type: 'decimal', precision: 14, scale: 2 })
   spent: number;
 
   @Column()
-  @Index() // Add index for performance
+  @Index()
   userId: string;
 
-  /**
-   * A real relation, not the free text this used to be. As text, renaming
-   * a category silently detached every envelope using it: the envelope
-   * kept the old string, stopped resolving to any category, and the
-   * renamed category's own count dropped to zero. See migration
-   * 1787950000000-envelope_category_fk.
-   *
-   * `SET NULL` on delete: an envelope outlives its category, it just
-   * stops being classified.
-   */
+  // `SET NULL` on delete so an envelope outlives a deleted category as unclassified.
   @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'categoryId' })
   category?: Category | null;

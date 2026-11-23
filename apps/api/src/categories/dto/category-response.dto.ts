@@ -1,9 +1,5 @@
 import { Category } from '../entities/category.entity';
 
-/**
- * Response DTO for Category entity
- * Controls what data is exposed to the client
- */
 export class CategoryResponseDto {
   id: string;
   label: string;

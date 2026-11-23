@@ -1,8 +1,3 @@
-/**
- * Standard envelope for a paginated list response.
- * `meta` carries everything a client needs to render pager controls
- * without re-deriving them (totalPages, hasNextPage, hasPreviousPage).
- */
 export class PaginationMetaDto {
   total: number;
   page: number;

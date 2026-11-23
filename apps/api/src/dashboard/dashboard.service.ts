@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { DashboardRepository } from './repositories/dashboard.repository';
-import { DashboardSummaryResponseDto } from './dto/dashboard-summary-response.dto';
+
+import { DashboardBreakdownTotalDto } from './dto/dashboard-breakdown-total-response.dto';
 import { DashboardCategoryBreakdownDto } from './dto/dashboard-category-breakdown-response.dto';
 import { DashboardEnvelopeBreakdownDto } from './dto/dashboard-envelope-breakdown-response.dto';
 import { DashboardNameBreakdownDto } from './dto/dashboard-name-breakdown-response.dto';
-import { DashboardBreakdownTotalDto } from './dto/dashboard-breakdown-total-response.dto';
 import { DashboardRecentExpenseDto } from './dto/dashboard-recent-expense-response.dto';
+import { DashboardSummaryResponseDto } from './dto/dashboard-summary-response.dto';
+import { DashboardRepository } from './repositories/dashboard.repository';
 
-/** Shared by the four breakdown methods below - see
- * DashboardRepository.withUserCurrencyAndDateRange for how they're
- * applied. */
 interface BreakdownFilters {
   year?: number;
   startDate?: string;
@@ -29,22 +27,14 @@ export class DashboardService {
     year?: number,
     currency?: string,
   ): Promise<DashboardSummaryResponseDto> {
-    // Run aggregate and availableYears in parallel; getMonthlySpending
-    // only depends on currencyAggregates to pick chartCurrency.
-    // Envelope state is not date-filtered; `year` scopes only the chart.
+    // Envelope totals are never date-filtered; `year` scopes only the chart.
     const [currencyAggregates, availableYears] = await Promise.all([
       this.dashboardRepository.getSummaryAggregate(userId),
       this.dashboardRepository.getAvailableYears(userId),
     ]);
-    // Already ordered by envelope count DESC, currency ASC - the same
-    // "most-used currency" the summary totals put first.
+
     const primaryCurrency = currencyAggregates[0]?.currency;
-    // `currency` is a request to view a specific one (see
-    // dashboard-query.dto.ts) - honor it only if the user actually has
-    // envelopes in it, otherwise silently fall back to the primary one
-    // rather than querying a currency with nothing to show. Either way,
-    // `chartCurrency` in the response says which one was actually used,
-    // since the frontend can no longer just assume "primary".
+    // Honor requested currency only if the user has envelopes in it; otherwise fall back to primary.
     const chartCurrency =
       (currency &&
         currencyAggregates.find((row) => row.currency === currency)
@@ -62,8 +52,6 @@ export class DashboardService {
       : [];
 
     return {
-      // Currency-agnostic - "how many envelopes" doesn't need splitting
-      // by currency the way the money totals below do.
       totalEnvelopes: currencyAggregates.reduce(
         (sum, row) => sum + row.count,
         0,
@@ -77,12 +65,6 @@ export class DashboardService {
         totalAvailable: row.totalAvailable,
         totalExceeded: row.totalExceeded,
       })),
-      // The raw "YYYY-MM" key, not a formatted month name. This used
-      // to send `label: "Ago 2026"`, which pinned every client to
-      // Spanish - a month name is presentation, and this API has more
-      // than one kind of reader (the web app in two languages, and a
-      // mobile app later). Deciding whether the year is worth showing
-      // is presentation too, so that moves with it.
       chart: monthlySpending.map((row) => ({
         month: row.month,
         spent: row.spent,
@@ -92,16 +74,6 @@ export class DashboardService {
     };
   }
 
-  /**
-   * Spending grouped by category, for one currency and period - one tab
-   * of the statistics page's breakdown card. Scoped by each expense's
-   * own date (see DashboardRepository.withUserCurrencyAndDateRange),
-   * not by when its envelope was created.
-   *
-   * Its own endpoint rather than part of the summary: the summary page
-   * never renders it, so folding it in would run an extra GROUP BY on every
-   * dashboard load. Same reasoning as getRecentExpenses below.
-   */
   async getCategoryBreakdown(
     userId: string,
     currency: string,
@@ -114,10 +86,6 @@ export class DashboardService {
     );
   }
 
-  /**
-   * Spending grouped by envelope, for one currency and period - the
-   * "por sobre" tab next to getCategoryBreakdown above.
-   */
   async getEnvelopeBreakdown(
     userId: string,
     currency: string,
@@ -130,11 +98,6 @@ export class DashboardService {
     );
   }
 
-  /**
-   * Spending grouped by the expense's own name, for one currency and
-   * period - surfaces recurring expenses (e.g. "Arriendo" paid every
-   * month) as a single total, the "por nombre" tab.
-   */
   async getNameBreakdown(
     userId: string,
     currency: string,
@@ -143,10 +106,6 @@ export class DashboardService {
     return this.dashboardRepository.getNameBreakdown(userId, currency, filters);
   }
 
-  /**
-   * The grand total across every expense in the period/currency - the
-   * "Total" tab, a single number rather than a list of rows.
-   */
   async getBreakdownTotal(
     userId: string,
     currency: string,
@@ -159,12 +118,6 @@ export class DashboardService {
     );
   }
 
-  /**
-   * Separate from getSummary above rather than folded into it - the
-   * summary page is the only caller (statistics never renders this),
-   * so bundling it into the summary would mean an unused query running
-   * on every year/currency-filtered chart reload on that other page.
-   */
   async getRecentExpenses(
     userId: string,
     limit: number = RECENT_EXPENSES_DEFAULT_LIMIT,

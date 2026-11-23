@@ -1,4 +1,4 @@
-import { normalizeString } from './string-utils';
+import { escapeLikePattern, normalizeString } from './string-utils';
 
 describe('normalizeString', () => {
   it('trims and collapses repeated spaces', () => {
@@ -19,5 +19,15 @@ describe('normalizeString', () => {
   it('passes non-strings through unchanged', () => {
     expect(normalizeString(undefined)).toBeUndefined();
     expect(normalizeString(42)).toBe(42);
+  });
+});
+
+describe('escapeLikePattern', () => {
+  it('escapes backslash, percent, and underscore characters', () => {
+    expect(escapeLikePattern('100%_off\\deal')).toBe('100\\%\\_off\\\\deal');
+  });
+
+  it('leaves plain text untouched', () => {
+    expect(escapeLikePattern('supermercado')).toBe('supermercado');
   });
 });

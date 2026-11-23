@@ -1,10 +1,6 @@
-import { Expense } from '../entities/expense.entity';
 import { ExpensePaymentMethodDto } from '../../payment-methods/dto/payment-method-response.dto';
+import { Expense } from '../entities/expense.entity';
 
-/**
- * Response DTO for Expense entity
- * Controls what data is exposed to the client
- */
 export class ExpenseResponseDto {
   id: string;
   name: string;
@@ -12,14 +8,10 @@ export class ExpenseResponseDto {
   currency: string;
   date: Date;
   description?: string;
-  /** What it was paid with, or null. */
   paymentMethod: ExpensePaymentMethodDto | null;
   createdAt: Date;
   updatedAt: Date;
 
-  /**
-   * Transform Expense entity to response DTO
-   */
   static fromEntity(expense: Expense): ExpenseResponseDto {
     return {
       id: expense.id,
@@ -34,9 +26,6 @@ export class ExpenseResponseDto {
     };
   }
 
-  /**
-   * Transform array of Expense entities to response DTOs
-   */
   static fromEntities(expenses: Expense[]): ExpenseResponseDto[] {
     return expenses.map((expense) => this.fromEntity(expense));
   }

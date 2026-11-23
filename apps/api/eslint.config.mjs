@@ -26,9 +26,7 @@ export default [
   },
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'off', // Disabled for test mocks
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
@@ -43,10 +41,12 @@ export default [
     },
   },
   {
-    // Disable unbound-method for all test files (Jest mocks)
+    // Relax mock-ergonomics rules only in test files
     files: ['**/*.spec.ts', 'test/**/*.e2e-spec.ts'],
     rules: {
       '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
 ];

@@ -1,28 +1,5 @@
-/**
- * Envelope spending status - the single source of truth for it.
- *
- * This lives in the backend on purpose. The status is derived from
- * `amount` and `spent`, so any client could compute it, and the web
- * frontend used to: it had its own copy of the 80% threshold and its own
- * edge-case handling. That only works while there is exactly one client.
- * A second one (a mobile app) would have to reimplement the same rules,
- * and the moment the two disagree the same envelope shows a different
- * status depending on which app you opened. So the API now reports the
- * status it derived, and the threshold below is the only place the number
- * exists.
- *
- * An envelope's `amount` is a soft limit, not a hard cap: going over it
- * is allowed and only surfaces as a warning. Nothing here blocks any
- * operation - it is purely informational, the same pattern
- * YNAB/Goodbudget use for category budgets.
- */
+/** Single source of truth for envelope spending status and its matching SQL filters. */
 
-/**
- * Share of the limit at which an envelope starts warning - an early
- * heads-up before actually going over. Changing this changes both the
- * status reported per envelope and the `?status=` filter, because the
- * SQL below is built from this same constant.
- */
 export const ENVELOPE_WARNING_THRESHOLD = 0.8;
 
 export const ENVELOPE_PROGRESS_STATUSES = [
@@ -35,27 +12,11 @@ export const ENVELOPE_PROGRESS_STATUSES = [
 export type EnvelopeProgressStatus =
   (typeof ENVELOPE_PROGRESS_STATUSES)[number];
 
-/**
- * What the list endpoint can filter by: "all", any single status, or
- * `alert` - which merges `warning` and `exceeded` ("needs your
- * attention") and so overlaps them rather than partitioning the list the
- * way the others do.
- */
+/** List filter values: each status plus `all` and `alert` (warning + exceeded). */
 export const ENVELOPE_STATUS_FILTERS = [
   'all',
-  // One filter per status, so a client's tab labels can be the status
-  // words themselves rather than a second vocabulary. Added because the
-  // web app's tabs read "Activos"/"En alerta" while the same envelopes'
-  // badges read "Controlado"/"En riesgo" - two vocabularies for one set
-  // of states, on one screen.
   'normal',
   'warning',
-  // The one union that survives: warning + exceeded, "needs your
-  // attention". Not something a user picks from a tab - the summary
-  // page fetches it for its alert widget and count, which is why it
-  // stays a filter while `active` (normal + warning) was removed. That
-  // one had no consumer, and no word named it honestly: an envelope is
-  // never activated or deactivated.
   'alert',
   'exceeded',
   'unlimited',
@@ -63,21 +24,12 @@ export const ENVELOPE_STATUS_FILTERS = [
 
 export type EnvelopeStatusFilter = (typeof ENVELOPE_STATUS_FILTERS)[number];
 
-/**
- * `amount` and `spent` are `decimal` columns. TypeORM hands those back as
- * strings at runtime even though the entity types them `number`, so
- * everything here coerces rather than trusting the declared type.
- */
+/** TypeORM returns `decimal` columns as strings at runtime. */
 function toNumber(value: number | string): number {
   return typeof value === 'number' ? value : Number(value);
 }
 
-/**
- * Derive an envelope's status from its limit and its spend.
- *
- * `amount === null` means an unlimited envelope (a running counter with
- * no cap), which is a distinct state rather than a limit of zero.
- */
+/** Derives spending status from limit (`null` = unlimited) and spent amount. */
 export function deriveEnvelopeStatus(
   amount: number | string | null,
   spent: number | string,
@@ -87,16 +39,10 @@ export function deriveEnvelopeStatus(
   const limit = toNumber(amount);
   const used = toNumber(spent);
 
-  // A non-positive limit has no meaningful ratio to compare against, so
-  // it is "exceeded" the moment anything is spent and "normal"
-  // otherwise. Without this branch, `used / limit` would divide by zero
-  // (or flip sign on a negative limit) and misreport both cases.
+  // Guard against division by zero or sign flips on non-positive limits.
   if (limit <= 0) return used > 0 ? 'exceeded' : 'normal';
 
-  // Compare in integer thousandths using BigInt instead of `used / limit`
-  // in float: IEEE-754 evaluates values like `5.6 / 7` as
-  // `0.7999999999999999 < 0.8`, making this disagree with Postgres's
-  // exact `numeric` predicate (`spent >= amount * 0.8`).
+  // Exact integer thousandths via BigInt to match Postgres `numeric` at float boundaries (e.g. 5.6/7).
   const limitScaled = BigInt(Math.round(limit * 1000));
   const usedScaled = BigInt(Math.round(used * 1000));
   const warningPercent = BigInt(Math.round(ENVELOPE_WARNING_THRESHOLD * 100));
@@ -106,23 +52,7 @@ export function deriveEnvelopeStatus(
   return 'normal';
 }
 
-/**
- * The same rules as `deriveEnvelopeStatus`, expressed as a SQL predicate
- * so the list endpoint can filter and count in the database instead of
- * fetching everything and filtering in memory.
- *
- * These two implementations have to agree, which is why they are in the
- * same file and share `ENVELOPE_WARNING_THRESHOLD`, and why
- * envelope-status.spec.ts checks every boundary value against both. The
- * `amount <= 0` branches exist for exactly the reason described in
- * `deriveEnvelopeStatus` - dropping them is the easy way to make the
- * filter and the reported status silently disagree on a zero or negative
- * limit.
- *
- * `alias` is the query builder's alias for the envelope table.
- * Comparisons stay in SQL numerics (Postgres `decimal` is exact), so
- * there is no float rounding to reconcile with the TypeScript side.
- */
+/** SQL equivalent of `deriveEnvelopeStatus` (must stay in sync; verified by envelope-status.spec.ts). */
 export function buildEnvelopeStatusPredicate(
   filter: EnvelopeStatusFilter,
   alias = 'envelope',
@@ -147,9 +77,6 @@ export function buildEnvelopeStatusPredicate(
         params: {},
       };
 
-    // Mirrors deriveEnvelopeStatus's `ratio < threshold` branch, plus
-    // its non-positive-limit case (no meaningful ratio, so "normal"
-    // until anything is spent).
     case 'normal':
       return {
         clause:
@@ -159,9 +86,6 @@ export function buildEnvelopeStatusPredicate(
         params,
       };
 
-    // At or past the threshold but not over the limit. A non-positive
-    // limit can never be "warning" - it goes straight from normal to
-    // exceeded - which is why there is no second branch here.
     case 'warning':
       return {
         clause:
@@ -170,7 +94,6 @@ export function buildEnvelopeStatusPredicate(
         params,
       };
 
-    // warning + exceeded
     case 'alert':
       return {
         clause:
@@ -182,7 +105,6 @@ export function buildEnvelopeStatusPredicate(
   }
 }
 
-/** Whether a status belongs under one of the filter groupings above. */
 export function statusMatchesFilter(
   status: EnvelopeProgressStatus,
   filter: EnvelopeStatusFilter,

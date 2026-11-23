@@ -11,11 +11,7 @@ export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // The owner. NULL only on the 9 predefined rows, which are templates:
-  // never shown or used directly, copied to each user the first time they
-  // load categories (see CategoriesRepository.seedDefaultsFor). Only ever
-  // set by CategoriesService.create, never by an update - a category's
-  // ownership doesn't change after creation.
+  // NULL only on the 9 predefined template rows copied to each user on first load.
   @Column({ nullable: true, type: 'varchar' })
   userId: string | null;
 

@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
+
 import { Category } from '../entities/category.entity';
 
-/**
- * Custom repository for Category entity
- * Encapsulates complex queries and data access logic
- */
 @Injectable()
 export class CategoriesRepository {
   constructor(
@@ -15,18 +12,9 @@ export class CategoriesRepository {
   ) {}
 
   /**
-   * Gives a user their own copy of the predefined categories, once.
-   *
-   * The `category_seed` insert is both the "already done" check and the
-   * lock: its primary key makes a second concurrent transaction wait for
-   * the first to commit and then insert nothing, so two simultaneous
-   * first requests cannot duplicate the set. It is a marker rather than
-   * "the user has no categories" so that someone who deletes them all
-   * does not get them back.
-   *
-   * Envelopes that still point at a shared template (every account that
-   * existed before this change) are re-pointed to the user's copy, so no
-   * envelope loses its category.
+   * Idempotently copies predefined templates into the user's namespace once.
+   * `category_seed` PK serializes concurrent first requests and prevents
+   * re-seeding if the user later deletes all default categories.
    */
   async seedDefaultsFor(userId: string): Promise<void> {
     await this.repository.manager.transaction(async (manager) => {
@@ -36,9 +24,6 @@ export class CategoriesRepository {
       );
       if (claimed.length === 0) return;
 
-      // Copy every shared template into the user's own namespace in one
-      // statement; any label the user already owns (case-insensitively)
-      // keeps their row via UQ_category_userId_label.
       await manager.query(
         `INSERT INTO "category" ("userId", "label", "color", "icon", "isDefault", "created_at", "updated_at")
          SELECT $1, t."label", t."color", t."icon", true, t."created_at", now()
@@ -48,8 +33,7 @@ export class CategoriesRepository {
         [userId],
       );
 
-      // Re-point any envelope still referencing a shared template to the
-      // user's matching row in a single set-based update.
+      // Re-point any envelope still referencing a shared template to the user's copy.
       await manager.query(
         `UPDATE "envelope" e
          SET "categoryId" = c."id"
@@ -73,12 +57,6 @@ export class CategoriesRepository {
     return rows.length > 0;
   }
 
-  /**
-   * Every category the user owns - their copies of the predefined ones
-   * and whatever they added. The shared templates (userId NULL) are never
-   * returned. Seeded copies first, in template order, then the rest
-   * oldest-first - a stable order for the picker.
-   */
   async findAllOwned(userId: string) {
     return this.repository.find({
       where: { userId },
@@ -86,21 +64,7 @@ export class CategoriesRepository {
     });
   }
 
-  /**
-   * How many envelopes this user has in each category. One row per
-   * category they actually use - categories with none are simply absent,
-   * and the caller treats a missing entry as zero.
-   *
-   * Counts across every currency and regardless of spend, which is why
-   * this is not the dashboard's category breakdown: that one is scoped
-   * to a currency and skips envelopes with nothing spent, because it
-   * answers "where did the money go" rather than "how is this classified".
-   *
-   * Its own endpoint rather than a field on GET /categories: the
-   * dashboard layout fetches that list on every page to populate the
-   * category picker, and it has no use for counts - making it join and
-   * group every time would be a cost paid app-wide for one page.
-   */
+  /** Counts envelopes per category across all currencies (omits zero-count categories). */
   async countEnvelopesByCategory(userId: string) {
     const rows = await this.repository.manager
       .createQueryBuilder()
@@ -118,16 +82,10 @@ export class CategoriesRepository {
     }));
   }
 
-  /**
-   * One category by id, only if this user owns it. Envelopes reference
-   * categories by id, so this is what stops a well-formed uuid belonging
-   * to someone else (or a shared template) from being attached to one.
-   */
   async findOwnedById(userId: string, id: string) {
     return this.repository.findOneBy({ id, userId });
   }
 
-  /** Case-insensitive, among the user's own categories. */
   async findOwnedByLabel(userId: string, label: string) {
     return this.repository
       .createQueryBuilder('category')
@@ -136,18 +94,12 @@ export class CategoriesRepository {
       .getOne();
   }
 
-  /**
-   * Create a new category
-   */
   async create(categoryData: Partial<Category>, manager?: EntityManager) {
     const repo = manager ? manager.getRepository(Category) : this.repository;
     const category = repo.create(categoryData);
     return repo.save(category);
   }
 
-  /**
-   * Update a category
-   */
   async update(
     id: string,
     categoryData: Partial<Category>,
@@ -157,9 +109,6 @@ export class CategoriesRepository {
     return repo.update(id, categoryData);
   }
 
-  /**
-   * Remove a category
-   */
   async remove(category: Category, manager?: EntityManager) {
     const repo = manager ? manager.getRepository(Category) : this.repository;
     return repo.remove(category);

@@ -6,6 +6,8 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
+
+import { escapeLikePattern } from 'src/common/utils/string-utils';
 import { Expense } from '../entities/expense.entity';
 
 interface ExpenseFilters {
@@ -34,11 +36,6 @@ export class ExpensesRepository {
     return repo.findOneBy({ id, envelopeId });
   }
 
-  /**
-   * Loads one expense scoped to both the envelope and its owner in a
-   * single SQL query, selecting only the paymentMethod fields embedded
-   * in ExpenseResponseDto.
-   */
   async findOwnedInEnvelope(
     userId: string,
     envelopeId: string,
@@ -79,19 +76,14 @@ export class ExpensesRepository {
     return repo.delete({ id });
   }
 
-  /**
-   * The `envelopeId` + search/date-range conditions shared by `findAll`
-   * and `calculateFilteredTotal`. Sorting and pagination are deliberately
-   * left out here - they only ever apply to the page of rows being
-   * listed, never to the aggregate over the full filtered set.
-   */
+  /** Base filter query shared by `findPage` and `getFilteredAggregate` (excludes sort/pagination). */
   private buildFilteredQuery(
     envelopeId: string,
     filters: ExpenseFilters,
   ): SelectQueryBuilder<Expense> {
-    const query = this.repository.createQueryBuilder('expense');
-
-    query.where('expense.envelopeId = :envelopeId', { envelopeId });
+    const query = this.repository
+      .createQueryBuilder('expense')
+      .where('expense.envelopeId = :envelopeId', { envelopeId });
 
     if (filters.startDate) {
       query.andWhere('expense.date >= :startDate', {
@@ -107,31 +99,39 @@ export class ExpensesRepository {
 
     if (filters.search) {
       query.andWhere(
-        '(LOWER(expense.name) LIKE LOWER(:search) OR LOWER(expense.description) LIKE LOWER(:search))',
-        { search: `%${filters.search}%` },
+        "(LOWER(expense.name) LIKE LOWER(:search) ESCAPE '\\' OR LOWER(expense.description) LIKE LOWER(:search) ESCAPE '\\')",
+        { search: `%${escapeLikePattern(filters.search)}%` },
       );
     }
 
-    const methodIds = filters.paymentMethodIds ?? [];
-    if (methodIds.length > 0 || filters.includeUnassigned) {
-      // Any of the selected methods, or none at all when asked - an OR
-      // inside its own brackets so it cannot leak past the envelope
-      // condition above.
-      query.andWhere(
-        new Brackets((byMethod) => {
-          if (methodIds.length > 0) {
-            byMethod.orWhere('expense.paymentMethodId IN (:...methodIds)', {
-              methodIds,
-            });
-          }
-          if (filters.includeUnassigned) {
-            byMethod.orWhere('expense.paymentMethodId IS NULL');
-          }
-        }),
-      );
-    }
+    this.applyPaymentMethodFilter(
+      query,
+      filters.paymentMethodIds ?? [],
+      Boolean(filters.includeUnassigned),
+    );
 
     return query;
+  }
+
+  private applyPaymentMethodFilter(
+    query: SelectQueryBuilder<Expense>,
+    methodIds: string[],
+    includeUnassigned: boolean,
+  ) {
+    if (methodIds.length === 0 && !includeUnassigned) return;
+
+    query.andWhere(
+      new Brackets((byMethod) => {
+        if (methodIds.length > 0) {
+          byMethod.orWhere('expense.paymentMethodId IN (:...methodIds)', {
+            methodIds,
+          });
+        }
+        if (includeUnassigned) {
+          byMethod.orWhere('expense.paymentMethodId IS NULL');
+        }
+      }),
+    );
   }
 
   async findPage(
@@ -148,30 +148,20 @@ export class ExpensesRepository {
         'paymentMethod.color',
       ]);
 
-    // Most recent first by default - the conventional order for a
-    // transaction/expense history (what did I just spend, not what did
-    // I spend first), and what the frontend's own "Actividad reciente"
-    // dashboard widget already assumes for expenses.
     const sortOrder = filters.sort || 'DESC';
     if (filters.sortBy === 'amount') {
-      // Ties (same amount) fall back to newest first.
       query.orderBy('expense.amount', sortOrder);
       query.addOrderBy('expense.date', 'DESC');
     } else {
       query.orderBy('expense.date', sortOrder);
     }
     query.addOrderBy('expense.createdAt', 'DESC');
-    // offset/limit instead of skip/take: paymentMethod is many-to-one so
-    // rows never multiply, avoiding TypeORM's extra DISTINCT sub-query.
+    // offset/limit avoids TypeORM's DISTINCT subquery since paymentMethod is many-to-one.
     query.offset((page - 1) * limit).limit(limit);
 
     return query.getMany();
   }
 
-  /**
-   * Total count and sum of `amount` over the entire filtered result set
-   * in a single aggregate query (replaces separate COUNT + SUM queries).
-   */
   async getFilteredAggregate(envelopeId: string, filters: ExpenseFilters) {
     const result = await this.buildFilteredQuery(envelopeId, filters)
       .select('COUNT(*)', 'count')

@@ -8,16 +8,19 @@ import {
   IsString,
   IsUUID,
   Max,
+  MaxLength,
 } from 'class-validator';
-import { normalizeString } from 'src/common/utils/string-utils';
-import { Currency } from 'src/common/enums/currency.enum';
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+
 import { MAX_AMOUNT } from 'src/common/constants/amounts';
+import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+import { Currency } from 'src/common/enums/currency.enum';
+import { normalizeString } from 'src/common/utils/string-utils';
 import { IsCalendarDate } from 'src/common/validators/calendar-date.validators';
 
 export class CreateExpenseDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   @Transform(({ value }) => normalizeString(value))
   name: string;
 
@@ -33,6 +36,7 @@ export class CreateExpenseDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   @Transform(({ value }) => normalizeString(value))
   description?: string;
 

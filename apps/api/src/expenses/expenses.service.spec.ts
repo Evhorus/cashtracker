@@ -1,14 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
+
+import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+import { Currency } from 'src/common/enums/currency.enum';
+import { Envelope } from '../envelopes/entities/envelope.entity';
+import { EnvelopesRepository } from '../envelopes/repositories/envelopes.repository';
+import { PaymentMethodsRepository } from '../payment-methods/repositories/payment-methods.repository';
+import { Expense } from './entities/expense.entity';
 import { ExpensesService } from './expenses.service';
 import { ExpensesRepository } from './repositories/expenses.repository';
-import { EnvelopesRepository } from '../envelopes/repositories/envelopes.repository';
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { Envelope } from '../envelopes/entities/envelope.entity';
-import { Expense } from './entities/expense.entity';
-import { Currency } from 'src/common/enums/currency.enum';
-import { PaymentMethodsRepository } from '../payment-methods/repositories/payment-methods.repository';
 
 describe('ExpensesService', () => {
   let service: ExpensesService;
