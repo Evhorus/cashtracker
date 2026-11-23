@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -18,7 +17,6 @@ export class Category {
   // set by CategoriesService.create, never by an update - a category's
   // ownership doesn't change after creation.
   @Column({ nullable: true, type: 'varchar' })
-  @Index() // Add index for performance
   userId: string | null;
 
   @Column()

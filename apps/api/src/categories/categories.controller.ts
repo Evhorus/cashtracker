@@ -12,7 +12,6 @@ import {
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { CategoryExists } from './decorators/category-exists.decorator';
 import { CategoryResponseDto } from './dto/category-response.dto';
 import { CategoriesService } from './categories.service';
 
@@ -52,18 +51,20 @@ export class CategoriesController {
     return this.categoriesService.create(userId, createCategoryDto);
   }
 
-  @CategoryExists()
   @Patch(':categoryId')
   updateCategory(
     @Param('categoryId', ParseUUIDPipe) categoryId: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
+    @CurrentUser('id') userId: string,
   ) {
-    return this.categoriesService.update(categoryId, updateCategoryDto);
+    return this.categoriesService.update(userId, categoryId, updateCategoryDto);
   }
 
-  @CategoryExists()
   @Delete(':categoryId')
-  remove(@Param('categoryId', ParseUUIDPipe) categoryId: string) {
-    return this.categoriesService.remove(categoryId);
+  remove(
+    @Param('categoryId', ParseUUIDPipe) categoryId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.categoriesService.remove(userId, categoryId);
   }
 }

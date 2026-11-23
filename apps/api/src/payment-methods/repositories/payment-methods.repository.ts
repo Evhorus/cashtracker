@@ -17,10 +17,6 @@ export class PaymentMethodsRepository {
     });
   }
 
-  findById(id: string) {
-    return this.repository.findOneBy({ id });
-  }
-
   findForUserById(userId: string, id: string, manager?: EntityManager) {
     const repo = manager
       ? manager.getRepository(PaymentMethod)

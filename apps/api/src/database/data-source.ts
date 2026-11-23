@@ -80,6 +80,11 @@ export const dataSourceOptions: DataSourceOptions = {
   migrationsRun: process.env.MIGRATIONS_RUN_ON_BOOT !== 'false',
   subscribers: [],
   poolSize: 10,
+  extra: {
+    connectionTimeoutMillis: 10_000,
+    idleTimeoutMillis: 30_000,
+    query_timeout: 15_000,
+  },
 };
 
 export const AppDataSource = new DataSource(dataSourceOptions);

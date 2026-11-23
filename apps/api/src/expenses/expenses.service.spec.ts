@@ -45,17 +45,18 @@ describe('ExpensesService', () => {
   beforeEach(async () => {
     const mockExpensesRepo = {
       create: jest.fn(),
-      findById: jest.fn(),
-      findAll: jest.fn(),
-      calculateFilteredTotal: jest.fn(),
+      findInEnvelopeById: jest.fn(),
+      findOwnedInEnvelope: jest.fn(),
+      findPage: jest.fn(),
+      getFilteredAggregate: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     };
 
     const mockEnvelopesRepo = {
-      findByIdForUpdate: jest.fn(),
+      findOwnedByIdForUpdate: jest.fn(),
+      existsOwnedById: jest.fn(),
       recalculateSpent: jest.fn(),
-      findById: jest.fn(),
     };
 
     const mockEntityManager = {
@@ -100,13 +101,20 @@ describe('ExpensesService', () => {
     };
 
     it('locks the envelope, creates the expense and recomputes spent', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
 
-      const result = await service.create('envelope-123', createDto);
+      const result = await service.create(
+        'user-123',
+        'envelope-123',
+        createDto,
+      );
 
       expect(result).toEqual({ message: 'Gasto creado' });
       expect(dataSource.transaction).toHaveBeenCalled();
-      expect(envelopesRepository.findByIdForUpdate).toHaveBeenCalledWith(
+      expect(envelopesRepository.findOwnedByIdForUpdate).toHaveBeenCalledWith(
+        'user-123',
         'envelope-123',
         entityManager,
       );
@@ -121,10 +129,12 @@ describe('ExpensesService', () => {
     });
 
     it('rejects a currency other than the envelope one', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
 
       await expect(
-        service.create('envelope-123', {
+        service.create('user-123', 'envelope-123', {
           ...createDto,
           currency: Currency.USD,
         }),
@@ -136,11 +146,13 @@ describe('ExpensesService', () => {
     });
 
     it("rejects a payment method that is not the envelope owner's", async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
       paymentMethodsRepository.findForUserById.mockResolvedValue(null);
 
       await expect(
-        service.create('envelope-123', {
+        service.create('user-123', 'envelope-123', {
           ...createDto,
           paymentMethodId: '5b8e2c4e-1f3a-4c7e-9d2b-8a6f0e1c2d3b',
         }),
@@ -156,17 +168,21 @@ describe('ExpensesService', () => {
     });
 
     it('does not look up a payment method when none is sent', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
 
-      await service.create('envelope-123', createDto);
+      await service.create('user-123', 'envelope-123', createDto);
 
       expect(paymentMethodsRepository.findForUserById).not.toHaveBeenCalled();
     });
 
-    it('fails with 404 if the envelope disappeared before the lock', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(null);
+    it('fails with 404 if the envelope disappeared or belongs to another user', async () => {
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(null);
 
-      await expect(service.create('envelope-123', createDto)).rejects.toThrow(
+      await expect(
+        service.create('user-123', 'envelope-123', createDto),
+      ).rejects.toThrow(
         new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND),
       );
       expect(expensesRepository.create).not.toHaveBeenCalled();
@@ -175,18 +191,21 @@ describe('ExpensesService', () => {
 
   describe('update', () => {
     it('updates inside the lock and recomputes spent', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
-      expensesRepository.findById.mockResolvedValue(mockExpense);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
+      expensesRepository.findInEnvelopeById.mockResolvedValue(mockExpense);
 
       const result = await service.update({
-        envelope: mockEnvelope,
+        userId: 'user-123',
+        envelopeId: mockEnvelope.id,
         expenseId: 'expense-123',
         updateExpenseDto: { amount: 15 },
       });
 
       expect(result).toEqual({ message: 'Gasto actualizado' });
-      // Re-read with the transaction's manager, not the guard's stale copy.
-      expect(expensesRepository.findById).toHaveBeenCalledWith(
+      expect(expensesRepository.findInEnvelopeById).toHaveBeenCalledWith(
+        mockEnvelope.id,
         'expense-123',
         entityManager,
       );
@@ -202,12 +221,15 @@ describe('ExpensesService', () => {
     });
 
     it('rejects moving the expense to another currency', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
-      expensesRepository.findById.mockResolvedValue(mockExpense);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
+      expensesRepository.findInEnvelopeById.mockResolvedValue(mockExpense);
 
       await expect(
         service.update({
-          envelope: mockEnvelope,
+          userId: 'user-123',
+          envelopeId: mockEnvelope.id,
           expenseId: 'expense-123',
           updateExpenseDto: { currency: Currency.USD },
         }),
@@ -218,12 +240,15 @@ describe('ExpensesService', () => {
     });
 
     it('fails with 404 if a concurrent request already deleted it', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
-      expensesRepository.findById.mockResolvedValue(null);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
+      expensesRepository.findInEnvelopeById.mockResolvedValue(null);
 
       await expect(
         service.update({
-          envelope: mockEnvelope,
+          userId: 'user-123',
+          envelopeId: mockEnvelope.id,
           expenseId: 'expense-123',
           updateExpenseDto: { amount: 15 },
         }),
@@ -237,10 +262,16 @@ describe('ExpensesService', () => {
 
   describe('remove', () => {
     it('deletes inside the lock and recomputes spent', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
-      expensesRepository.findById.mockResolvedValue(mockExpense);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
+      expensesRepository.findInEnvelopeById.mockResolvedValue(mockExpense);
 
-      const result = await service.remove(mockEnvelope, 'expense-123');
+      const result = await service.remove(
+        'user-123',
+        mockEnvelope.id,
+        'expense-123',
+      );
 
       expect(result).toEqual({ message: 'Gasto eliminado' });
       expect(expensesRepository.delete).toHaveBeenCalledWith(
@@ -254,39 +285,31 @@ describe('ExpensesService', () => {
     });
 
     it('fails with 404 and changes nothing if the expense is already gone', async () => {
-      // The second of two simultaneous deletes lands here.
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
-      expensesRepository.findById.mockResolvedValue(null);
+      envelopesRepository.findOwnedByIdForUpdate.mockResolvedValue(
+        mockEnvelope,
+      );
+      expensesRepository.findInEnvelopeById.mockResolvedValue(null);
 
       await expect(
-        service.remove(mockEnvelope, 'non-existent'),
+        service.remove('user-123', mockEnvelope.id, 'non-existent'),
       ).rejects.toThrow(
         new NotFoundException(ERROR_MESSAGES.EXPENSE_NOT_FOUND),
       );
       expect(expensesRepository.delete).not.toHaveBeenCalled();
       expect(envelopesRepository.recalculateSpent).not.toHaveBeenCalled();
     });
-
-    it('treats an expense from another envelope as not found', async () => {
-      envelopesRepository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
-      expensesRepository.findById.mockResolvedValue({
-        ...mockExpense,
-        envelopeId: 'another-envelope',
-      });
-
-      await expect(service.remove(mockEnvelope, 'expense-123')).rejects.toThrow(
-        new NotFoundException(ERROR_MESSAGES.EXPENSE_NOT_FOUND),
-      );
-      expect(expensesRepository.delete).not.toHaveBeenCalled();
-    });
   });
 
   describe('findAll', () => {
     it('should return a paginated list of mapped expense responses', async () => {
-      expensesRepository.findAll.mockResolvedValue([[mockExpense], 1]);
-      expensesRepository.calculateFilteredTotal.mockResolvedValue(10);
+      envelopesRepository.existsOwnedById.mockResolvedValue(true);
+      expensesRepository.findPage.mockResolvedValue([mockExpense]);
+      expensesRepository.getFilteredAggregate.mockResolvedValue({
+        total: 1,
+        totalAmount: 10,
+      });
 
-      const result = await service.findAll('envelope-123', {
+      const result = await service.findAll('user-123', 'envelope-123', {
         page: 1,
         limit: 20,
       });
@@ -302,53 +325,102 @@ describe('ExpensesService', () => {
         hasPreviousPage: false,
         totalAmount: 10,
       });
-      expect(expensesRepository.findAll).toHaveBeenCalledWith(
+      expect(expensesRepository.findPage).toHaveBeenCalledWith(
         'envelope-123',
         {},
         1,
         20,
       );
-      expect(expensesRepository.calculateFilteredTotal).toHaveBeenCalledWith(
+      expect(expensesRepository.getFilteredAggregate).toHaveBeenCalledWith(
         'envelope-123',
         {},
       );
     });
 
-    it('should pass filters through without page/limit', async () => {
-      expensesRepository.findAll.mockResolvedValue([[mockExpense], 1]);
-      expensesRepository.calculateFilteredTotal.mockResolvedValue(10);
+    it('should throw NotFoundException when envelope is not owned by the user', async () => {
+      envelopesRepository.existsOwnedById.mockResolvedValue(false);
+      expensesRepository.findPage.mockResolvedValue([]);
+      expensesRepository.getFilteredAggregate.mockResolvedValue({
+        total: 0,
+        totalAmount: 0,
+      });
 
-      await service.findAll('envelope-123', {
+      await expect(
+        service.findAll('user-123', 'envelope-123', { page: 1, limit: 20 }),
+      ).rejects.toThrow(
+        new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND),
+      );
+    });
+
+    it('should pass filters through without page/limit', async () => {
+      envelopesRepository.existsOwnedById.mockResolvedValue(true);
+      expensesRepository.findPage.mockResolvedValue([mockExpense]);
+      expensesRepository.getFilteredAggregate.mockResolvedValue({
+        total: 1,
+        totalAmount: 10,
+      });
+
+      await service.findAll('user-123', 'envelope-123', {
         page: 2,
         limit: 10,
         search: 'milk',
       });
 
-      expect(expensesRepository.findAll).toHaveBeenCalledWith(
+      expect(expensesRepository.findPage).toHaveBeenCalledWith(
         'envelope-123',
         { search: 'milk' },
         2,
         10,
       );
-      expect(expensesRepository.calculateFilteredTotal).toHaveBeenCalledWith(
+      expect(expensesRepository.getFilteredAggregate).toHaveBeenCalledWith(
         'envelope-123',
         { search: 'milk' },
       );
     });
 
     it('should sum only the filtered set, not just the current page', async () => {
-      // The page in hand can be a partial slice of a filter that spans
-      // multiple pages - totalAmount must come from the repository's own
-      // full-set aggregate, not be derived from the mapped page here.
-      expensesRepository.findAll.mockResolvedValue([[mockExpense], 50]);
-      expensesRepository.calculateFilteredTotal.mockResolvedValue(123456.78);
+      envelopesRepository.existsOwnedById.mockResolvedValue(true);
+      expensesRepository.findPage.mockResolvedValue([mockExpense]);
+      expensesRepository.getFilteredAggregate.mockResolvedValue({
+        total: 50,
+        totalAmount: 123456.78,
+      });
 
-      const result = await service.findAll('envelope-123', {
+      const result = await service.findAll('user-123', 'envelope-123', {
         page: 1,
         limit: 20,
       });
 
       expect(result.meta.totalAmount).toBe(123456.78);
+    });
+  });
+
+  describe('findOne', () => {
+    it('loads an owned expense inside the envelope in one query', async () => {
+      expensesRepository.findOwnedInEnvelope.mockResolvedValue(mockExpense);
+
+      const result = await service.findOne(
+        'user-123',
+        'envelope-123',
+        'expense-123',
+      );
+
+      expect(result).toHaveProperty('id', mockExpense.id);
+      expect(expensesRepository.findOwnedInEnvelope).toHaveBeenCalledWith(
+        'user-123',
+        'envelope-123',
+        'expense-123',
+      );
+    });
+
+    it('throws NotFoundException when expense does not exist or is not owned', async () => {
+      expensesRepository.findOwnedInEnvelope.mockResolvedValue(null);
+
+      await expect(
+        service.findOne('user-123', 'envelope-123', 'expense-123'),
+      ).rejects.toThrow(
+        new NotFoundException(ERROR_MESSAGES.EXPENSE_NOT_FOUND),
+      );
     });
   });
 });

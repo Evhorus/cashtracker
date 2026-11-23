@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, IsNull, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
 
 /**
@@ -36,43 +36,32 @@ export class CategoriesRepository {
       );
       if (claimed.length === 0) return;
 
-      const templates = await manager.find(Category, {
-        where: { userId: IsNull() },
-        order: { createdAt: 'ASC' },
-      });
+      // Copy every shared template into the user's own namespace in one
+      // statement; any label the user already owns (case-insensitively)
+      // keeps their row via UQ_category_userId_label.
+      await manager.query(
+        `INSERT INTO "category" ("userId", "label", "color", "icon", "isDefault", "created_at", "updated_at")
+         SELECT $1, t."label", t."color", t."icon", true, t."created_at", now()
+         FROM "category" t
+         WHERE t."userId" IS NULL
+         ON CONFLICT DO NOTHING`,
+        [userId],
+      );
 
-      for (const template of templates) {
-        // A label the user already has keeps their row; the template's
-        // envelopes are still re-pointed to it below.
-        await manager
-          .createQueryBuilder()
-          .insert()
-          .into(Category)
-          .values({
-            userId,
-            label: template.label,
-            color: template.color,
-            icon: template.icon,
-            isDefault: true,
-            createdAt: template.createdAt,
-          })
-          .orIgnore()
-          .execute();
-
-        // Locked, so a rename of this row cannot land between resolving it
-        // and re-pointing the envelopes to it (it would otherwise leave
-        // them with no category for good - the marker commits regardless).
-        const [owned] = await manager.query<{ id: string }[]>(
-          `SELECT "id" FROM "category" WHERE "userId" = $1 AND LOWER("label") = LOWER($2) FOR UPDATE`,
-          [userId, template.label],
-        );
-        if (owned) {
-          await manager.query(
-            `UPDATE "envelope" SET "categoryId" = $1 WHERE "userId" = $2 AND "categoryId" = $3`,
-            [owned.id, userId, template.id],
-          );
-        }
-      }
+      // Re-point any envelope still referencing a shared template to the
+      // user's matching row in a single set-based update.
+      await manager.query(
+        `UPDATE "envelope" e
+         SET "categoryId" = c."id"
+         FROM "category" t
+         JOIN "category" c
+           ON c."userId" = $1
+          AND LOWER(c."label") = LOWER(t."label")
+         WHERE t."userId" IS NULL
+           AND e."userId" = $1
+           AND e."categoryId" = t."id"`,
+        [userId],
+      );
     });
   }
 
@@ -95,13 +84,6 @@ export class CategoriesRepository {
       where: { userId },
       order: { isDefault: 'DESC', createdAt: 'ASC', label: 'ASC' },
     });
-  }
-
-  /**
-   * Find one category by ID
-   */
-  async findById(id: string) {
-    return this.repository.findOneBy({ id });
   }
 
   /**

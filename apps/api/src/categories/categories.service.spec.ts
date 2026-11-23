@@ -28,7 +28,7 @@ describe('CategoriesService', () => {
       findAllOwned: jest.fn(),
       countEnvelopesByCategory: jest.fn(),
       findOwnedByLabel: jest.fn(),
-      findById: jest.fn(),
+      findOwnedById: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       remove: jest.fn(),
@@ -81,12 +81,38 @@ describe('CategoriesService', () => {
     });
   });
 
+  describe('findAllForUser', () => {
+    it('skips hasBeenSeeded when user already owns a seeded default category', async () => {
+      const seeded = [{ ...mockCategory, isDefault: true }];
+      repository.findAllOwned.mockResolvedValue(seeded);
+
+      const result = await service.findAllForUser('user-123');
+
+      expect(result).toEqual(seeded);
+      expect(repository.hasBeenSeeded).not.toHaveBeenCalled();
+      expect(repository.seedDefaultsFor).not.toHaveBeenCalled();
+    });
+
+    it('checks hasBeenSeeded and skips seeding when user deleted all categories', async () => {
+      repository.findAllOwned.mockResolvedValue([]);
+      repository.hasBeenSeeded.mockResolvedValue(true);
+
+      const result = await service.findAllForUser('user-123');
+
+      expect(result).toEqual([]);
+      expect(repository.hasBeenSeeded).toHaveBeenCalledWith('user-123');
+      expect(repository.seedDefaultsFor).not.toHaveBeenCalled();
+    });
+  });
+
   describe('update', () => {
     it('allows a case-only rename of the same category', async () => {
-      repository.findById.mockResolvedValue(mockCategory);
+      repository.findOwnedById.mockResolvedValue(mockCategory);
       repository.findOwnedByLabel.mockResolvedValue(mockCategory);
 
-      const result = await service.update('cat-1', { label: 'Hogar' });
+      const result = await service.update('user-123', 'cat-1', {
+        label: 'Hogar',
+      });
 
       expect(result).toEqual({ message: 'Categoría actualizada' });
       expect(repository.update).toHaveBeenCalledWith('cat-1', {
@@ -95,7 +121,7 @@ describe('CategoriesService', () => {
     });
 
     it('rejects renaming to a label already owned by another category', async () => {
-      repository.findById.mockResolvedValue(mockCategory);
+      repository.findOwnedById.mockResolvedValue(mockCategory);
       repository.findOwnedByLabel.mockResolvedValue({
         ...mockCategory,
         id: 'cat-2',
@@ -103,7 +129,7 @@ describe('CategoriesService', () => {
       });
 
       await expect(
-        service.update('cat-1', { label: 'viajes' }),
+        service.update('user-123', 'cat-1', { label: 'viajes' }),
       ).rejects.toThrow(
         new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS),
       );
@@ -113,10 +139,10 @@ describe('CategoriesService', () => {
 
   describe('remove', () => {
     it('returns a plain message without leaking the raw entity', async () => {
-      repository.findById.mockResolvedValue(mockCategory);
+      repository.findOwnedById.mockResolvedValue(mockCategory);
       repository.remove.mockResolvedValue(mockCategory);
 
-      const result = await service.remove('cat-1');
+      const result = await service.remove('user-123', 'cat-1');
 
       expect(result).toEqual({ message: 'Categoría eliminada' });
       expect(result).not.toHaveProperty('userId');

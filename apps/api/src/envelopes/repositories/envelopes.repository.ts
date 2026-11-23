@@ -123,23 +123,39 @@ export class EnvelopesRepository {
   }
 
   /**
-   * Find one envelope by ID
+   * Find one envelope owned by the user (without unnecessary joins).
    */
-  async findById(id: string) {
-    return this.repository.findOne({
-      where: { id },
-      relations: { category: true },
-    });
+  async findOwnedById(userId: string, id: string) {
+    return this.repository.findOneBy({ id, userId });
   }
 
   /**
-   * Find one envelope by ID with expenses
+   * Lightweight ownership check for nested routes like GET /envelopes/:id/expenses.
    */
-  async findByIdWithExpenses(id: string) {
-    return this.repository.findOne({
-      where: { id },
-      relations: { expenses: { paymentMethod: true }, category: true },
-    });
+  async existsOwnedById(userId: string, id: string) {
+    return this.repository.existsBy({ id, userId });
+  }
+
+  /**
+   * Find one envelope owned by the user with category and deterministically
+   * ordered expenses.
+   */
+  async findOwnedByIdWithExpenses(userId: string, id: string) {
+    return this.repository
+      .createQueryBuilder('envelope')
+      .leftJoinAndSelect('envelope.category', 'category')
+      .leftJoinAndSelect('envelope.expenses', 'expense')
+      .leftJoin('expense.paymentMethod', 'paymentMethod')
+      .addSelect([
+        'paymentMethod.id',
+        'paymentMethod.name',
+        'paymentMethod.color',
+      ])
+      .where('envelope.id = :id', { id })
+      .andWhere('envelope.userId = :userId', { userId })
+      .orderBy('expense.date', 'DESC')
+      .addOrderBy('expense.createdAt', 'DESC')
+      .getOne();
   }
 
   /**
@@ -178,9 +194,13 @@ export class EnvelopesRepository {
    * (a double tap, a retry, two devices) run one after the other instead
    * of both acting on what they read before the other committed.
    */
-  async findByIdForUpdate(id: string, manager: EntityManager) {
+  async findOwnedByIdForUpdate(
+    userId: string,
+    id: string,
+    manager: EntityManager,
+  ) {
     return manager.getRepository(Envelope).findOne({
-      where: { id },
+      where: { id, userId },
       lock: { mode: 'pessimistic_write' },
     });
   }

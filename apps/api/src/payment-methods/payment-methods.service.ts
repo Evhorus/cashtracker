@@ -9,7 +9,6 @@ import { PaymentMethodsRepository } from './repositories/payment-methods.reposit
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
 import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
 import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
-import { PaymentMethod } from './entities/payment-method.entity';
 import {
   TYPES_WITH_CUT_DAY,
   type PaymentMethodType,
@@ -25,8 +24,8 @@ export class PaymentMethodsService {
     );
   }
 
-  async findOne(id: string) {
-    const method = await this.repository.findById(id);
+  private async findOwnedOrFail(userId: string, id: string) {
+    const method = await this.repository.findForUserById(userId, id);
     if (!method) {
       throw new NotFoundException(ERROR_MESSAGES.PAYMENT_METHOD_NOT_FOUND);
     }
@@ -72,9 +71,10 @@ export class PaymentMethodsService {
     }
   }
 
-  async update(method: PaymentMethod, dto: UpdatePaymentMethodDto) {
+  async update(userId: string, id: string, dto: UpdatePaymentMethodDto) {
+    const method = await this.findOwnedOrFail(userId, id);
     if (dto.name !== undefined) {
-      await this.assertNameIsFree(method.userId, dto.name, method.id);
+      await this.assertNameIsFree(userId, dto.name, method.id);
     }
     const type = dto.type ?? method.type;
     const cutDay = dto.cutDay !== undefined ? dto.cutDay : method.cutDay;
@@ -96,7 +96,8 @@ export class PaymentMethodsService {
 
   /** Its expenses keep existing and simply lose the payment method
    * (ON DELETE SET NULL), like envelopes losing a deleted category. */
-  async remove(method: PaymentMethod) {
+  async remove(userId: string, id: string) {
+    const method = await this.findOwnedOrFail(userId, id);
     await this.repository.remove(method);
     return { message: 'Medio de pago eliminado' };
   }

@@ -92,8 +92,8 @@ export class EnvelopesService {
     );
   }
 
-  async findOne(id: string) {
-    const envelope = await this.envelopesRepository.findById(id);
+  async findOneOwned(userId: string, id: string) {
+    const envelope = await this.envelopesRepository.findOwnedById(userId, id);
 
     if (!envelope) {
       throw new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND);
@@ -102,8 +102,11 @@ export class EnvelopesService {
     return envelope;
   }
 
-  async findOnePlain(id: string) {
-    const envelope = await this.envelopesRepository.findByIdWithExpenses(id);
+  async findOnePlain(userId: string, id: string) {
+    const envelope = await this.envelopesRepository.findOwnedByIdWithExpenses(
+      userId,
+      id,
+    );
 
     if (!envelope) {
       throw new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND);
@@ -123,12 +126,13 @@ export class EnvelopesService {
    * takes, so a concurrent expense in the old currency cannot land
    * between `hasExpenses()` and `update()`.
    */
-  async update(id: string, updateEnvelopeDto: UpdateEnvelopeDto) {
-    const envelope = await this.findOne(id);
-    await this.assertCategoryIsUsable(
-      envelope.userId,
-      updateEnvelopeDto.categoryId,
-    );
+  async update(
+    userId: string,
+    id: string,
+    updateEnvelopeDto: UpdateEnvelopeDto,
+  ) {
+    const envelope = await this.findOneOwned(userId, id);
+    await this.assertCategoryIsUsable(userId, updateEnvelopeDto.categoryId);
 
     const nextCurrency: string | undefined = updateEnvelopeDto.currency;
     const isCurrencyChange =
@@ -136,7 +140,8 @@ export class EnvelopesService {
 
     if (isCurrencyChange) {
       await this.dataSource.transaction(async (manager) => {
-        const locked = await this.envelopesRepository.findByIdForUpdate(
+        const locked = await this.envelopesRepository.findOwnedByIdForUpdate(
+          userId,
           id,
           manager,
         );
@@ -160,8 +165,8 @@ export class EnvelopesService {
     };
   }
 
-  async remove(id: string) {
-    const envelope = await this.findOne(id);
+  async remove(userId: string, id: string) {
+    const envelope = await this.findOneOwned(userId, id);
     await this.envelopesRepository.remove(envelope);
     return {
       message: 'Sobre eliminado',

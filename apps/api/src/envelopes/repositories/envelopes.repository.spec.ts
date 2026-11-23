@@ -231,33 +231,25 @@ describe('EnvelopesRepository', () => {
     });
   });
 
-  describe('findById', () => {
-    it('should find envelope by id', async () => {
-      // Arrange
+  describe('findOwnedById', () => {
+    it('should find envelope owned by user', async () => {
       const id = 'envelope-123';
-      mockRepository.findOne.mockResolvedValue(mockEnvelope);
+      mockRepository.findOneBy.mockResolvedValue(mockEnvelope);
 
-      // Act
-      const result = await repository.findById(id);
+      const result = await repository.findOwnedById('user-123', id);
 
-      // Assert
       expect(result).toEqual(mockEnvelope);
-      // findOne with a relation now, not findOneBy - the envelope's
-      // category has to travel with it so responses can embed it.
-      expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { id },
-        relations: { category: true },
+      expect(mockRepository.findOneBy).toHaveBeenCalledWith({
+        id,
+        userId: 'user-123',
       });
     });
 
-    it('should return null if envelope not found', async () => {
-      // Arrange
-      mockRepository.findOne.mockResolvedValue(null);
+    it('should return null if envelope not found or owned by another user', async () => {
+      mockRepository.findOneBy.mockResolvedValue(null);
 
-      // Act
-      const result = await repository.findById('non-existent');
+      const result = await repository.findOwnedById('user-123', 'non-existent');
 
-      // Assert
       expect(result).toBeNull();
     });
   });

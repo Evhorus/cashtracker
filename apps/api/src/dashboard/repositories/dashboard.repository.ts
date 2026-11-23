@@ -57,6 +57,23 @@ export class DashboardRepository {
    * BreakdownQueryDto), but a range is the more specific instruction
    * either way. All three omitted means all-time.
    */
+  private resolveDateBounds(filters: {
+    year?: number;
+    startDate?: string;
+    endDate?: string;
+  }): { startDate?: string; endDate?: string } {
+    if (filters.startDate || filters.endDate) {
+      return { startDate: filters.startDate, endDate: filters.endDate };
+    }
+    if (filters.year) {
+      return {
+        startDate: `${filters.year}-01-01`,
+        endDate: `${filters.year}-12-31`,
+      };
+    }
+    return {};
+  }
+
   private withUserCurrencyAndDateRange(
     userId: string,
     currency: string,
@@ -68,19 +85,12 @@ export class DashboardRepository {
       .where('envelope.userId = :userId', { userId })
       .andWhere('expense.currency = :currency', { currency });
 
-    if (filters.startDate || filters.endDate) {
-      if (filters.startDate) {
-        qb.andWhere('expense.date >= :startDate', {
-          startDate: filters.startDate,
-        });
-      }
-      if (filters.endDate) {
-        qb.andWhere('expense.date <= :endDate', { endDate: filters.endDate });
-      }
-    } else if (filters.year) {
-      qb.andWhere('EXTRACT(YEAR FROM expense.date) = :year', {
-        year: filters.year,
-      });
+    const { startDate, endDate } = this.resolveDateBounds(filters);
+    if (startDate) {
+      qb.andWhere('expense.date >= :startDate', { startDate });
+    }
+    if (endDate) {
+      qb.andWhere('expense.date <= :endDate', { endDate });
     }
 
     return qb;
@@ -305,10 +315,10 @@ export class DashboardRepository {
         'totalExceeded',
       )
       .groupBy('envelope.currency')
-      // Most-used currency first (by envelope count) - GROUP BY alone
-      // has no defined row order, and the frontend treats the first
-      // entry as the primary one.
+      // Most-used currency first (by envelope count), with alphabetical
+      // currency tie-breaker so primaryCurrency stays deterministic.
       .orderBy('count', 'DESC')
+      .addOrderBy('envelope.currency', 'ASC')
       .getRawMany<SummaryAggregateRow>();
 
     return rows.map((row) => ({
@@ -339,17 +349,9 @@ export class DashboardRepository {
     limit: number,
     currency: string,
   ) {
-    const qb = this.expenseRepository
-      .createQueryBuilder('expense')
-      .innerJoin('expense.envelope', 'envelope')
-      .where('envelope.userId = :userId', { userId })
-      .andWhere('expense.currency = :currency', { currency });
-
-    if (year) {
-      qb.andWhere('EXTRACT(YEAR FROM expense.date) = :year', { year });
-    }
-
-    const rows = await qb
+    const rows = await this.withUserCurrencyAndDateRange(userId, currency, {
+      year,
+    })
       .select("TO_CHAR(expense.date, 'YYYY-MM')", 'month')
       .addSelect('COALESCE(SUM(expense.amount), 0)', 'spent')
       .groupBy("TO_CHAR(expense.date, 'YYYY-MM')")

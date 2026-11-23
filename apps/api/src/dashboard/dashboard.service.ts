@@ -29,15 +29,15 @@ export class DashboardService {
     year?: number,
     currency?: string,
   ): Promise<DashboardSummaryResponseDto> {
-    // getMonthlySpending needs to know which currency to run against
-    // before it can run (see its own doc comment on why it's scoped to
-    // one currency), so this can't be a single Promise.all the way the
-    // three queries used to be - the aggregate has to resolve first.
+    // Run aggregate and availableYears in parallel; getMonthlySpending
+    // only depends on currencyAggregates to pick chartCurrency.
     // Envelope state is not date-filtered; `year` scopes only the chart.
-    const currencyAggregates =
-      await this.dashboardRepository.getSummaryAggregate(userId);
-    // Already ordered by envelope count DESC - the same "most-used
-    // currency" the summary totals put first.
+    const [currencyAggregates, availableYears] = await Promise.all([
+      this.dashboardRepository.getSummaryAggregate(userId),
+      this.dashboardRepository.getAvailableYears(userId),
+    ]);
+    // Already ordered by envelope count DESC, currency ASC - the same
+    // "most-used currency" the summary totals put first.
     const primaryCurrency = currencyAggregates[0]?.currency;
     // `currency` is a request to view a specific one (see
     // dashboard-query.dto.ts) - honor it only if the user actually has
@@ -52,17 +52,14 @@ export class DashboardService {
       primaryCurrency ||
       null;
 
-    const [monthlySpending, availableYears] = await Promise.all([
-      chartCurrency
-        ? this.dashboardRepository.getMonthlySpending(
-            userId,
-            year,
-            CHART_MONTHS_LIMIT,
-            chartCurrency,
-          )
-        : Promise.resolve([]),
-      this.dashboardRepository.getAvailableYears(userId),
-    ]);
+    const monthlySpending = chartCurrency
+      ? await this.dashboardRepository.getMonthlySpending(
+          userId,
+          year,
+          CHART_MONTHS_LIMIT,
+          chartCurrency,
+        )
+      : [];
 
     return {
       // Currency-agnostic - "how many envelopes" doesn't need splitting

@@ -48,9 +48,9 @@ describe('EnvelopesService', () => {
       findByUserIdLight: jest.fn(),
       // No expenses unless a test says otherwise.
       findExpenseDateRanges: jest.fn().mockResolvedValue(new Map()),
-      findById: jest.fn(),
-      findByIdForUpdate: jest.fn(),
-      findByIdWithExpenses: jest.fn(),
+      findOwnedById: jest.fn(),
+      findOwnedByIdForUpdate: jest.fn(),
+      findOwnedByIdWithExpenses: jest.fn(),
       update: jest.fn(),
       remove: jest.fn(),
       hasExpenses: jest.fn(),
@@ -231,25 +231,25 @@ describe('EnvelopesService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return an envelope by id', async () => {
-      // Arrange
-      repository.findById.mockResolvedValue(mockEnvelope);
+  describe('findOneOwned', () => {
+    it('should return an envelope owned by the user', async () => {
+      repository.findOwnedById.mockResolvedValue(mockEnvelope);
 
-      // Act
-      const result = await service.findOne('envelope-123');
+      const result = await service.findOneOwned('user-123', 'envelope-123');
 
-      // Assert
       expect(result).toEqual(mockEnvelope);
-      expect(repository.findById).toHaveBeenCalledWith('envelope-123');
+      expect(repository.findOwnedById).toHaveBeenCalledWith(
+        'user-123',
+        'envelope-123',
+      );
     });
 
     it('should throw NotFoundException when envelope not found', async () => {
-      // Arrange
-      repository.findById.mockResolvedValue(null);
+      repository.findOwnedById.mockResolvedValue(null);
 
-      // Act & Assert
-      await expect(service.findOne('non-existent')).rejects.toThrow(
+      await expect(
+        service.findOneOwned('user-123', 'non-existent'),
+      ).rejects.toThrow(
         new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND),
       );
     });
@@ -257,27 +257,27 @@ describe('EnvelopesService', () => {
 
   describe('findOnePlain', () => {
     it('should return envelope with expenses', async () => {
-      // Arrange
       const envelopeWithExpenses = { ...mockEnvelope, expenses: [] };
-      repository.findByIdWithExpenses.mockResolvedValue(envelopeWithExpenses);
+      repository.findOwnedByIdWithExpenses.mockResolvedValue(
+        envelopeWithExpenses,
+      );
 
-      // Act
-      const result = await service.findOnePlain('envelope-123');
+      const result = await service.findOnePlain('user-123', 'envelope-123');
 
-      // Assert
       expect(result).toHaveProperty('id');
       expect(result).toHaveProperty('expenses');
-      expect(repository.findByIdWithExpenses).toHaveBeenCalledWith(
+      expect(repository.findOwnedByIdWithExpenses).toHaveBeenCalledWith(
+        'user-123',
         'envelope-123',
       );
     });
 
     it('should throw NotFoundException when envelope not found', async () => {
-      // Arrange
-      repository.findByIdWithExpenses.mockResolvedValue(null);
+      repository.findOwnedByIdWithExpenses.mockResolvedValue(null);
 
-      // Act & Assert
-      await expect(service.findOnePlain('non-existent')).rejects.toThrow(
+      await expect(
+        service.findOnePlain('user-123', 'non-existent'),
+      ).rejects.toThrow(
         new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND),
       );
     });
@@ -285,36 +285,41 @@ describe('EnvelopesService', () => {
 
   describe('update', () => {
     it('should update an envelope successfully', async () => {
-      // Arrange
       const updateDto = { name: 'Updated Envelope', amount: 600 };
-      repository.findById.mockResolvedValue(mockEnvelope);
+      repository.findOwnedById.mockResolvedValue(mockEnvelope);
       repository.update.mockResolvedValue({
         affected: 1,
         raw: [],
         generatedMaps: [],
       });
 
-      // Act
-      const result = await service.update('envelope-123', updateDto);
+      const result = await service.update(
+        'user-123',
+        'envelope-123',
+        updateDto,
+      );
 
-      // Assert
       expect(result).toEqual({ message: 'Sobre actualizado' });
-      expect(repository.findById).toHaveBeenCalledWith('envelope-123');
+      expect(repository.findOwnedById).toHaveBeenCalledWith(
+        'user-123',
+        'envelope-123',
+      );
       expect(repository.update).toHaveBeenCalledWith('envelope-123', updateDto);
     });
 
     it('refuses a currency change once the envelope has expenses', async () => {
-      repository.findById.mockResolvedValue(mockEnvelope);
-      repository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
+      repository.findOwnedById.mockResolvedValue(mockEnvelope);
+      repository.findOwnedByIdForUpdate.mockResolvedValue(mockEnvelope);
       repository.hasExpenses.mockResolvedValue(true);
 
       await expect(
-        service.update('envelope-123', { currency: Currency.USD }),
+        service.update('user-123', 'envelope-123', { currency: Currency.USD }),
       ).rejects.toThrow(
         new ConflictException(ERROR_MESSAGES.ENVELOPE_CURRENCY_LOCKED),
       );
       expect(dataSource.transaction).toHaveBeenCalled();
-      expect(repository.findByIdForUpdate).toHaveBeenCalledWith(
+      expect(repository.findOwnedByIdForUpdate).toHaveBeenCalledWith(
+        'user-123',
         'envelope-123',
         entityManager,
       );
@@ -326,11 +331,13 @@ describe('EnvelopesService', () => {
     });
 
     it('allows a currency change on an envelope without expenses', async () => {
-      repository.findById.mockResolvedValue(mockEnvelope);
-      repository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
+      repository.findOwnedById.mockResolvedValue(mockEnvelope);
+      repository.findOwnedByIdForUpdate.mockResolvedValue(mockEnvelope);
       repository.hasExpenses.mockResolvedValue(false);
 
-      await service.update('envelope-123', { currency: Currency.USD });
+      await service.update('user-123', 'envelope-123', {
+        currency: Currency.USD,
+      });
 
       expect(dataSource.transaction).toHaveBeenCalled();
       expect(repository.update).toHaveBeenCalledWith(
@@ -341,9 +348,9 @@ describe('EnvelopesService', () => {
     });
 
     it('does not treat re-sending the same currency as a change', async () => {
-      repository.findById.mockResolvedValue(mockEnvelope);
+      repository.findOwnedById.mockResolvedValue(mockEnvelope);
 
-      await service.update('envelope-123', {
+      await service.update('user-123', 'envelope-123', {
         currency: mockEnvelope.currency as Currency,
       });
 
@@ -353,12 +360,10 @@ describe('EnvelopesService', () => {
     });
 
     it('should throw NotFoundException when envelope not found', async () => {
-      // Arrange
-      repository.findById.mockResolvedValue(null);
+      repository.findOwnedById.mockResolvedValue(null);
 
-      // Act & Assert
       await expect(
-        service.update('non-existent', { name: 'Test' }),
+        service.update('user-123', 'non-existent', { name: 'Test' }),
       ).rejects.toThrow(
         new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND),
       );
@@ -367,26 +372,24 @@ describe('EnvelopesService', () => {
 
   describe('remove', () => {
     it('should remove an envelope successfully', async () => {
-      // Arrange
-      repository.findById.mockResolvedValue(mockEnvelope);
+      repository.findOwnedById.mockResolvedValue(mockEnvelope);
       repository.remove.mockResolvedValue(mockEnvelope);
 
-      // Act
-      const result = await service.remove('envelope-123');
+      const result = await service.remove('user-123', 'envelope-123');
 
-      // Assert
       expect(result).toEqual({ message: 'Sobre eliminado' });
       expect(result).not.toHaveProperty('userId');
-      expect(repository.findById).toHaveBeenCalledWith('envelope-123');
+      expect(repository.findOwnedById).toHaveBeenCalledWith(
+        'user-123',
+        'envelope-123',
+      );
       expect(repository.remove).toHaveBeenCalledWith(mockEnvelope);
     });
 
     it('should throw NotFoundException when envelope not found', async () => {
-      // Arrange
-      repository.findById.mockResolvedValue(null);
+      repository.findOwnedById.mockResolvedValue(null);
 
-      // Act & Assert
-      await expect(service.remove('non-existent')).rejects.toThrow(
+      await expect(service.remove('user-123', 'non-existent')).rejects.toThrow(
         new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND),
       );
     });

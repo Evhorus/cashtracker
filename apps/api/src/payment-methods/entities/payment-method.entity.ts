@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,7 +18,6 @@ export class PaymentMethod {
   id: string;
 
   @Column()
-  @Index()
   userId: string;
 
   @Column({ type: 'varchar', length: 50 })

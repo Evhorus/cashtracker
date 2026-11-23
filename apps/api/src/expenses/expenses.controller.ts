@@ -7,78 +7,67 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  Req,
-  BadRequestException,
   Query,
 } from '@nestjs/common';
 
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { GetExpensesFilterDto } from './dto/get-expenses-filter.dto';
-import type { Request } from 'express';
-import { EnvelopeExists } from '../envelopes/decorators/envelope-exists.decorator';
-import { ExpenseExists } from './decorators/expense-exists.decorator';
 import { ExpensesService } from './expenses.service';
 
 @Controller('envelopes/:envelopeId/expenses')
-@EnvelopeExists() // All routes here require the envelope to exist and belong to the user
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @Post()
   createExpense(
+    @CurrentUser('id') userId: string,
+    @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
     @Body() createExpenseDto: CreateExpenseDto,
-    @Req() req: Request,
   ) {
-    const envelopeId = req.envelope?.id;
-    if (!envelopeId) {
-      throw new BadRequestException('Envelope not found in request');
-    }
-    return this.expensesService.create(envelopeId, createExpenseDto);
+    return this.expensesService.create(userId, envelopeId, createExpenseDto);
   }
 
   @Get()
   findAllExpenses(
+    @CurrentUser('id') userId: string,
     @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
     @Query() filters: GetExpensesFilterDto,
   ) {
-    return this.expensesService.findAll(envelopeId, filters);
+    return this.expensesService.findAll(userId, envelopeId, filters);
   }
 
-  @ExpenseExists()
   @Get(':expenseId')
-  findExpense(@Param('expenseId', ParseUUIDPipe) expenseId: string) {
-    return this.expensesService.findOne(expenseId);
+  findExpense(
+    @CurrentUser('id') userId: string,
+    @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
+    @Param('expenseId', ParseUUIDPipe) expenseId: string,
+  ) {
+    return this.expensesService.findOne(userId, envelopeId, expenseId);
   }
 
-  @ExpenseExists()
   @Patch(':expenseId')
   updateExpense(
+    @CurrentUser('id') userId: string,
+    @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
     @Param('expenseId', ParseUUIDPipe) expenseId: string,
     @Body() updateExpenseDto: UpdateExpenseDto,
-    @Req() req: Request,
   ) {
-    const envelope = req.envelope;
-    if (!envelope) {
-      throw new BadRequestException('Envelope not found in request');
-    }
     return this.expensesService.update({
-      envelope,
+      userId,
+      envelopeId,
       expenseId,
       updateExpenseDto,
     });
   }
 
-  @ExpenseExists()
   @Delete(':expenseId')
   deleteExpense(
+    @CurrentUser('id') userId: string,
+    @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
     @Param('expenseId', ParseUUIDPipe) expenseId: string,
-    @Req() req: Request,
   ) {
-    const envelope = req.envelope;
-    if (!envelope) {
-      throw new BadRequestException('Envelope not found in request');
-    }
-    return this.expensesService.remove(envelope, expenseId);
+    return this.expensesService.remove(userId, envelopeId, expenseId);
   }
 }

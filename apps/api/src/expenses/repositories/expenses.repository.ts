@@ -25,9 +25,38 @@ export class ExpensesRepository {
     private readonly repository: Repository<Expense>,
   ) {}
 
-  async findById(id: string, manager?: EntityManager) {
+  async findInEnvelopeById(
+    envelopeId: string,
+    id: string,
+    manager?: EntityManager,
+  ) {
     const repo = manager ? manager.getRepository(Expense) : this.repository;
-    return repo.findOne({ where: { id }, relations: { paymentMethod: true } });
+    return repo.findOneBy({ id, envelopeId });
+  }
+
+  /**
+   * Loads one expense scoped to both the envelope and its owner in a
+   * single SQL query, selecting only the paymentMethod fields embedded
+   * in ExpenseResponseDto.
+   */
+  async findOwnedInEnvelope(
+    userId: string,
+    envelopeId: string,
+    expenseId: string,
+  ) {
+    return this.repository
+      .createQueryBuilder('expense')
+      .innerJoin('expense.envelope', 'envelope')
+      .leftJoin('expense.paymentMethod', 'paymentMethod')
+      .addSelect([
+        'paymentMethod.id',
+        'paymentMethod.name',
+        'paymentMethod.color',
+      ])
+      .where('expense.id = :expenseId', { expenseId })
+      .andWhere('expense.envelopeId = :envelopeId', { envelopeId })
+      .andWhere('envelope.userId = :userId', { userId })
+      .getOne();
   }
 
   async create(expenseData: Partial<Expense>, manager?: EntityManager) {
@@ -105,16 +134,19 @@ export class ExpensesRepository {
     return query;
   }
 
-  async findAll(
+  async findPage(
     envelopeId: string,
     filters: ExpenseFilters,
     page: number,
     limit: number,
   ) {
-    const query = this.buildFilteredQuery(
-      envelopeId,
-      filters,
-    ).leftJoinAndSelect('expense.paymentMethod', 'paymentMethod');
+    const query = this.buildFilteredQuery(envelopeId, filters)
+      .leftJoin('expense.paymentMethod', 'paymentMethod')
+      .addSelect([
+        'paymentMethod.id',
+        'paymentMethod.name',
+        'paymentMethod.color',
+      ]);
 
     // Most recent first by default - the conventional order for a
     // transaction/expense history (what did I just spend, not what did
@@ -129,22 +161,26 @@ export class ExpensesRepository {
       query.orderBy('expense.date', sortOrder);
     }
     query.addOrderBy('expense.createdAt', 'DESC');
-    query.skip((page - 1) * limit).take(limit);
+    // offset/limit instead of skip/take: paymentMethod is many-to-one so
+    // rows never multiply, avoiding TypeORM's extra DISTINCT sub-query.
+    query.offset((page - 1) * limit).limit(limit);
 
-    return query.getManyAndCount();
+    return query.getMany();
   }
 
   /**
-   * Sum of `amount` over the *entire* filtered result set (same
-   * search/date-range as `findAll`), not just the page in hand - a
-   * filter that spans more than one page would otherwise show a
-   * misleading partial total.
+   * Total count and sum of `amount` over the entire filtered result set
+   * in a single aggregate query (replaces separate COUNT + SUM queries).
    */
-  async calculateFilteredTotal(envelopeId: string, filters: ExpenseFilters) {
+  async getFilteredAggregate(envelopeId: string, filters: ExpenseFilters) {
     const result = await this.buildFilteredQuery(envelopeId, filters)
-      .select('SUM(expense.amount)', 'sum')
-      .getRawOne<{ sum: string }>();
+      .select('COUNT(*)', 'count')
+      .addSelect('COALESCE(SUM(expense.amount), 0)', 'sum')
+      .getRawOne<{ count: string; sum: string }>();
 
-    return result && result.sum ? parseFloat(result.sum) : 0;
+    return {
+      total: result ? Number(result.count) : 0,
+      totalAmount: result ? parseFloat(result.sum) : 0,
+    };
   }
 }

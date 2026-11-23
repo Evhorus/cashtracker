@@ -25,13 +25,17 @@ export class ExpensesService {
   ) {}
 
   /**
-   * Locks the envelope for the rest of the transaction - see
-   * EnvelopesRepository.findByIdForUpdate. The guard already checked
-   * that it exists and belongs to the caller; this re-read is what makes
-   * concurrent writes on the same envelope take turns.
+   * Verifies ownership and locks the envelope for the rest of the
+   * transaction in a single query - see
+   * EnvelopesRepository.findOwnedByIdForUpdate.
    */
-  private async lockEnvelope(envelopeId: string, manager: EntityManager) {
-    const envelope = await this.envelopesRepository.findByIdForUpdate(
+  private async lockOwnedEnvelope(
+    userId: string,
+    envelopeId: string,
+    manager: EntityManager,
+  ) {
+    const envelope = await this.envelopesRepository.findOwnedByIdForUpdate(
+      userId,
       envelopeId,
       manager,
     );
@@ -56,18 +60,21 @@ export class ExpensesService {
   }
 
   /**
-   * Re-reads the expense inside the locked transaction. The guard's copy
-   * was read before the lock, so a concurrent delete may already have
-   * removed it - that request must see a 404, not act on a stale row.
+   * Reads the expense inside the locked transaction, ensuring it still
+   * exists and belongs to the target envelope.
    */
   private async findExpenseInEnvelope(
     envelopeId: string,
     expenseId: string,
     manager: EntityManager,
   ) {
-    const expense = await this.expensesRepository.findById(expenseId, manager);
+    const expense = await this.expensesRepository.findInEnvelopeById(
+      envelopeId,
+      expenseId,
+      manager,
+    );
 
-    if (!expense || expense.envelopeId !== envelopeId) {
+    if (!expense) {
       throw new NotFoundException(ERROR_MESSAGES.EXPENSE_NOT_FOUND);
     }
 
@@ -96,12 +103,20 @@ export class ExpensesService {
     }
   }
 
-  async create(envelopeId: string, createExpenseDto: CreateExpenseDto) {
+  async create(
+    userId: string,
+    envelopeId: string,
+    createExpenseDto: CreateExpenseDto,
+  ) {
     return this.dataSource.transaction(async (manager) => {
-      const envelope = await this.lockEnvelope(envelopeId, manager);
+      const envelope = await this.lockOwnedEnvelope(
+        userId,
+        envelopeId,
+        manager,
+      );
       this.assertSameCurrency(envelope, createExpenseDto.currency);
       await this.assertPaymentMethodIsUsable(
-        envelope.userId,
+        userId,
         createExpenseDto.paymentMethodId,
         manager,
       );
@@ -116,24 +131,37 @@ export class ExpensesService {
     });
   }
 
-  async findAll(envelopeId: string, filters: GetExpensesFilterDto) {
+  async findAll(
+    userId: string,
+    envelopeId: string,
+    filters: GetExpensesFilterDto,
+  ) {
     const { page, limit, ...rest } = filters;
-    const [[expenses, total], totalAmount] = await Promise.all([
-      this.expensesRepository.findAll(envelopeId, rest, page, limit),
-      this.expensesRepository.calculateFilteredTotal(envelopeId, rest),
+    const [envelopeExists, expenses, aggregate] = await Promise.all([
+      this.envelopesRepository.existsOwnedById(userId, envelopeId),
+      this.expensesRepository.findPage(envelopeId, rest, page, limit),
+      this.expensesRepository.getFilteredAggregate(envelopeId, rest),
     ]);
+
+    if (!envelopeExists) {
+      throw new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND);
+    }
 
     return new ExpensesPaginatedResponseDto(
       expenses.map((expense) => ExpenseResponseDto.fromEntity(expense)),
-      total,
+      aggregate.total,
       page,
       limit,
-      totalAmount,
+      aggregate.totalAmount,
     );
   }
 
-  async findOne(id: string) {
-    const expense = await this.expensesRepository.findById(id);
+  async findOne(userId: string, envelopeId: string, expenseId: string) {
+    const expense = await this.expensesRepository.findOwnedInEnvelope(
+      userId,
+      envelopeId,
+      expenseId,
+    );
 
     if (!expense) {
       throw new NotFoundException(ERROR_MESSAGES.EXPENSE_NOT_FOUND);
@@ -142,56 +170,49 @@ export class ExpensesService {
     return ExpenseResponseDto.fromEntity(expense);
   }
 
-  /**
-   * Internal method for guards - returns Entity
-   */
-  async findOneInternal(id: string) {
-    const expense = await this.expensesRepository.findById(id);
-
-    if (!expense) {
-      throw new NotFoundException(ERROR_MESSAGES.EXPENSE_NOT_FOUND);
-    }
-
-    return expense;
-  }
-
   async update({
-    envelope,
+    userId,
+    envelopeId,
     expenseId,
     updateExpenseDto,
   }: {
-    envelope: Envelope;
+    userId: string;
+    envelopeId: string;
     expenseId: string;
     updateExpenseDto: UpdateExpenseDto;
   }) {
     return this.dataSource.transaction(async (manager) => {
-      const lockedEnvelope = await this.lockEnvelope(envelope.id, manager);
+      const lockedEnvelope = await this.lockOwnedEnvelope(
+        userId,
+        envelopeId,
+        manager,
+      );
       this.assertSameCurrency(lockedEnvelope, updateExpenseDto.currency);
       await this.assertPaymentMethodIsUsable(
-        lockedEnvelope.userId,
+        userId,
         updateExpenseDto.paymentMethodId,
         manager,
       );
-      await this.findExpenseInEnvelope(envelope.id, expenseId, manager);
+      await this.findExpenseInEnvelope(envelopeId, expenseId, manager);
 
       await this.expensesRepository.update(
         expenseId,
         updateExpenseDto,
         manager,
       );
-      await this.envelopesRepository.recalculateSpent(envelope.id, manager);
+      await this.envelopesRepository.recalculateSpent(envelopeId, manager);
 
       return { message: 'Gasto actualizado' };
     });
   }
 
-  async remove(envelope: Envelope, expenseId: string) {
+  async remove(userId: string, envelopeId: string, expenseId: string) {
     return this.dataSource.transaction(async (manager) => {
-      await this.lockEnvelope(envelope.id, manager);
-      await this.findExpenseInEnvelope(envelope.id, expenseId, manager);
+      await this.lockOwnedEnvelope(userId, envelopeId, manager);
+      await this.findExpenseInEnvelope(envelopeId, expenseId, manager);
 
       await this.expensesRepository.delete(expenseId, manager);
-      await this.envelopesRepository.recalculateSpent(envelope.id, manager);
+      await this.envelopesRepository.recalculateSpent(envelopeId, manager);
 
       return { message: 'Gasto eliminado' };
     });

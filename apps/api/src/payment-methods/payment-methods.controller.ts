@@ -1,19 +1,17 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  Param,
+  ParseUUIDPipe,
   Patch,
   Post,
-  Req,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PaymentMethodsService } from './payment-methods.service';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
 import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
-import { PaymentMethodExists } from './decorators/payment-method-exists.decorator';
 
 @Controller('payment-methods')
 export class PaymentMethodsController {
@@ -32,17 +30,20 @@ export class PaymentMethodsController {
     return this.service.create(userId, dto);
   }
 
-  @PaymentMethodExists()
   @Patch(':paymentMethodId')
-  update(@Req() req: Request, @Body() dto: UpdatePaymentMethodDto) {
-    if (!req.paymentMethod) throw new BadRequestException();
-    return this.service.update(req.paymentMethod, dto);
+  update(
+    @CurrentUser('id') userId: string,
+    @Param('paymentMethodId', ParseUUIDPipe) paymentMethodId: string,
+    @Body() dto: UpdatePaymentMethodDto,
+  ) {
+    return this.service.update(userId, paymentMethodId, dto);
   }
 
-  @PaymentMethodExists()
   @Delete(':paymentMethodId')
-  remove(@Req() req: Request) {
-    if (!req.paymentMethod) throw new BadRequestException();
-    return this.service.remove(req.paymentMethod);
+  remove(
+    @CurrentUser('id') userId: string,
+    @Param('paymentMethodId', ParseUUIDPipe) paymentMethodId: string,
+  ) {
+    return this.service.remove(userId, paymentMethodId);
   }
 }

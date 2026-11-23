@@ -14,7 +14,6 @@ import { CreateEnvelopeDto } from './dto/create-envelope.dto';
 import { UpdateEnvelopeDto } from './dto/update-envelope.dto';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { GetEnvelopesFilterDto } from './dto/get-envelopes-filter.dto';
-import { EnvelopeExists } from './decorators/envelope-exists.decorator';
 import { EnvelopesService } from './envelopes.service';
 
 @Controller('envelopes')
@@ -41,24 +40,28 @@ export class EnvelopesController {
     });
   }
 
-  @EnvelopeExists()
   @Get(':envelopeId')
-  findEnvelope(@Param('envelopeId', ParseUUIDPipe) envelopeId: string) {
-    return this.envelopesService.findOnePlain(envelopeId);
+  findEnvelope(
+    @CurrentUser('id') userId: string,
+    @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
+  ) {
+    return this.envelopesService.findOnePlain(userId, envelopeId);
   }
 
-  @EnvelopeExists()
   @Patch(':envelopeId')
   updateEnvelope(
+    @CurrentUser('id') userId: string,
     @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
     @Body() updateEnvelopeDto: UpdateEnvelopeDto,
   ) {
-    return this.envelopesService.update(envelopeId, updateEnvelopeDto);
+    return this.envelopesService.update(userId, envelopeId, updateEnvelopeDto);
   }
 
-  @EnvelopeExists()
   @Delete(':envelopeId')
-  remove(@Param('envelopeId', ParseUUIDPipe) envelopeId: string) {
-    return this.envelopesService.remove(envelopeId);
+  remove(
+    @CurrentUser('id') userId: string,
+    @Param('envelopeId', ParseUUIDPipe) envelopeId: string,
+  ) {
+    return this.envelopesService.remove(userId, envelopeId);
   }
 }

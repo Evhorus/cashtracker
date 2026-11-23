@@ -34,7 +34,16 @@ export class CategoriesService {
    * category here can be renamed or deleted - none is shared.
    */
   async findAllForUser(userId: string) {
-    await this.ensureSeeded(userId);
+    const owned = await this.categoriesRepository.findAllOwned(userId);
+    // Only seeded copies carry isDefault = true, so their presence proves
+    // the account was already seeded without a second query to category_seed.
+    if (owned.some((category) => category.isDefault)) {
+      return owned;
+    }
+    if (await this.categoriesRepository.hasBeenSeeded(userId)) {
+      return owned;
+    }
+    await this.categoriesRepository.seedDefaultsFor(userId);
     return this.categoriesRepository.findAllOwned(userId);
   }
 
@@ -84,8 +93,8 @@ export class CategoriesService {
     }
   }
 
-  async findOne(id: string) {
-    const category = await this.categoriesRepository.findById(id);
+  async findOneOwned(userId: string, id: string) {
+    const category = await this.categoriesRepository.findOwnedById(userId, id);
 
     if (!category) {
       throw new NotFoundException(ERROR_MESSAGES.CATEGORY_NOT_FOUND);
@@ -94,17 +103,19 @@ export class CategoriesService {
     return category;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    const category = await this.findOne(id);
+  async update(
+    userId: string,
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ) {
+    const category = await this.findOneOwned(userId, id);
 
     if (updateCategoryDto.label && updateCategoryDto.label !== category.label) {
-      // Only ever reachable via the CategoryExists guard, which already
-      // confirmed category.userId === the caller's own id - safe to treat
-      // as non-null here. Seeded first, so a name the predefined set brings
-      // in (differing only by case) is rejected like any other duplicate.
-      await this.ensureSeeded(category.userId as string);
+      // Seeded first, so a name the predefined set brings in (differing
+      // only by case) is rejected like any other duplicate.
+      await this.ensureSeeded(userId);
       const existing = await this.categoriesRepository.findOwnedByLabel(
-        category.userId as string,
+        userId,
         updateCategoryDto.label,
       );
       if (existing && existing.id !== category.id) {
@@ -126,8 +137,8 @@ export class CategoriesService {
     };
   }
 
-  async remove(id: string) {
-    const category = await this.findOne(id);
+  async remove(userId: string, id: string) {
+    const category = await this.findOneOwned(userId, id);
     await this.categoriesRepository.remove(category);
     return {
       message: 'Categoría eliminada',
