@@ -3,6 +3,11 @@ import {
   appendPaginationParams,
   type PaginationParams,
 } from "@/shared/utils/pagination";
+import type {
+  EnvelopeSort,
+  EnvelopeStatusFilter,
+} from "../lib/envelope-helpers";
+import { EnvelopeMapper } from "../mappers/envelope.mapper";
 import {
   EnvelopeFormValues,
   EnvelopeAPIResponseSchema,
@@ -11,19 +16,10 @@ import {
   EnvelopesResponseApi,
 } from "../schemas/envelope.schema";
 import { Envelope, EnvelopesResponse } from "../types";
-import { EnvelopeMapper } from "../mappers/envelope.mapper";
-import type {
-  EnvelopeSort,
-  EnvelopeStatusFilter,
-} from "../lib/envelope-helpers";
 
-// Mirrors GetExpensesParams (expenses.service.ts): search, the derived
-// spending status, and the order (by the period each envelope covers).
 export interface GetEnvelopesParams extends PaginationParams {
   search?: string;
-  /** Filtered in SQL by the backend, so `meta.total` counts the filtered
-   * set - see EnvelopeStatusFilter and cashtracker-backend's
-   * buildEnvelopeStatusPredicate. */
+  /** Filtered in SQL on the backend so `meta.total` reflects the filtered set. */
   status?: EnvelopeStatusFilter;
   /** "recent" is the backend's default, so it is not sent. */
   sort?: EnvelopeSort;

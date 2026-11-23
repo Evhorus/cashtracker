@@ -1,14 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { SubmitButton } from "@/shared/components/common/submit-button";
+import { useCategoryOptions } from "@/features/categories/providers/categories-provider";
+import { ColorSwatchPicker } from "@/shared/components/common/color-swatch-picker";
 import { FormInput } from "@/shared/components/common/form-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
+import { Button } from "@/shared/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -17,9 +17,15 @@ import {
   FieldLabel,
   FieldSet,
 } from "@/shared/components/ui/field";
-import { useCategoryOptions } from "@/features/categories/providers/categories-provider";
+import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import { useIsDesktop } from "@/shared/hooks/use-media-query";
-import { cn } from "@/shared/lib/utils";
 import {
   buildPaymentMethodFormSchema,
   type PaymentMethodFormValues,
@@ -43,8 +49,6 @@ export function PaymentMethodForm({
   const tValidation = useTranslations("validation");
   const tCommon = useTranslations("common");
   const isDesktop = useIsDesktop();
-  // Same colour whitelist as categories - the backend validates both
-  // against it.
   const { colors } = useCategoryOptions();
 
   const { control, handleSubmit } = useForm<PaymentMethodFormValues>({
@@ -60,8 +64,7 @@ export function PaymentMethodForm({
   const type = useWatch({ control, name: "type" });
 
   return (
-    // stopPropagation: this form can open from inside the expense form's
-    // drawer, and a submit must not also submit the expense.
+    // Prevent portal submit events from bubbling into a parent ExpenseForm.
     <form
       onSubmit={(event) => {
         event.stopPropagation();
@@ -89,19 +92,24 @@ export function PaymentMethodForm({
                   <FieldLabel htmlFor="payment-method-type">
                     {t("form.type")}
                   </FieldLabel>
-                  <select
-                    id="payment-method-type"
+                  <Select
                     value={field.value}
-                    onChange={(event) => field.onChange(event.target.value)}
+                    onValueChange={(value) => value && field.onChange(value)}
                     disabled={isLoading}
-                    className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-base md:text-sm dark:bg-input/30"
                   >
-                    {PAYMENT_METHOD_TYPES.map((value) => (
-                      <option key={value} value={value}>
-                        {t(`types.${value}`)}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger id="payment-method-type" className="w-full">
+                      <SelectValue>
+                        {() => t(`types.${field.value}`)}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_METHOD_TYPES.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {t(`types.${value}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               )}
             />
@@ -143,37 +151,14 @@ export function PaymentMethodForm({
                   <FieldLabel id="payment-method-color">
                     {t("form.color")}
                   </FieldLabel>
-                  <div
-                    role="radiogroup"
-                    aria-labelledby="payment-method-color"
-                    className="flex flex-wrap gap-2"
-                  >
-                    {colors.map((color, index) => {
-                      const selected = field.value === color;
-                      return (
-                        <button
-                          key={color}
-                          type="button"
-                          role="radio"
-                          aria-checked={selected}
-                          aria-label={`${t("form.color")} ${index + 1}`}
-                          disabled={isLoading}
-                          onClick={() => field.onChange(color)}
-                          className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-transform",
-                            selected
-                              ? "scale-110 border-foreground/80"
-                              : "border-transparent",
-                          )}
-                          style={{ background: color }}
-                        >
-                          {selected && (
-                            <Check className="h-4 w-4 text-white drop-shadow" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <ColorSwatchPicker
+                    colors={colors}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isLoading}
+                    ariaLabelPrefix={t("form.color")}
+                    ariaLabelledBy="payment-method-color"
+                  />
                 </Field>
               )}
             />

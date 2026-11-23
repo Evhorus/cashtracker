@@ -7,13 +7,7 @@ export type SubmitButtonProps = ComponentProps<typeof Button> & {
   isLoading?: boolean;
 };
 
-/**
- * Submit button for forms that need a loading spinner while pending
- * (react-hook-form + useActionState submissions). Not a Button
- * replacement - plain buttons should import Button directly from
- * @/shared/components/ui/button. Only use this where the isLoading spinner is
- * actually needed.
- */
+/** Form submit button with a pending spinner; use `Button` directly when `isLoading` is not needed. */
 function SubmitButton({
   isLoading = false,
   disabled,

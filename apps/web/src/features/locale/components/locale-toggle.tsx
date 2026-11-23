@@ -1,36 +1,25 @@
 "use client";
 
 import { useTransition } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { Languages } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
+import { Button } from "@/shared/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { Button } from "@/shared/components/ui/button";
-import { cn } from "@/shared/lib/utils";
 import {
   LOCALE_LABELS,
   SUPPORTED_LOCALES,
   type SupportedLocale,
 } from "@/shared/config/i18n/config";
+import { cn } from "@/shared/lib/utils";
 import { setLocaleAction } from "../actions/set-locale.action";
 
-/**
- * Language picker, sitting beside ModeToggle and shaped like it.
- *
- * Until this existed, `messages/en.json` was unreachable: i18n/request.ts
- * read a cookie nothing ever wrote, so every request resolved to Spanish
- * no matter what. Translating strings without this would have been
- * unverifiable work.
- *
- * Each option's name is written in its own language and never
- * translated - a language picker has to be readable to someone who
- * can't read the language currently showing.
- */
+/** Locale switcher; option labels stay in their native language so they remain readable regardless of active locale. */
 export function LocaleToggle({ className }: { className?: string }) {
   const currentLocale = useLocale();
   const t = useTranslations("locale");
@@ -50,7 +39,6 @@ export function LocaleToggle({ className }: { className?: string }) {
             size="icon"
             disabled={isPending}
             className={cn(className)}
-            // Same in both languages, deliberately - see above.
             aria-label={t("label")}
           >
             <Languages className="size-5" />

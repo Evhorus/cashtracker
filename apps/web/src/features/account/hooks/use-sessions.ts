@@ -1,14 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useSession, useUser } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 
 import type { AccountSession } from "../types";
 
-// Type-level-only derivation so this file doesn't need an extra import
-// just for the shape of one array element - @clerk/nextjs re-exports
-// hooks, not every resource type by name.
+// Derived from useUser() because @clerk/nextjs does not export resource types directly.
 type ClerkUser = NonNullable<ReturnType<typeof useUser>["user"]>;
 type RawSession = Awaited<ReturnType<ClerkUser["getSessions"]>>[number];
 
@@ -33,12 +31,7 @@ function toAccountSession(
   };
 }
 
-// Clerk's own "connected devices" panel: user.getSessions() lists every
-// active session across every device/browser for this account - not to
-// be confused with useSessionList(), which only covers Clerk's
-// multi-account-in-one-browser feature. Not part of the reactive user
-// object the way externalAccounts is, so this hook owns its own
-// fetch/refetch instead of just deriving from useUser().
+// Uses user.getSessions() (all devices for this account, not multi-account useSessionList()); not reactive, so this hook manages fetching.
 export function useSessions() {
   const t = useTranslations("account.errors");
   const { user } = useUser();
@@ -47,10 +40,7 @@ export function useSessions() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
-  // Bumping this re-runs the effect below - lets reload() live outside
-  // the effect (see revokeSession()) instead of the effect calling a
-  // function that sets state as its first synchronous statement, which
-  // react-hooks/set-state-in-effect flags.
+  // Bumping this triggers refetch inside the effect, avoiding react-hooks/set-state-in-effect.
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
@@ -65,8 +55,7 @@ export function useSessions() {
         setSessions(
           raw
             .map((session) => toAccountSession(session, currentSession?.id))
-            // Current device first - it's the one thing the user always
-            // wants to confirm is actually "this one".
+            // Put current device first.
             .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent)),
         );
       })
@@ -94,10 +83,7 @@ export function useSessions() {
     setRevokingId(sessionId);
     setError(null);
     try {
-      // getSessions() again rather than caching the raw resources from
-      // the last load - `revoke()` lives on the resource itself, and
-      // AccountSession (the mapped, exported shape) deliberately doesn't
-      // carry it.
+      // Re-fetch raw Clerk session resources because AccountSession omits `revoke()`.
       const raw = await user.getSessions();
       const target = raw.find((session) => session.id === sessionId);
       await target?.revoke();

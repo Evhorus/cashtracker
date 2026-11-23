@@ -1,18 +1,13 @@
 import { Button } from "@/shared/components/ui/button";
-import { FacebookIcon, GoogleIcon } from "./icons";
 import type { OAuthProvider } from "../types";
+import { FacebookIcon, GoogleIcon } from "./icons";
 
 interface OAuthButtonsProps {
   disabled?: boolean;
   onSelect: (provider: OAuthProvider) => void;
-  /** Providers to hide entirely - e.g. the account page's "connect a new
-   * provider" list shouldn't offer a provider that's already linked. */
   exclude?: OAuthProvider[];
 }
 
-// Shared between sign-in, sign-up, and the account page's connected-
-// accounts section - same two buttons everywhere, the provider-agnostic
-// OAuthProvider value is all the caller passes back.
 export function OAuthButtons({
   disabled,
   onSelect,

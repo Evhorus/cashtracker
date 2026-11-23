@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Heading } from "@/shared/components/common/typography";
+
 import { CategoryIcon } from "@/features/categories/components/category-badge";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
-import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
+import { Heading } from "@/shared/components/common/typography";
 import { cn } from "@/shared/lib/utils";
+import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
 import type { AlertEnvelope } from "../lib/dashboard-summary";
 
 interface AlertEnvelopesProps {
@@ -13,14 +14,8 @@ interface AlertEnvelopesProps {
   className?: string;
 }
 
-/** How many rows fit before "Ver todos" is the better answer. */
 const MAX_ROWS = 3;
 
-/**
- * Resumen's "Sobres en alerta" widget. Extracted from dashboard/page.tsx
- * along with RecentActivity's sibling treatment, so the page composes
- * two widgets instead of inlining one of them.
- */
 export async function AlertEnvelopes({
   entries,
   className,
@@ -38,8 +33,6 @@ export async function AlertEnvelopes({
     >
       <div className="flex items-center justify-between">
         <Heading size="sm">{t("alertsTitle")}</Heading>
-        {/* Exactly the set this widget lists and its tile counts - the
-            same `alert` filter the page fetched them with. */}
         <Link
           href="/dashboard/envelopes?status=alert"
           className="text-xs font-medium text-primary hover:underline"
@@ -81,11 +74,7 @@ export async function AlertEnvelopes({
                     {formatCurrency(remaining, config)}
                   </span>
                 </div>
-                {/* A real progressbar, unlike the decorative bars in
-                    envelopes-table/category-breakdown: this row shows the
-                    remaining *amount* beside it, never the percentage, so
-                    the bar is the only thing carrying how far through the
-                    limit this envelope is. */}
+                {/* Real progressbar (not decorative): only remaining amount is shown as text, not percentage. */}
                 <div
                   role="progressbar"
                   aria-valuenow={Math.round(Math.min(percentage, 100))}

@@ -1,26 +1,25 @@
+import type { Expense } from "@/features/expenses/types";
 import { fetchApi } from "@/shared/lib/api-client";
-import { Expense } from "@/features/expenses/types";
 import {
   appendPaginationParams,
   type PaginationParams,
 } from "@/shared/utils/pagination";
 import {
-  ExpenseAPIResponseSchema,
-  ExpensesAPIResponseSchema,
-  ExpenseApi,
-  ExpensesResponseApi,
-  type ExpensesPaginationMeta,
-} from "../schemas/expense.schema";
-import {
   ExpenseMapper,
   type ExpenseActionPayload,
 } from "../mappers/expense.mapper";
+import {
+  ExpenseAPIResponseSchema,
+  ExpensesAPIResponseSchema,
+  type ExpenseApi,
+  type ExpensesPaginationMeta,
+  type ExpensesResponseApi,
+} from "../schemas/expense.schema";
 
 export interface GetExpensesParams extends PaginationParams {
   startDate?: string;
   endDate?: string;
   search?: string;
-  categoryId?: string;
   sort?: "ASC" | "DESC";
   sortBy?: "date" | "amount";
   paymentMethodIds?: string[];
@@ -41,7 +40,6 @@ export const ExpensesService = {
     if (params?.startDate) query.set("startDate", params.startDate);
     if (params?.endDate) query.set("endDate", params.endDate);
     if (params?.search) query.set("search", params.search);
-    if (params?.categoryId) query.set("categoryId", params.categoryId);
     if (params?.sort) query.set("sort", params.sort);
     if (params?.sortBy && params.sortBy !== "date") {
       query.set("sortBy", params.sortBy);
@@ -75,36 +73,29 @@ export const ExpensesService = {
     return ExpenseMapper.fromApi(expense);
   },
 
-  create: (envelopeId: string, data: ExpenseActionPayload) => {
-    return fetchApi<{ message: string }>(
+  create: (envelopeId: string, data: ExpenseActionPayload) =>
+    fetchApi<{ message: string }>(
       `/envelopes/${encodeURIComponent(envelopeId)}/expenses`,
       {
         method: "POST",
         body: JSON.stringify(ExpenseMapper.toApiRequest(data)),
       },
-    );
-  },
+    ),
 
-  update: (
-    envelopeId: string,
-    expenseId: string,
-    data: ExpenseActionPayload,
-  ) => {
-    return fetchApi<{ message: string }>(
+  update: (envelopeId: string, expenseId: string, data: ExpenseActionPayload) =>
+    fetchApi<{ message: string }>(
       `/envelopes/${encodeURIComponent(envelopeId)}/expenses/${encodeURIComponent(expenseId)}`,
       {
         method: "PATCH",
         body: JSON.stringify(ExpenseMapper.toApiRequest(data)),
       },
-    );
-  },
+    ),
 
-  delete: (envelopeId: string, expenseId: string) => {
-    return fetchApi<{ message: string }>(
+  delete: (envelopeId: string, expenseId: string) =>
+    fetchApi<{ message: string }>(
       `/envelopes/${encodeURIComponent(envelopeId)}/expenses/${encodeURIComponent(expenseId)}`,
       {
         method: "DELETE",
       },
-    );
-  },
+    ),
 };

@@ -12,19 +12,12 @@ import {
 export interface FilterOption {
   value: string;
   label: string;
-  /**
-   * Draws a divider above this option. Used to set a saved view apart
-   * from the plain values above it - the envelopes list's "Necesitan
-   * atención" is a union of two statuses rather than a status, and the
-   * line says so without needing a word to explain it.
-   */
+  /** Draws a divider above this option (e.g. separating composite views from plain statuses). */
   separatorBefore?: boolean;
 }
 
 interface FilterSelectProps {
-  /** The dimension being filtered ("Estado", "Tipo") - shown in the
-   * trigger before the value, so the control reads as a sentence
-   * rather than a bare word whose meaning depends on position. */
+  /** Filter dimension prefix shown in the trigger before the active value. */
   label: string;
   value: string;
   options: FilterOption[];
@@ -32,20 +25,7 @@ interface FilterSelectProps {
   className?: string;
 }
 
-/**
- * One filter dimension, as a labelled select.
- *
- * Replaces the row of tabs both list pages used. Six status tabs read as
- * scattered on a wide screen and needed horizontal scrolling on a phone;
- * one control is the same size at every breakpoint and leaves room for
- * more dimensions (currency, category) beside it later.
- *
- * Presentational on purpose: it takes value/onValueChange rather than
- * touching the URL, because its two callers drive different things - the
- * envelopes list writes a search param (server-filtered, so the URL has
- * to carry it) while the categories list sets client context (its full
- * list is already in memory).
- */
+/** Presentational labelled filter select (callers own URL params vs. client state). */
 export function FilterSelect({
   label,
   value,

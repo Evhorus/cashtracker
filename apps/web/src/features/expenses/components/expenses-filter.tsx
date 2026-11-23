@@ -5,9 +5,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/shared/components/ui/button";
+import {
+  parseMethodFilter,
+  toggleMethod,
+  type MethodOption,
+} from "@/features/payment-methods/lib/method-filter";
 import { SearchInput } from "@/shared/components/common/search-input";
-import { useDebouncedSearchParam } from "@/shared/hooks/use-debounced-search-param";
+import { Button } from "@/shared/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -27,11 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  parseMethodFilter,
-  toggleMethod,
-  type MethodOption,
-} from "@/features/payment-methods/lib/method-filter";
+import { useDebouncedSearchParam } from "@/shared/hooks/use-debounced-search-param";
 import {
   EXPENSES_MAX_PAGE_SIZE,
   EXPENSES_DEFAULT_PAGE_SIZE,
@@ -45,9 +45,7 @@ import {
 } from "../lib/expense-order";
 
 interface ExpensesFilterProps {
-  /** Payment methods used in this envelope - see methodOptionsFor.
-   * Empty when there is nothing to tell apart, which hides that
-   * section. */
+  /** Payment methods used in this envelope (from `methodOptionsFor`); empty hides the section. */
   methodOptions: MethodOption[];
 }
 
@@ -72,7 +70,6 @@ function readState(searchParams: URLSearchParams): FilterState {
   };
 }
 
-/** The state as URL params, defaults left out. */
 function writeState(params: URLSearchParams, state: FilterState) {
   const set = (key: string, value: string, isDefault: boolean) =>
     isDefault ? params.delete(key) : params.set(key, value);
@@ -85,16 +82,7 @@ function writeState(params: URLSearchParams, state: FilterState) {
   );
 }
 
-/**
- * The search box and the page size stay in view - people change how
- * many expenses they see often. Payment method and order share one
- * "Filtros" menu, which counts what differs from the defaults so an
- * active filter is never hidden behind a closed menu.
- *
- * The state is optimistic: the menu stays open while ticking, and a
- * second tick must build on the first even though the URL (the source
- * of truth) has not caught up yet - otherwise it would undo it.
- */
+/** Optimistic filter state keeps rapid multi-select ticks from clobbering each other before the URL catches up. */
 export const ExpensesFilter = ({ methodOptions }: ExpensesFilterProps) => {
   const t = useTranslations("expenses");
   const tMethods = useTranslations("paymentMethods.filter");
@@ -104,16 +92,14 @@ export const ExpensesFilter = ({ methodOptions }: ExpensesFilterProps) => {
   const [, startTransition] = useTransition();
   const [state, setOptimisticState] = useOptimistic(readState(searchParams));
 
-  // Debounce/URL plumbing shared with the envelopes list - see
-  // useDebouncedSearchParam. `applyTo` carries a half-typed search into
-  // this navigation instead of dropping it.
+  // `applyTo` carries an in-flight debounced search into filter navigations instead of dropping it.
   const {
     value: search,
     onChange: handleSearchChange,
     applyTo: applyPendingSearch,
   } = useDebouncedSearchParam();
 
-  /** Goes back to page 1: a filter can shrink the result set. */
+  // Reset to page 1 because changing a filter can shrink the result set.
   const update = (changes: Partial<FilterState>) => {
     const next = { ...state, ...changes };
     const params = new URLSearchParams(searchParams);
@@ -130,8 +116,7 @@ export const ExpensesFilter = ({ methodOptions }: ExpensesFilterProps) => {
   const activeCount =
     (state.methods.length > 0 ? 1 : 0) + (state.order !== "newest" ? 1 : 0);
 
-  // The largest option means "everything" rather than a literal count,
-  // so it reads as a word; the other two are just their number.
+  // Largest page-size option represents "all" rather than a literal count.
   const pageSizeLabel = (size: number) =>
     size === EXPENSES_MAX_PAGE_SIZE ? t("pageSizeAll") : String(size);
 

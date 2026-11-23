@@ -1,23 +1,20 @@
 "use client";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
+import { useTranslations } from "next-intl";
+
+import { createCategoryAction } from "@/features/categories/actions/create-category.action";
+import { CategoryFormValues } from "@/features/categories/schemas/category.schema";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
+import { Button } from "@/shared/components/ui/button";
 import { useActionDialog } from "@/shared/hooks/useActionDialog";
 import { CategoryForm } from "./category-form";
-import { CategoryFormValues } from "@/features/categories/schemas/category.schema";
-import { createCategoryAction } from "@/features/categories/actions/create-category.action";
 
 interface CreateCategoryDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Fires once the category is actually saved, with the newly created
-   * category id - e.g. so CategoryPicker can auto-select it. Separate from
-   * onOpenChange, which just tracks the dialog's open state. */
   onCreated?: (categoryId: string) => void;
-  /** Omit when the dialog is fully controlled from outside, e.g. opened
-   * from CategoryPicker's own footer button. */
+  /** Omit when controlled externally without a trigger button. */
   trigger?: React.ReactElement;
 }
 

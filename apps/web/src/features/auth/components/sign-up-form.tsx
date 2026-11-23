@@ -1,15 +1,16 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
+import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@/shared/components/ui/button";
-import { SubmitButton } from "@/shared/components/common/submit-button";
 import { ErrorMessage } from "@/shared/components/common/error-message";
 import { FormInput } from "@/shared/components/common/form-input";
+import { OtpInput } from "@/shared/components/common/otp-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
 import { Text } from "@/shared/components/common/typography";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
@@ -18,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { OAuthButtons } from "./oauth-buttons";
+import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
 import { useSignUp } from "../hooks/use-sign-up";
 import {
   type CodeFormValues,
@@ -26,14 +27,9 @@ import {
   type SignUpFormValues,
   buildSignUpFormSchema,
 } from "../schemas/auth.schema";
+import { OAuthButtons } from "./oauth-buttons";
 
-// Custom-built sign-up UI on top of the useSignUp() hook (features/auth/
-// hooks/use-sign-up.ts) - see the sibling sign-in form for the full
-// reasoning, including why FormInput's serverError prop (fed from
-// fieldErrors) and react-hook-form's own client errors share the same
-// field slot. The signed-in redirect lives in the parent (auth)/
-// layout.tsx (a resource-level check, not middleware), so an already-
-// authenticated visitor never sees a blank flash of this page.
+// Delegates Clerk state to useSignUp(); already-authenticated redirects happen in (auth)/layout.tsx.
 export function SignUpForm() {
   const t = useTranslations("auth.signUp");
   const tCommon = useTranslations("common");
@@ -92,10 +88,7 @@ export function SignUpForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-y-4">
-        {/* Clerk's bot sign-up protection widget - required placeholder
-            for custom sign-up flows, must exist before signUpWithPassword()/
-            signUpWithOAuth() runs or Clerk falls back to invisible CAPTCHA
-            with a console warning. Usually renders invisibly. */}
+        {/* Required Clerk bot-protection mount point; must exist before signUp calls or Clerk falls back with a warning. */}
         <div id="clerk-captcha" />
 
         {globalErrors.map((message, i) => (
@@ -177,14 +170,29 @@ export function SignUpForm() {
             onSubmit={codeVerifyForm.handleSubmit(onVerify)}
             className="grid gap-y-4"
           >
-            <FormInput
+            <Controller
               control={codeVerifyForm.control}
               name="code"
-              label={tCommon("code")}
-              placeholder="123456"
-              autoComplete="one-time-code"
-              disabled={isSubmitting}
-              serverError={fieldErrors.code}
+              render={({ field, fieldState }) => {
+                const message = fieldState.error?.message ?? fieldErrors.code;
+                return (
+                  <Field>
+                    <FieldLabel htmlFor="sign-up-code">
+                      {tCommon("code")}
+                    </FieldLabel>
+                    <OtpInput
+                      id="sign-up-code"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={isSubmitting}
+                      autoFocus
+                      aria-invalid={fieldState.invalid || !!fieldErrors.code}
+                    />
+                    {message && <FieldError>{message}</FieldError>}
+                  </Field>
+                );
+              }}
             />
             <SubmitButton
               type="submit"

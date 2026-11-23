@@ -1,17 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 
 import type { AccountActionResult, ProfileFieldErrors } from "../types";
 import { mapClerkError } from "./map-clerk-error";
 
-// Owns the "profile" section of the account page: name and photo. Only
-// file (besides map-clerk-error.ts) in features/account/ that imports
-// useUser() for writes - use-account-user.ts covers the read-only display
-// case. See features/auth/hooks/use-sign-in.ts for the provider-agnostic
-// reasoning this mirrors.
+// Write boundary for Clerk profile updates (name/photo); read-only display uses use-account-user.ts.
 export function useUpdateProfile() {
   const t = useTranslations("account.errors");
   const { user } = useUser();

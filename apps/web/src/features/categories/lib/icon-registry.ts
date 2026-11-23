@@ -157,10 +157,8 @@ import {
 } from "lucide-react";
 
 /**
- * Maps an icon key (matching the backend's ICON_KEYS in
- * src/categories/constants/icon-keys.ts) to its LucideIcon component.
- * Search keywords live separately in icon-keywords.ts so display-only
- * callers do not bundle the keyword dictionary.
+ * Maps backend ICON_KEYS to LucideIcon components.
+ * Search keywords live separately in icon-keywords.ts so display-only callers don't bundle them.
  */
 const ICON_COMPONENTS: Record<string, LucideIcon> = {
   house: House,
@@ -319,10 +317,7 @@ const ICON_COMPONENTS: Record<string, LucideIcon> = {
   cigarette: Cigarette,
 };
 
-/**
- * Resolves an icon key to its LucideIcon component. Unknown keys fall back to
- * Tag rather than throwing.
- */
+/** Resolves an icon key to its LucideIcon, falling back to Tag for unknown keys. */
 export function resolveIcon(key: string): LucideIcon {
   return ICON_COMPONENTS[key] ?? Tag;
 }

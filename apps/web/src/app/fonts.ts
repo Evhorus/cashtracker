@@ -1,23 +1,20 @@
 import { Manrope, Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 
-// UI/body font - buttons, labels, nav, everything that isn't a hero
-// number or a page title.
+// UI/body font.
 export const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
   display: "swap",
 });
 
-// Display/serif font - hero balance numbers and page titles only. Variable
-// (opsz axis), so no weight array needed.
+// Display/serif font for hero numbers and page titles (variable opsz axis, no weight array needed).
 export const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
   display: "swap",
 });
 
-// Tabular data font - amounts, percentages, dates in lists/tables. Not a
-// variable font on Google Fonts, so the weights actually used need listing.
+// Tabular data font for amounts/dates (non-variable on Google Fonts, so weights must be listed).
 export const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
   subsets: ["latin"],

@@ -1,13 +1,18 @@
 "use client";
-import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
-import { Switch } from "@/shared/components/ui/switch";
-import { Button } from "@/shared/components/ui/button";
-import { SubmitButton } from "@/shared/components/common/submit-button";
+import { CategoryPicker } from "@/features/categories/components/category-picker";
+import { CurrencySelector } from "@/features/envelopes/components/currency-selector";
+import {
+  buildEnvelopeFormSchema,
+  EnvelopeFormValues,
+} from "@/features/envelopes/schemas/envelope.schema";
 import { FormInput } from "@/shared/components/common/form-input";
+import { PriceInput } from "@/shared/components/common/price-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
+import { Button } from "@/shared/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -16,13 +21,8 @@ import {
   FieldLabel,
   FieldSet,
 } from "@/shared/components/ui/field";
-import {
-  buildEnvelopeFormSchema,
-  EnvelopeFormValues,
-} from "@/features/envelopes/schemas/envelope.schema";
-import { PriceInput } from "@/shared/components/common/price-input";
-import { CurrencySelector } from "@/features/envelopes/components/currency-selector";
-import { CategoryPicker } from "@/features/categories/components/category-picker";
+import { Switch } from "@/shared/components/ui/switch";
+import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import {
   CURRENCY_MAP,
   DEFAULT_CURRENCY_CONFIG,
@@ -163,7 +163,7 @@ export const EnvelopeForm = ({
             control={control}
             name="categoryId"
             render={({ field, fieldState }) => (
-              <Field className="md:col-span-4">
+              <Field>
                 <FieldLabel htmlFor="categoryId">{t("category")}</FieldLabel>
                 <CategoryPicker
                   {...field}

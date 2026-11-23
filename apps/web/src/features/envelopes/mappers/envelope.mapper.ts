@@ -1,15 +1,12 @@
-import { EnvelopeFormValues } from "../schemas/envelope.schema";
-import { Envelope } from "../types";
-import { EnvelopeApi } from "../schemas/envelope.schema";
 import { ExpenseMapper } from "@/features/expenses/mappers/expense.mapper";
-import type { CurrencyCode } from "@/shared/utils/format-currency";
-import { parseCalendarDate } from "@/shared/utils/date-helpers";
 import type { Expense } from "@/features/expenses/types";
+import { parseCalendarDate } from "@/shared/utils/date-helpers";
+import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { EnvelopeFormValues } from "../schemas/envelope.schema";
+import { EnvelopeApi } from "../schemas/envelope.schema";
+import { Envelope } from "../types";
 
-/**
- * The list endpoint reports the range; the detail endpoint embeds the
- * expenses instead, so there it is derived from them.
- */
+/** List endpoint reports the range; detail endpoint embeds expenses so derive it from them. */
 function expenseDateRange(
   apiEnvelope: EnvelopeApi,
   expenses: Expense[],
@@ -29,35 +26,22 @@ function expenseDateRange(
 }
 
 export const EnvelopeMapper = {
-  /**
-   * UI -> API (Outbound)
-   * Handles Colombian currency formatting (removing dots) before converting to number
-   */
   toApiRequest: (data: EnvelopeFormValues) => ({
     name: data.name,
     amount: data.hasLimit ? Number(data.amount) : null,
     currency: data.currency,
-    // An id, not a label - "" from the picker's cleared state means "no
-    // category", which the API expects as null.
+    // Empty string from cleared picker means "no category" (API expects null).
     categoryId: data.categoryId || null,
   }),
 
-  /**
-   * API -> UI (Inbound)
-   * Transforms raw API response into the domain model (Envelope)
-   */
   fromApi: (apiEnvelope: EnvelopeApi): Envelope => {
-    // Absent on the paginated list endpoint - only the detail endpoint
-    // embeds expenses.
+    // Only the detail endpoint embeds expenses; list endpoint omits them.
     const expenses = apiEnvelope.expenses?.map(ExpenseMapper.fromApi) ?? [];
     return {
       id: apiEnvelope.id,
-      // Exactly as the user typed it.
       name: apiEnvelope.name,
       amount: apiEnvelope.amount,
-      // The API schema types this as a loose string (z.string().default);
-      // the domain model narrows it to the known currency codes, since
-      // it's the app's own form that ever writes this value.
+      // Narrow loose API string to CurrencyCode (values originate from this app's selector).
       currency: apiEnvelope.currency as CurrencyCode,
       spent: apiEnvelope.spent,
       status: apiEnvelope.status,

@@ -1,19 +1,17 @@
 import { useTranslations } from "next-intl";
+
+import type { DashboardBreakdownTotal as DashboardBreakdownTotalRow } from "@/features/dashboard/schemas/dashboard.schema";
 import {
   CURRENCY_MAP,
   formatCurrency,
   type CurrencyCode,
 } from "@/shared/utils/format-currency";
-import type { DashboardBreakdownTotal as DashboardBreakdownTotalRow } from "@/features/dashboard/schemas/dashboard.schema";
 
 interface BreakdownTotalProps {
   total: DashboardBreakdownTotalRow;
   currency: CurrencyCode;
 }
 
-// The "Total" tab - a single number rather than a list of rows, since
-// there's nothing left to group once every axis (category/envelope/
-// name) has its own tab beside it.
 export function BreakdownTotal({ total, currency }: BreakdownTotalProps) {
   const t = useTranslations("statistics");
   const config = CURRENCY_MAP[currency];

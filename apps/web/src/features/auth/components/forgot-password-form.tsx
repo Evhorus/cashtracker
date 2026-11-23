@@ -1,15 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 
-import { SubmitButton } from "@/shared/components/common/submit-button";
 import { ErrorMessage } from "@/shared/components/common/error-message";
 import { FormInput } from "@/shared/components/common/form-input";
 import { OtpInput } from "@/shared/components/common/otp-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
 import {
   Card,
   CardContent,
@@ -29,13 +29,6 @@ import {
   buildNewPasswordFormSchema,
 } from "../schemas/auth.schema";
 
-// Three-step reset flow (send code -> verify code -> set new password) on
-// top of the useForgotPassword() hook (features/auth/hooks/
-// use-forgot-password.ts) - see sign-in-form.tsx for the full reasoning
-// behind FormInput/serverError. The last step asks for the new password
-// twice (schema-enforced match via buildNewPasswordFormSchema) so a mistyped
-// password doesn't lock the user out of the account they're actively
-// trying to recover.
 export function ForgotPasswordForm() {
   const t = useTranslations("auth.forgotPassword");
   const tSignIn = useTranslations("auth.signIn");

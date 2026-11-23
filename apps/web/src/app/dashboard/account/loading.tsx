@@ -1,27 +1,15 @@
 import { PageHeaderSkeleton } from "@/features/dashboard/components/page-header-skeleton";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
-// Mirrors AccountView's layout (a Select on mobile, a horizontal top-tab
-// row on desktop, above a content column, full page width) so nothing
-// shifts once the real content mounts - see account-view.tsx.
 export default function AccountLoading() {
   return (
     <div className="space-y-6">
-      {/* No actions on this page - the shared skeleton covers the rest,
-          including the breadcrumb, so this no longer hand-rolls a copy
-          of PageHeader's shape that has to be kept in step by hand. */}
       <PageHeaderSkeleton actions="none" />
 
       <div className="space-y-6">
-        {/* Mobile: one bar (the Select). */}
         <Skeleton className="h-9 w-full md:hidden" />
 
-        {/* Desktop: the horizontal top-tab row - 6 varying-width pills
-            (roughly matching each section's icon+label length) inside
-            the same rounded-2xl/bordered/padded container AccountView's
-            real TabsList uses, so this doesn't visibly resize once the
-            real tabs mount. */}
         <div className="hidden flex-wrap items-center gap-1.5 rounded-2xl border border-border/60 bg-card/50 p-2.5 md:flex">
           {["w-20", "w-28", "w-24", "w-36", "w-28", "w-32"].map((w, i) => (
             <Skeleton key={i} className={`h-10 ${w} rounded-full`} />

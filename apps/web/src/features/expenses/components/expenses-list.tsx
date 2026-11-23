@@ -1,30 +1,23 @@
 "use client";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Expense } from "@/features/expenses/types";
 import { useParams, useSearchParams } from "next/navigation";
 import { Receipt, SearchX } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { Expense } from "@/features/expenses/types";
 import { EmptyState } from "@/shared/components/common/empty-state";
+import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { DeleteExpenseAlertDialog } from "./delete-expense-alert-dialog";
 import { ExpenseCard } from "./expense-card";
 import { ExpensesTable } from "./expenses-table";
 import { UpdateExpenseDialog } from "./update-expense-dialog";
-import { DeleteExpenseAlertDialog } from "./delete-expense-alert-dialog";
-import type { CurrencyCode } from "@/shared/utils/format-currency";
 
 interface ExpensesGridProps {
   expenses: Expense[];
   currency: CurrencyCode;
 }
 
-/**
- * Empty state for this list. Filter-aware, the same distinction
- * EnvelopesGrid already made and this list didn't: "no results for this
- * search" must not read as "you have no expenses at all".
- *
- * Reads the URL directly rather than taking props - this component is
- * already a Client Component sitting under the same search/date filters
- * the server used to build the list, so there's nothing to thread down.
- */
+/** Filter-aware empty state; reads active URL search/date params directly instead of prop drilling. */
 function ExpensesEmptyState() {
   const t = useTranslations("expenses.empty");
   const searchParams = useSearchParams();
@@ -87,9 +80,6 @@ export const ExpensesList = ({ expenses, currency }: ExpensesGridProps) => {
         <ExpensesEmptyState />
       ) : (
         <>
-          {/* Mobile: the compact card list. Desktop: a dense table
-              instead of the same cards stretched wider - see
-              expenses-table.tsx, same split EnvelopesGrid already uses. */}
           <div className="space-y-2 md:hidden">
             {expenses.map((expense) => (
               <ExpenseCard

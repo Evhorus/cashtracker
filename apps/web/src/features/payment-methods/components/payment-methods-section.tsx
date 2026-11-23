@@ -1,18 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
+
+import { ConfirmDeleteDialog } from "@/shared/components/common/confirm-delete-dialog";
 import { Button } from "@/shared/components/ui/button";
 import { useActionDialog } from "@/shared/hooks/useActionDialog";
 import { deletePaymentMethodAction } from "../actions/delete-payment-method.action";
@@ -20,7 +12,6 @@ import { usePaymentMethods } from "../providers/payment-methods-provider";
 import type { PaymentMethod } from "../types";
 import { PaymentMethodDialog } from "./payment-method-dialog";
 
-/** Account > Medios de pago: list, create, edit, delete. */
 export function PaymentMethodsSection() {
   const t = useTranslations("paymentMethods");
   const tCommon = useTranslations("common");
@@ -98,43 +89,24 @@ export function PaymentMethodsSection() {
       )}
 
       <PaymentMethodDialog
-        // Remount per target so the form's default values reset.
         key={editing?.id ?? "new"}
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         paymentMethod={editing}
       />
 
-      <AlertDialog
+      <ConfirmDeleteDialog
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("section.deleteTitle", { name: deleting?.name ?? "" })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("section.deleteDescription")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={remove.isPending}>
-              {tCommon("cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={(event) => {
-                event.preventDefault();
-                if (deleting) remove.dispatch({ id: deleting.id });
-              }}
-            >
-              {t("section.deleteConfirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title={t("section.deleteTitle", { name: deleting?.name ?? "" })}
+        description={t("section.deleteDescription")}
+        confirmLabel={t("section.deleteConfirm")}
+        cancelLabel={tCommon("cancel")}
+        isPending={remove.isPending}
+        onConfirm={() => {
+          if (deleting) remove.dispatch({ id: deleting.id });
+        }}
+      />
     </section>
   );
 }

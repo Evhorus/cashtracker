@@ -1,52 +1,18 @@
 import { z } from "zod";
 
-/**
- * The shape of the server environment, with no side effects.
- *
- * Split from env.server.ts so it can be imported and exercised without
- * booting: that module parses `process.env` at import time and throws on
- * a bad environment, which is exactly the behaviour wanted at boot and
- * exactly what makes it untestable. This file has no `server-only`
- * marker for the same reason - it holds no values, only the rules.
- */
-/**
- * A required string whose message survives the variable being absent.
- *
- * `z.string().min(1, msg)` reads as if it covers both, and does not: an
- * absent variable fails the type check first and reports "Invalid input:
- * expected string, received undefined", so the message explaining what
- * to set never appears. Passing `error` covers the undefined case too,
- * which is the common one - a variable missing from .env entirely.
- */
+/** Server env schema split from env.server.ts (without `server-only`) so tests can import it without booting. */
+/** Uses `error` so missing (undefined) vars show the custom message instead of Zod's type error. */
 const required = (message: string) =>
   z.string({ error: message }).min(1, message);
 
-/**
- * An http(s) URL.
- *
- * `z.url()` alone is weaker than it looks: it accepts "localhost:4000",
- * because `new URL("localhost:4000")` is valid with protocol
- * "localhost:". That value then fails at the first fetch instead of at
- * boot, which is the whole thing this module exists to prevent.
- */
+/** Restricts to http(s) because plain `z.url()` accepts "localhost:4000" as protocol "localhost:". */
 const httpUrl = (message: string) =>
   z.url({ error: message, protocol: /^https?$/ });
 
-/**
- * A path within this app, like "/sign-in".
- *
- * A path rather than a URL: these are relative by design, and an
- * absolute one would send users to another origin - which is the exact
- * failure being guarded against.
- */
+/** Relative app-local path (e.g. "/sign-in"); rejects absolute URLs to prevent open redirects. */
 const appPath = (name: string, why: string) =>
   required(`${name} is required. ${why}`).regex(
-    // One leading slash, and the next character must not be another
-    // slash or a backslash. "//elsewhere.test/sign-in" starts with "/"
-    // and is NOT app-local: a protocol-relative URL resolves to
-    // elsewhere.test, which is the redirect this variable exists to
-    // prevent. Browsers normalise a backslash to a slash, so "/\\evil"
-    // is the same trick spelled differently.
+    // Reject protocol-relative ("//host") and backslash-normalized ("/\host") external redirects.
     /^\/(?![/\\])/,
     `${name} must be a path beginning with "/" and pointing at this app (not "//host" or "/\\host"). ${why}`,
   );

@@ -1,11 +1,4 @@
-/**
- * Validates the server environment at boot.
- *
- * Without this the first bad request is what surfaces a missing variable,
- * and the three NEXT_PUBLIC_URL readers never surfaced it at all - they
- * fell back to localhost:4001 in silence, so a production deploy shipped
- * a sitemap.xml pointing at a developer's machine.
- */
+/** Validates server env at boot so missing vars (like NEXT_PUBLIC_URL) fail fast instead of falling back silently. */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Input } from "@/shared/components/ui/input";
+
 import { Text } from "@/shared/components/common/typography";
+import { Input } from "@/shared/components/ui/input";
 import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import { cn } from "@/shared/lib/utils";
 import { iconLabel, searchIcons } from "../lib/icon-keywords";
@@ -16,11 +17,7 @@ interface CategoryIconPickerGridProps {
   onPick: (key: string) => void;
 }
 
-/**
- * Searchable grid rendered inside CategoryIconPicker's popover. Code-split via
- * next/dynamic so icon-keywords.ts is only loaded when the user opens the
- * icon selector.
- */
+/** Code-split via next/dynamic in CategoryIconPicker so icon-keywords.ts loads only when opened. */
 export function CategoryIconPickerGrid({
   value,
   icons,
@@ -38,8 +35,7 @@ export function CategoryIconPickerGrid({
   return (
     <>
       <div className="p-2">
-        {/* Desktop only, like the other forms: on a phone it opens the
-            keyboard over the very grid this popover is for. */}
+        {/* Desktop only: mobile autoFocus opens the keyboard over the icon grid. */}
         <Input
           autoFocus={isDesktop}
           value={query}

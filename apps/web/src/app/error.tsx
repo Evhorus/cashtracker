@@ -1,16 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
 import { RotateCw, TriangleAlert } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Text } from "@/shared/components/common/typography";
+import { useTranslations } from "next-intl";
 
-/**
- * Root error boundary catching unhandled errors on public/auth routes outside
- * /dashboard. Mirrors dashboard/error.tsx and uses retry() so failed server
- * data fetches re-run cleanly.
- */
+import { Text } from "@/shared/components/common/typography";
+import { Button } from "@/shared/components/ui/button";
+
+/** Root error boundary for routes outside /dashboard; uses retry() to re-run failed server fetches. */
 export default function RootError({
   error,
   retry,

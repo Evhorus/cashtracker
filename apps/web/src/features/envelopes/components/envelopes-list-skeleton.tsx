@@ -1,11 +1,8 @@
 import { useTranslations } from "next-intl";
 
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
-// Mirrors EnvelopeCard's actual shape (icon + title/meta line, status row +
-// bar, 2-column stats, "Ver detalles" row) so there's no layout shift when
-// real data replaces this.
 export const EnvelopeCardSkeleton = () => {
   return (
     <Card className="h-full border-0 bg-card/50 shadow-sm">
@@ -48,10 +45,7 @@ export const EnvelopeCardSkeleton = () => {
   );
 };
 
-// Mirrors EnvelopesTable's actual shape (icon + name, category pill,
-// progress bar + %, two right-aligned money columns, status pill) - the
-// real header labels render directly (static text, nothing to skeleton)
-// so only the body rows are placeholders.
+// Renders static table headers directly so only body rows are placeholders.
 const EnvelopesTableSkeleton = () => {
   const t = useTranslations("envelopes.table");
 
@@ -115,11 +109,6 @@ const EnvelopesTableSkeleton = () => {
   );
 };
 
-// Mobile: a single-column card list (md:hidden, matches EnvelopesGrid's
-// real breakpoint - the card grid never goes multi-column, that's the
-// table's job on desktop). Desktop: the dense table above, not more
-// cards - the two are genuinely different components/layouts on
-// EnvelopesGrid itself, not just a wider version of the same grid.
 export const EnvelopesListSkeleton = () => {
   return (
     <>
@@ -133,10 +122,7 @@ export const EnvelopesListSkeleton = () => {
   );
 };
 
-// The "X sobres" count line + the list itself - shared between
-// envelopes/loading.tsx (full route navigation) and the Suspense
-// fallback envelopes/page.tsx shows on a filter/page change, so the two
-// stay in sync instead of drifting apart.
+// Shared between envelopes/loading.tsx and the Suspense fallback in envelopes/page.tsx.
 export const EnvelopesResultsSkeleton = () => {
   return (
     <>

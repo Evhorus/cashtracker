@@ -1,9 +1,7 @@
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
-// Mirrors ExpenseCard's real (compact, single-row) shape - was a
-// taller two-row skeleton (stacked on mobile) that shrunk once real
-// content mounted, an extra bit of layout shift the real page never has.
+// Matches ExpenseCard's single-row height to avoid CLS on mount.
 export const ExpenseCardSkeleton = () => {
   return (
     <Card size="sm" className="overflow-hidden">
@@ -20,9 +18,6 @@ export const ExpenseCardSkeleton = () => {
   );
 };
 
-// Mirrors ExpensesTable's real shape (header row + 5 rows) - same
-// mobile-card/desktop-table split as the real ExpensesList, so nothing
-// changes shape once real content mounts on either breakpoint.
 const ExpensesTableSkeleton = () => {
   return (
     <div className="hidden overflow-hidden rounded-2xl border border-border/60 bg-card/30 md:block">

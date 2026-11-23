@@ -1,8 +1,4 @@
-/**
- * Lower-case, accent-free Spanish search keywords for every category icon key.
- * Kept separate from icon-registry.ts so consumers that only render an icon via
- * resolveIcon() never bundle this dictionary.
- */
+/** Spanish search keywords per icon key; kept separate from icon-registry.ts so `resolveIcon()` callers don't bundle it. */
 const ICON_KEYWORDS: Record<string, string> = {
   house: "casa hogar vivienda arriendo alquiler",
   car: "carro auto coche vehiculo",
@@ -168,11 +164,7 @@ const normalize = (text: string) =>
     .toLowerCase()
     .trim();
 
-/**
- * Icon keys matching what the user typed, in their original order. Matches the
- * key itself ("shopping-bag") and the Spanish keywords ("compras"); every typed
- * word must match somewhere so "casa arriendo" narrows instead of widening.
- */
+/** Filters icon keys by matching every typed word against the key or its Spanish keywords (preserving order). */
 export function searchIcons(keys: readonly string[], query: string): string[] {
   const words = normalize(query.replace(/-/g, " "))
     .split(/\s+/)
@@ -185,11 +177,7 @@ export function searchIcons(keys: readonly string[], query: string): string[] {
   });
 }
 
-/**
- * Readable label for an icon, used in tooltips and screen readers. In Spanish
- * it takes the first keyword (the icon's Spanish name by construction);
- * elsewhere it replaces hyphens with spaces.
- */
+/** Tooltip/sr label: first Spanish keyword for `es*` locales, otherwise hyphen-spaced key. */
 export function iconLabel(key: string, locale: string): string {
   const spanish = locale.startsWith("es")
     ? ICON_KEYWORDS[key]?.split(" ")[0]

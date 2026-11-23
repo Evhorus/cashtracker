@@ -1,28 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { EditableEnvelope, Envelope } from "@/features/envelopes/types";
 import { SearchX, Wallet } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { type EnvelopeStatusTab } from "@/features/envelopes/lib/envelope-helpers";
+import { EditableEnvelope, Envelope } from "@/features/envelopes/types";
 import { EmptyState } from "@/shared/components/common/empty-state";
 import { CreateEnvelopeDialog } from "./create-envelope-dialog";
-import { UpdateEnvelopeDialog } from "./update-envelope-dialog";
 import { DeleteEnvelopeAlertDialog } from "./delete-envelope-alert-dialog";
-import { statusFilterLabel } from "./envelopes-filter";
 import { EnvelopeCard } from "./envelope-card";
+import { statusFilterLabel } from "./envelopes-filter";
 import { EnvelopesTable } from "./envelopes-table";
-import { type EnvelopeStatusTab } from "@/features/envelopes/lib/envelope-helpers";
+import { UpdateEnvelopeDialog } from "./update-envelope-dialog";
 
 interface EnvelopesGridProps {
   envelopes: Envelope[];
-  /** Active search term, if any - swaps the empty state so a "no
-   * results for this search" doesn't read as "you have no envelopes at
-   * all" (and doesn't offer a "create your first envelope" CTA that
-   * wouldn't help find what was searched for). */
+  /** Active search term; switches empty state to "no matches" instead of first-run CTA. */
   searchQuery?: string;
-  /** Active status tab, if not "all" - same reasoning as searchQuery:
-   * an empty "Excedidos" tab means "nothing matches this filter", not
-   * "you have no envelopes". */
+  /** Active status filter; switches empty state to "no matches" when not "all". */
   statusFilter?: EnvelopeStatusTab;
 }
 
@@ -72,9 +68,6 @@ export const EnvelopesGrid = ({
             }
           />
         ) : (
-          // First-run state - bigger and more editorial than the "no
-          // search results" case above, since this is most people's
-          // actual first screen in the app.
           <EmptyState
             variant="first-run"
             icon={Wallet}
@@ -86,9 +79,6 @@ export const EnvelopesGrid = ({
         )
       ) : (
         <>
-          {/* Mobile: same card grid as before. Desktop: a dense table
-              instead of the same cards stretched wider - see
-              envelopes-table.tsx. */}
           <div className="grid grid-cols-1 gap-4 md:hidden">
             {envelopes.map((envelope, index) => (
               <div

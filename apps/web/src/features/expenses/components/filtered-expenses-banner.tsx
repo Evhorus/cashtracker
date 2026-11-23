@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Button } from "@/shared/components/ui/button";
 
 interface FilterChip {
@@ -8,7 +9,6 @@ interface FilterChip {
   label: string;
   /** Null for "no payment method" (dashed dot), undefined for no dot. */
   color?: string | null;
-  /** The same page with only this filter removed. */
   removeHref: string;
 }
 
@@ -16,16 +16,9 @@ interface FilteredExpensesBannerProps {
   shown: number;
   total: number;
   chips: FilterChip[];
-  /** The same page without any filter. */
   clearHref: string;
 }
 
-/**
- * Says, right above the list, what is filtered - each filter a chip
- * that removes it - and how many of the envelope's expenses that
- * leaves. The filtered total lives in the summary card beside it, so it
- * is not repeated here.
- */
 export function FilteredExpensesBanner({
   shown,
   total,
@@ -39,10 +32,7 @@ export function FilteredExpensesBanner({
       aria-label={t("label")}
       className="mb-4 rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 sm:px-4 sm:py-3"
     >
-      {/* The count and the clear-all on one line, the chips beneath
-          with the full width. On phones the clear is icon-only and the
-          chips scroll sideways on one line - wrapping them took three
-          rows for three payment methods. */}
+      {/* Chips scroll horizontally on mobile to avoid multi-row wrapping. */}
       <div className="flex min-w-0 items-center justify-between gap-2">
         <p className="shrink-0 text-xs font-medium sm:text-sm">
           {t("showing", { shown, total })}

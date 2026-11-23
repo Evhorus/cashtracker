@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+
 import { Input } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/utils";
 
@@ -6,18 +7,11 @@ interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  /** Required, not optional - a bare icon+input with no accessible name
-   * is the one thing every caller of this needs to get right themselves,
-   * so there's no silent fallback here. */
+  /** Required so callers provide an accessible name for the icon-only input. */
   "aria-label": string;
   className?: string;
 }
 
-// The icon-in-input shell every list/table search box in the app uses
-// (envelopes, categories, ...) - previously copy-pasted at each call
-// site. Purely presentational: how the value round-trips (a debounced
-// URL param, plain local state, ...) stays with the caller, since that
-// genuinely differs per list - only the markup was identical.
 export function SearchInput({
   value,
   onChange,

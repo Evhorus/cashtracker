@@ -1,48 +1,31 @@
 import { z } from "zod";
 
 export const DashboardChartEntrySchema = z.object({
-  /** "YYYY-MM". The API used to send a formatted Spanish month name
-   * here; formatting it is the client's job now - see
-   * statistics/page.tsx. */
+  /** "YYYY-MM" key formatted client-side. */
   month: z.string(),
   spent: z.number(),
 });
 
-// Loose z.string() for currency, not the strict CurrencyCode enum -
-// same convention as EnvelopeAPIResponseSchema (envelope.schema.ts):
-// this is the network-boundary shape, the domain side narrows it (see
-// dashboard/page.tsx and statistics/page.tsx, which cast to
-// CurrencyCode when mapping `totals`).
+// Loose currency string at the network boundary; narrowed to CurrencyCode in domain mapping.
 export const DashboardCurrencyTotalsSchema = z.object({
   currency: z.string(),
   totalEnvelopes: z.number(),
   totalAssigned: z.number(),
-  // Every envelope in this currency, capped or not - not the number to
-  // compare against totalAssigned/totalAvailable (see totalSpentCapped).
+  // Includes both capped and uncapped envelopes; compare budgets against totalSpentCapped.
   totalSpent: z.number(),
-  // The portion of totalSpent that actually counts against
-  // totalAssigned (capped envelopes only) - totalAvailable is derived
-  // from this, not totalSpent. Use this alongside totalAssigned/
-  // totalAvailable; totalSpent - totalSpentCapped is what an unlimited
-  // envelope spent, shown separately since it's not part of any budget.
+  // Spend within capped envelopes only (basis for totalAvailable).
   totalSpentCapped: z.number(),
-  // What is left in capped envelopes still under their limit - never
-  // negative. Overspend is reported apart, in totalExceeded.
+  // Remaining balance in under-limit capped envelopes (never negative; overspend is in totalExceeded).
   totalAvailable: z.number(),
   totalExceeded: z.number(),
 });
 
 export const DashboardSummaryAPIResponseSchema = z.object({
   totalEnvelopes: z.number(),
-  // One entry per currency the user has envelopes in - money in
-  // different currencies is never one unit, so the backend no longer
-  // flattens totalAssigned/totalSpent/totalAvailable into a single
-  // number the way it used to.
+  // Per-currency totals; amounts in different currencies are never summed together.
   totals: z.array(DashboardCurrencyTotalsSchema),
   chart: z.array(DashboardChartEntrySchema),
-  // Which currency `chart` is actually scoped to - null only when the
-  // user has no envelopes at all. Loose z.string() for the same reason
-  // as DashboardCurrencyTotalsSchema's currency above.
+  // Null only when the user has no envelopes.
   chartCurrency: z.string().nullable(),
   availableYears: z.array(z.number()),
 });
@@ -51,12 +34,7 @@ export type DashboardSummary = z.infer<
   typeof DashboardSummaryAPIResponseSchema
 >;
 
-// The "Actividad reciente" widget on Resumen - most recent expenses
-// across every envelope, not scoped to one. Separate from
-// ExpenseAPIResponseSchema (expenses.schema.ts): this is a
-// cross-envelope reporting shape (envelopeId/envelopeName instead of a
-// route param), amount already a number (the backend's own aggregate,
-// not a pass-through of the decimal column's string form).
+// Cross-envelope recent expenses aggregate (amount is numeric, unlike raw ExpenseAPIResponseSchema).
 export const DashboardRecentExpenseAPISchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -75,12 +53,7 @@ export type DashboardRecentExpenseApi = z.infer<
   typeof DashboardRecentExpenseAPISchema
 >;
 
-// The filters shared by all four "breakdown" endpoints below - a period
-// (an exact startDate/endDate range, or a whole `year`, or neither for
-// all-time) plus the currency they're scoped to. Picking a range clears
-// `year` and vice versa (see date-range-filter.tsx/year-filter-select.tsx),
-// so the two are never both set from this app's own UI, but the shape
-// allows either.
+// Shared breakdown filters; UI keeps startDate/endDate and year mutually exclusive.
 export interface DashboardBreakdownFilters {
   currency: string;
   year?: number;
@@ -88,12 +61,7 @@ export interface DashboardBreakdownFilters {
   endDate?: string;
 }
 
-// GET /dashboard/category-breakdown - spending grouped by category for
-// one currency/period, aggregated in SQL from each matching expense's
-// own date (not the envelope's creation date - see the backend's
-// DashboardRepository.withUserCurrencyAndDateRange). Grouped by the
-// category itself now that envelopes reference it by id, so one
-// category is one row and the client has nothing left to merge.
+// GET /dashboard/category-breakdown (grouped by category id and expense date).
 export const DashboardCategoryBreakdownRowSchema = z.object({
   category: z
     .object({
@@ -115,15 +83,13 @@ export type DashboardCategoryBreakdownRow = z.infer<
   typeof DashboardCategoryBreakdownRowSchema
 >;
 
-// GET /dashboard/envelope-breakdown - same aggregation, grouped by
-// envelope instead of category.
+// GET /dashboard/envelope-breakdown
 export const DashboardEnvelopeBreakdownRowSchema = z.object({
   envelopeId: z.string(),
   envelopeName: z.string(),
   spent: z.number(),
   expenseCount: z.number(),
-  // Span of those expenses ("YYYY-MM-DD"): envelopes can share a name.
-  // Optional for a backend from before it was reported.
+  // Expense date span ("YYYY-MM-DD") to disambiguate envelopes sharing a name.
   firstExpenseDate: z.string().optional(),
   lastExpenseDate: z.string().optional(),
 });
@@ -136,9 +102,7 @@ export type DashboardEnvelopeBreakdownRow = z.infer<
   typeof DashboardEnvelopeBreakdownRowSchema
 >;
 
-// GET /dashboard/name-breakdown - same aggregation, grouped by the
-// expense's own (already-normalized) name - surfaces recurring expenses
-// like "Arriendo" as a single total instead of one row per month.
+// GET /dashboard/name-breakdown (grouped by normalized expense name).
 export const DashboardNameBreakdownRowSchema = z.object({
   name: z.string(),
   spent: z.number(),
@@ -153,8 +117,7 @@ export type DashboardNameBreakdownRow = z.infer<
   typeof DashboardNameBreakdownRowSchema
 >;
 
-// GET /dashboard/breakdown-total - the same set of expenses the three
-// breakdowns above group differently, collapsed to one number.
+// GET /dashboard/breakdown-total
 export const DashboardBreakdownTotalAPIResponseSchema = z.object({
   spent: z.number(),
   expenseCount: z.number(),

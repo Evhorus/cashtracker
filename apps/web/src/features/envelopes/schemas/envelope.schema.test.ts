@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { buildEnvelopeFormSchema } from "./envelope.schema";
 import type { ValidationTranslator } from "@/shared/lib/validation";
+import { buildEnvelopeFormSchema } from "./envelope.schema";
 
 /** Returns the key, so an assertion reads as the key it used. */
 const t = ((key: string) => key) as unknown as ValidationTranslator;

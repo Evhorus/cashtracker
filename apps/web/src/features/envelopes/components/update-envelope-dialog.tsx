@@ -1,26 +1,22 @@
 "use client";
-import { CardActionButton } from "@/shared/components/common/card-action-button";
-import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
+import { useState } from "react";
 import { Edit } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { EnvelopeForm } from "./envelope-form";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+
+import { updateEnvelopeAction } from "@/features/envelopes/actions/update-envelope.action";
 import { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
 import { EditableEnvelope } from "@/features/envelopes/types";
-import { updateEnvelopeAction } from "@/features/envelopes/actions/update-envelope.action";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
+import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { EnvelopeForm } from "./envelope-form";
 
 interface UpdateEnvelopeDialogProps {
   envelope: EditableEnvelope;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Override the default trigger's a11y label (envelopes.editAria) -
-   * the envelope detail page passes the shorter common.edit since
-   * there's only one edit button on that page, no ambiguity to
-   * resolve. */
+  /** Overrides the default trigger aria-label (e.g. shorter label on the detail page). */
   label?: string;
-  /** See CardActionButton - only the envelope detail page's header
-   * turns this on. */
   showLabelOnDesktop?: boolean;
 }
 
@@ -75,18 +71,12 @@ export const UpdateEnvelopeDialog = ({
           name: envelope.name,
           hasLimit: envelope.amount !== null,
           amount: envelope.amount ?? "",
-          // Missing before: EnvelopeForm's own default is "COP", so
-          // editing any non-COP envelope silently pre-selected the
-          // wrong currency in the dropdown - saving without manually
-          // re-picking the right one would have overwritten the
-          // envelope's real currency with COP.
+          // Must pass envelope.currency explicitly; EnvelopeForm defaults to "COP".
           currency: envelope.currency,
           categoryId: envelope.category?.id ?? "",
         }}
         isLoading={isPending}
-        // spent is the exact sum of the envelope's expenses, so it is a
-        // reliable "has expenses" signal even where the list endpoint
-        // doesn't send the expenses themselves.
+        // Lock currency when the envelope already has expenses (spent > 0).
         isCurrencyLocked={Number(envelope.spent) > 0}
         onSubmit={handleUpdate}
         onCloseDialog={() => setOpen(false)}

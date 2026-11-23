@@ -1,38 +1,23 @@
 "use client";
-import { deleteEnvelopeAction } from "@/features/envelopes/actions/delete-envelope.action";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/components/ui/alert-dialog";
-import { Input } from "@/shared/components/ui/input";
-import { CardActionButton } from "@/shared/components/common/card-action-button";
-import { Text } from "@/shared/components/common/typography";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
-import { Loader2, Trash2 } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { deleteEnvelopeAction } from "@/features/envelopes/actions/delete-envelope.action";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { ConfirmDeleteDialog } from "@/shared/components/common/confirm-delete-dialog";
+import { Text } from "@/shared/components/common/typography";
+import { Input } from "@/shared/components/ui/input";
+import { useActionDialog } from "@/shared/hooks/useActionDialog";
 
 interface DeleteEnvelopeAlertDialogProps {
   id: string;
   name: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Override the default trigger's a11y label (envelopes.deleteAria) -
-   * the envelope detail page passes the shorter common.delete since
-   * there's only one delete button on that page, no ambiguity to
-   * resolve. */
   label?: string;
-  /** See CardActionButton - only the envelope detail page's header
-   * turns this on. */
   showLabelOnDesktop?: boolean;
 }
 
@@ -54,9 +39,7 @@ export const DeleteEnvelopeAlertDialog = ({
   const open = isControlled ? controlledOpen : internalOpen;
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) {
-      setInputValue("");
-    }
+    if (!nextOpen) setInputValue("");
     if (isControlled) {
       setControlledOpen?.(nextOpen);
     } else {
@@ -66,10 +49,7 @@ export const DeleteEnvelopeAlertDialog = ({
 
   const { dispatch, isPending } = useActionDialog(
     deleteEnvelopeAction,
-    {
-      errors: [],
-      success: "",
-    },
+    { errors: [], success: "" },
     {
       setOpen: handleOpenChange,
       onSuccess: () => {
@@ -80,64 +60,44 @@ export const DeleteEnvelopeAlertDialog = ({
     },
   );
 
-  const handleDeleteEnvelope = async () => {
-    dispatch(id);
-  };
-
-  const Content = (
-    <div className="my-2 space-y-2">
-      <Text>
-        {t.rich("deleteDialog.confirmPrompt", {
-          name: () => <span className="font-bold text-foreground">{name}</span>,
-        })}
-      </Text>
-      <Input
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder={t("deleteDialog.namePlaceholder")}
-        className="col-span-3"
-        autoComplete="off"
-      />
-    </div>
-  );
-
   return (
-    <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      {!isControlled && (
-        <AlertDialogTrigger
-          render={
-            <CardActionButton
-              icon={Trash2}
-              label={label ?? t("deleteAria")}
-              tone="destructive"
-              showLabelOnDesktop={showLabelOnDesktop}
-            />
-          }
+    <ConfirmDeleteDialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      title={t("deleteDialog.title")}
+      description={t("deleteDialog.description")}
+      confirmLabel={tCommon("delete")}
+      cancelLabel={tCommon("cancel")}
+      isPending={isPending}
+      confirmDisabled={inputValue !== name}
+      onConfirm={() => dispatch(id)}
+      trigger={
+        isControlled ? undefined : (
+          <CardActionButton
+            icon={Trash2}
+            label={label ?? t("deleteAria")}
+            tone="destructive"
+            showLabelOnDesktop={showLabelOnDesktop}
+          />
+        )
+      }
+    >
+      <div className="my-2 space-y-2">
+        <Text>
+          {t.rich("deleteDialog.confirmPrompt", {
+            name: () => (
+              <span className="font-bold text-foreground">{name}</span>
+            ),
+          })}
+        </Text>
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder={t("deleteDialog.namePlaceholder")}
+          className="col-span-3"
+          autoComplete="off"
         />
-      )}
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("deleteDialog.description")}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        {Content}
-        <AlertDialogFooter>
-          <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
-          <AlertDialogAction
-            className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 sm:w-auto"
-            onClick={(e) => {
-              e.preventDefault();
-              handleDeleteEnvelope();
-            }}
-            disabled={isPending || inputValue !== name}
-          >
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {tCommon("delete")}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      </div>
+    </ConfirmDeleteDialog>
   );
 };

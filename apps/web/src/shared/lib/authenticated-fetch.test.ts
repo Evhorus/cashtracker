@@ -13,7 +13,9 @@ vi.mock("@/shared/config/env.server", () => ({
 vi.mock("@clerk/nextjs/server", () => {
   const auth = Object.assign(
     vi.fn(async () => ({ getToken: async () => "token-1" })),
-    { protect: vi.fn(async () => undefined) },
+    {
+      protect: vi.fn(async () => ({ getToken: async () => "token-1" })),
+    },
   );
   return { auth };
 });

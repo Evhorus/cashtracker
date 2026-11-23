@@ -1,11 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Controller, useForm } from "react-hook-form";
 
+import { ErrorMessage } from "@/shared/components/common/error-message";
+import { FormInput } from "@/shared/components/common/form-input";
+import { OtpInput } from "@/shared/components/common/otp-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -16,10 +20,6 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
-import { ErrorMessage } from "@/shared/components/common/error-message";
-import { FormInput } from "@/shared/components/common/form-input";
-import { OtpInput } from "@/shared/components/common/otp-input";
-import { SubmitButton } from "@/shared/components/common/submit-button";
 import { useReverificationFlow } from "../hooks/use-reverification-flow";
 import {
   type ReverificationCodeFormValues,
@@ -35,12 +35,7 @@ interface ReverificationDialogProps {
   onSuccess: () => void;
 }
 
-// Our own UI for Clerk's reverification flow, instead of the modal
-// useReverification() shows by default - see point 1 of
-// docs/pending-account-reverification-and-sessions-ui.md. Rendered once by
-// ReverificationProvider; all the actual Clerk calls live in
-// useReverificationFlow, this component only renders whatever that hook
-// says the account needs right now.
+// Custom UI for Clerk's reverification flow (replaces Clerk's default modal); Clerk calls live in useReverificationFlow.
 export function ReverificationDialog({
   request,
   onOpenChange,
@@ -70,9 +65,7 @@ export function ReverificationDialog({
     defaultValues: { code: "" },
   });
 
-  // A fresh request always starts from a clean slate - without this, a
-  // second reverification later in the session would reopen showing
-  // whatever the previous attempt left behind.
+  // Reset forms on each new request so stale state from a previous reverification doesn't carry over.
   useEffect(() => {
     passwordForm.reset();
     codeForm.reset();
@@ -186,9 +179,7 @@ export function ReverificationDialog({
           </form>
         )}
 
-        {/* No factor and no longer preparing - startVerification came back
-            with nothing this dialog knows how to collect (see
-            use-reverification-flow.ts). Still needs a way out. */}
+        {/* Fallback footer when startVerification returns no supported factor. */}
         {!isPreparing && !factor && globalErrors.length > 0 && (
           <DialogFooter>
             <Button

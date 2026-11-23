@@ -3,18 +3,11 @@ import type { ExpensePaymentMethod } from "../types";
 
 interface PaymentMethodBadgeProps {
   method: ExpensePaymentMethod;
-  /** `pill` sits on its own (expense detail); `inline` runs within a
-   * line of text (list rows). */
+  /** "pill" for standalone display (detail page); "inline" for list rows. */
   variant?: "inline" | "pill";
   className?: string;
 }
 
-/**
- * What an expense was paid with, at a glance: the method's colour dot
- * and its name. The colour is what makes a scanned list readable - one
- * card's expenses share it - and the name keeps it from depending on
- * colour alone.
- */
 export function PaymentMethodBadge({
   method,
   variant = "inline",

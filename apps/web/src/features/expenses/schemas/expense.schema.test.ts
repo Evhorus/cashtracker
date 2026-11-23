@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { buildExpenseSchema } from "./expense.schema";
-import type { ExpenseFormValues } from "./expense.schema";
 import { MAX_AMOUNT } from "@/shared/lib/validation";
 import type { ValidationTranslator } from "@/shared/lib/validation";
+import { buildExpenseSchema } from "./expense.schema";
+import type { ExpenseFormValues } from "./expense.schema";
 
 /**
  * The decimal(12, 2) ceiling on an expense amount.
@@ -74,5 +74,21 @@ describe("the amount floor", () => {
 
   it("accepts the smallest positive amount", () => {
     expect(schema.safeParse(form({ amount: "0.01" })).success).toBe(true);
+  });
+
+  it("rejects amounts with more than two decimal places", () => {
+    const result = schema.safeParse(form({ amount: "10.125" }));
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("amountMaxDecimals");
+  });
+
+  it("rejects whitespace-only names and trims surrounding spaces", () => {
+    const blank = schema.safeParse(form({ name: "   " }));
+    expect(blank.success).toBe(false);
+    expect(blank.error?.issues[0]?.message).toBe("notOnlySpaces");
+
+    const trimmed = schema.safeParse(form({ name: "  Mercado  " }));
+    expect(trimmed.success).toBe(true);
+    if (trimmed.success) expect(trimmed.data.name).toBe("Mercado");
   });
 });

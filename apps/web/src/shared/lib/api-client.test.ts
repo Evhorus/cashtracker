@@ -131,9 +131,6 @@ describe("HTTP errors", () => {
   });
 
   it("prefers the API's own message over the status text", async () => {
-    // This is what reaches the user through createSafeAction, so a
-    // generic "Error" instead of the backend's reason is a real
-    // downgrade.
     mockFetch.mockResolvedValue(
       respond({ message: "property status should not exist" }, { status: 400 }),
     );
@@ -141,6 +138,25 @@ describe("HTTP errors", () => {
     await expect(fetchApi("/envelopes")).rejects.toThrow(
       "property status should not exist",
     );
+  });
+
+  it("joins NestJS ValidationPipe array messages with '. '", async () => {
+    mockFetch.mockResolvedValue(
+      respond(
+        { message: ["name should not be empty", "amount must be positive"] },
+        { status: 400 },
+      ),
+    );
+
+    await expect(fetchApi("/envelopes")).rejects.toThrow(
+      "name should not be empty. amount must be positive",
+    );
+  });
+
+  it("falls back to status text when message array is empty", async () => {
+    mockFetch.mockResolvedValue(respond({ message: [] }, { status: 400 }));
+
+    await expect(fetchApi("/envelopes")).rejects.toThrow("Error");
   });
 
   it("falls back to the status text when there is no message", async () => {

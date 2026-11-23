@@ -32,22 +32,6 @@ function envelope(amount: string | null): Envelope {
   };
 }
 
-describe("getTotalAmount", () => {
-  it("sums decimal-string amounts", () => {
-    expect(
-      ExpenseHelpers.getTotalAmount([
-        expense("100.50"),
-        expense("200.25"),
-        expense("0.25"),
-      ]),
-    ).toBe(301);
-  });
-
-  it("is zero for an empty list", () => {
-    expect(ExpenseHelpers.getTotalAmount([])).toBe(0);
-  });
-});
-
 describe("getImpactPercentage", () => {
   it("is the share of the envelope's limit", () => {
     expect(
@@ -56,10 +40,17 @@ describe("getImpactPercentage", () => {
   });
 
   it("is null for an unlimited envelope", () => {
-    // There is no limit to be a percentage of - the UI shows a
-    // "sin límite" block instead of a fabricated 0%.
     expect(
       ExpenseHelpers.getImpactPercentage(expense("250"), envelope(null)),
+    ).toBeNull();
+  });
+
+  it("is null when the envelope limit is zero or negative", () => {
+    expect(
+      ExpenseHelpers.getImpactPercentage(expense("250"), envelope("0")),
+    ).toBeNull();
+    expect(
+      ExpenseHelpers.getImpactPercentage(expense("250"), envelope("-100")),
     ).toBeNull();
   });
 

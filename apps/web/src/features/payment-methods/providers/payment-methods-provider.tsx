@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, use } from "react";
+
 import type { PaymentMethod } from "../types";
 
 const PaymentMethodsContext = createContext<Promise<PaymentMethod[]> | null>(

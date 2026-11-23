@@ -7,8 +7,6 @@ export const PAYMENT_METHOD_TYPES = [
 
 export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
 
-/** What an expense was paid with. Owned by one user, optional on every
- * expense - independent of how envelopes are organised. */
 export interface PaymentMethod {
   id: string;
   name: string;
@@ -19,5 +17,4 @@ export interface PaymentMethod {
   cutDay: number | null;
 }
 
-/** The slice of a payment method embedded in an expense. */
 export type ExpensePaymentMethod = Pick<PaymentMethod, "id" | "name" | "color">;

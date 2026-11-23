@@ -1,21 +1,22 @@
 import { useTranslations } from "next-intl";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/shared/components/ui/tabs";
+
 import { CategoryBreakdown } from "@/features/categories/components/category-breakdown";
-import { EnvelopeBreakdown } from "./envelope-breakdown";
-import { ExpenseNameBreakdown } from "./expense-name-breakdown";
-import { BreakdownTotal } from "./breakdown-total";
 import type {
   DashboardCategoryBreakdownRow,
   DashboardEnvelopeBreakdownRow,
   DashboardNameBreakdownRow,
   DashboardBreakdownTotal as DashboardBreakdownTotalRow,
 } from "@/features/dashboard/schemas/dashboard.schema";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/shared/components/ui/tabs";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { BreakdownTotal } from "./breakdown-total";
+import { EnvelopeBreakdown } from "./envelope-breakdown";
+import { ExpenseNameBreakdown } from "./expense-name-breakdown";
 
 interface BreakdownTabsProps {
   categoryRows: DashboardCategoryBreakdownRow[];
@@ -25,11 +26,7 @@ interface BreakdownTabsProps {
   currency: CurrencyCode;
 }
 
-// One card, four views of the same underlying set of expenses - all
-// four already fetched by the caller (BreakdownSection in
-// statistics/page.tsx), so switching tabs is instant, client-side, and
-// needs no extra fetch. Tabs/TabsList/etc. carry their own "use client"
-// (components/ui/tabs.tsx), so this component itself doesn't need one.
+// Server component: tab primitives own "use client", and all four datasets are pre-fetched by the caller.
 export function BreakdownTabs({
   categoryRows,
   envelopeRows,

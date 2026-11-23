@@ -1,41 +1,22 @@
 import type { LucideIcon } from "lucide-react";
-import { Card } from "@/shared/components/ui/card";
+
 import { Heading, Text } from "@/shared/components/common/typography";
+import { Card } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/utils";
 
 interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  /**
-   * "filtered" (the default) is the "nothing matches this search/filter"
-   * case: compact, no call to action, because the fix is to change the
-   * filter and a CTA would only distract. "first-run" is the "you have
-   * none of these yet" case: taller, serif heading, and the place an
-   * `action` belongs.
-   */
+  /** "filtered" (default): compact, no CTA. "first-run": taller, serif heading, optional CTA. */
   variant?: "filtered" | "first-run";
-  /** Small all-caps line above the title. first-run only. */
+  /** Small all-caps line above the title (first-run only). */
   eyebrow?: string;
-  /** A CTA - meaningful for "first-run", not for "no results". */
+  /** CTA button (for "first-run", not "filtered"). */
   action?: React.ReactNode;
   className?: string;
 }
 
-/**
- * The shared shape for every empty list/section in the app. The card,
- * the tinted icon circle, the heading and the copy were copy-pasted at
- * five call sites (the envelopes grid's two states, the expenses list,
- * the categories table, Resumen's first run), which is how they drifted:
- * some had a CTA and some didn't, the headings were hand-styled
- * `text-xl font-semibold` rather than going through Heading, and only
- * the envelopes grid distinguished "no results" from "none yet" at all.
- *
- * Keeps the distinction that actually matters and was easy to forget: a
- * filtered-to-nothing list must not read as an empty account, and must
- * not offer a "create your first one" CTA that wouldn't help someone
- * whose search simply didn't match.
- */
 export function EmptyState({
   icon: Icon,
   title,

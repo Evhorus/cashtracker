@@ -1,36 +1,21 @@
 /**
- * Pure calendar math for the statistics page's period-shortcut filter
- * (Mes/Trimestre/Cuatrimestre/Semestre) - turns "give me every quarter
- * across these years" into the exact startDate/endDate pairs
- * DateRangeFilter already sends the backend, without the user having to
- * click through a calendar. No React, no fetching, so it's testable on
- * its own (see period-ranges.test.ts) the same way dashboard-summary.ts
- * is.
- *
- * Dates are computed directly as UTC year/month/day components, the
- * same anchor `parseCalendarDate` (date-helpers.ts) uses for values
- * that cross the server/client boundary - there's no real instant here
- * to convert, just a calendar boundary, so UTC math is unambiguous
- * regardless of which runtime builds it.
+ * Pure UTC calendar math for statistics period shortcuts (month/quarter/fourMonth/semester),
+ * matching `parseCalendarDate`'s UTC anchor across server/client runtimes.
  */
 
 export type PeriodType = "month" | "quarter" | "fourMonth" | "semester";
 
 export interface PeriodInstance {
-  /** Stable key for the URL (`periodValue`) and for re-finding this
-   * instance in a freshly computed list on the next render. */
+  /** Stable URL key (`periodValue`). */
   value: string;
-  /** "YYYY-MM" of the period's first/last month - feeds
-   * `formatMonthKey` (date-helpers.ts) for the display label. */
+  /** "YYYY-MM" bounds for `formatMonthKey`. */
   startMonthKey: string;
   endMonthKey: string;
-  /** "yyyy-MM-dd", ready for the startDate/endDate query params. */
+  /** "yyyy-MM-dd" bounds for query params. */
   startDate: string;
   endDate: string;
 }
 
-/** How many calendar months each period type spans, and the value's
- * one-letter/word prefix (month uses the "YYYY-MM" key itself instead). */
 const PERIOD_SPANS: Record<
   Exclude<PeriodType, "month">,
   { months: number; prefix: string }
@@ -48,9 +33,7 @@ function monthKey(year: number, month0: number): string {
   return `${year}-${pad2(month0 + 1)}`;
 }
 
-/** Last day of the given UTC month, as "yyyy-MM-dd" - day 0 of the
- * *next* month rolls back to the last day of this one, leap years
- * included, without a date library. */
+/** Last day of the UTC month as "yyyy-MM-dd" (day 0 of next month handles leap years). */
 function lastDayOfMonth(year: number, month0: number): string {
   const date = new Date(Date.UTC(year, month0 + 1, 0));
   return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}`;
@@ -60,16 +43,7 @@ function firstDayOfMonth(year: number, month0: number): string {
   return `${year}-${pad2(month0 + 1)}-01`;
 }
 
-/**
- * Every instance of `type` across `years`, in calendar order - oldest
- * year first and, within a year, earliest period first - so a dropdown
- * built from this reads top-to-bottom the way a timeline does ("de
- * donde inicia hasta donde termina"), not newest-first. Every year in
- * `years` gets the full set of periods regardless of whether they've
- * happened yet or have any data - same as the calendar's exact-range
- * picker already lets you pick any date, dated or not (see
- * date-range-filter.tsx).
- */
+/** Returns all periods of `type` across `years` in ascending chronological order. */
 export function getPeriodInstances(
   type: PeriodType,
   years: number[],
@@ -106,16 +80,7 @@ export function getPeriodInstances(
   );
 }
 
-/**
- * Instances that overlap ["yyyy-MM-dd" `rangeStart`, `rangeEnd`] -
- * keeps a period-type dropdown limited to what a hand-picked
- * DateRangeFilter range actually covers, instead of every period across
- * every year that range's endpoints happen to fall in. A range starting
- * 1 Jul only overlaps the second half of that year onward - "ene - jun"
- * of the same year never happened as far as the marked range is
- * concerned, so it's dropped; a period the range only partially
- * overlaps (its last day, say) still counts and is kept.
- */
+/** Keeps instances that at least partially overlap `[rangeStart, rangeEnd]`. */
 export function filterInstancesInRange(
   instances: PeriodInstance[],
   rangeStart: string,
@@ -127,16 +92,7 @@ export function filterInstancesInRange(
   );
 }
 
-/**
- * Whether `type` has at least one instance that fits entirely inside
- * ["yyyy-MM-dd" `rangeStart`, `rangeEnd`] - stricter than
- * filterInstancesInRange's overlap test, and what decides whether a
- * period *type* is worth offering at all for a marked range. A 2-month
- * mark (1 Jul - 1 Sep) can't fit a calendar quarter (3 months) no
- * matter which one - every quarter would spill past the mark - so
- * "Trimestre" has nothing legible to offer there, even though "Mes"
- * (August fits) does.
- */
+/** Returns true if at least one full instance of `type` fits inside `[rangeStart, rangeEnd]`. */
 export function typeFitsWithinRange(
   type: PeriodType,
   years: number[],
@@ -149,8 +105,7 @@ export function typeFitsWithinRange(
   );
 }
 
-/** Same containment test as typeFitsWithinRange, for the whole-year
- * shortcut (which isn't a PeriodType/getPeriodInstances entry). */
+/** Returns true if the full calendar year fits inside `[rangeStart, rangeEnd]`. */
 export function yearFitsWithinRange(
   year: number,
   rangeStart: string,

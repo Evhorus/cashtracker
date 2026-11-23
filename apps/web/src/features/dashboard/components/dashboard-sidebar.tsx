@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-import { cn } from "@/shared/lib/utils";
+import { AccountMenu } from "@/features/account/components/account-menu";
+import { useAccountUser } from "@/features/account/hooks/use-account-user";
 import { MAIN_NAV_ITEMS } from "@/features/dashboard/constants/nav-items";
 import { Logo } from "@/shared/components/common/logo";
 import {
@@ -13,15 +14,9 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
-import { AccountMenu } from "@/features/account/components/account-menu";
-import { useAccountUser } from "@/features/account/hooks/use-account-user";
+import { cn } from "@/shared/lib/utils";
 
-// Desktop-only persistent nav shell (see dashboard/layout.tsx). Replaces
-// custom-header.tsx's pill-nav on desktop entirely - that header is now
-// md:hidden, mobile-only, since this covers branding/nav/theme/account for
-// desktop instead. CustomHeader sits above the content column at every
-// breakpoint and carries the theme/language toggles; mobile also keeps
-// MobileNav for the bottom tab bar.
+// Desktop-only persistent nav shell (md:flex); mobile uses CustomHeader and MobileNav.
 export function DashboardSidebar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -29,9 +24,6 @@ export function DashboardSidebar() {
 
   return (
     <aside className="hidden h-full w-62 shrink-0 flex-col border-r border-border/60 bg-card/30 p-4 md:flex">
-      {/* Logo only. The theme and language toggles moved to
-          CustomHeader - they are app-wide chrome, and three controls in
-          a 248px row was tight. */}
       <div className="px-2">
         <Logo href="/dashboard" />
       </div>

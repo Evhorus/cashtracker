@@ -9,9 +9,6 @@ export type ActionState<T = unknown> = {
   success?: string;
 };
 
-/**
- * Creates a safe Server Action that automatically catches errors and formats the response.
- */
 export function createSafeAction<TPayload, TResult>(
   handler: (
     payload: TPayload,
@@ -42,9 +39,6 @@ export function createSafeAction<TPayload, TResult>(
         };
       }
 
-      // Translated here rather than at the call site: every action
-      // funnels through this one fallback, and it runs on the server
-      // where getTranslations is available.
       const t = await getTranslations("errors");
       return {
         errors: [t("unexpected")],

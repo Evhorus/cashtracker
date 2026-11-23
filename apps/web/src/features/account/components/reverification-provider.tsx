@@ -10,14 +10,7 @@ interface ReverificationProviderProps {
   children: React.ReactNode;
 }
 
-/**
- * Mounted once in account-view.tsx, above every section that can trigger
- * Clerk reverification (password change, account deletion, connecting a
- * new OAuth provider). Owns the one pending request at a time and renders
- * the single shared ReverificationDialog for it, instead of each of those
- * 3 sections owning its own copy - see use-reverification-gate.ts for how
- * they reach this.
- */
+/** Owns the single pending Clerk reverification request and shared ReverificationDialog for AccountView. */
 export function ReverificationProvider({
   children,
 }: ReverificationProviderProps) {
@@ -30,20 +23,12 @@ export function ReverificationProvider({
     [],
   );
 
-  // Stable identity - it's a dependency of useReverificationFlow's own
-  // effect (via ReverificationDialog), so a fresh function every render
-  // would re-run that effect (and re-call session.startVerification) any
-  // time this provider re-renders for an unrelated reason. That makes
-  // this (and openReverificationDialog above) correctness rather than
-  // performance, so both stay explicit even with the React Compiler
-  // enabled - don't "clean them up" as redundant memoization.
+  // Keep explicit useCallback even with React Compiler: unstable identity re-triggers session.startVerification in useReverificationFlow.
   const handleSuccess = useCallback(() => setRequest(null), []);
 
   function handleOpenChange(open: boolean) {
     if (open) return;
-    // Any close that isn't the success path above is a cancellation - Esc,
-    // a backdrop click, or the dialog's own Cancel button all funnel
-    // through Base UI's onOpenChange(false).
+    // Any non-success close (Esc, backdrop, Cancel) cancels the pending reverification.
     request?.cancel();
     setRequest(null);
   }

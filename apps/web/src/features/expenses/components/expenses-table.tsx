@@ -1,11 +1,11 @@
-import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Edit, Trash2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import { Expense } from "@/features/expenses/types";
-import { formatCalendarDateShort } from "@/shared/utils/date-helpers";
 import { PaymentMethodBadge } from "@/features/payment-methods/components/payment-method-badge";
-import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
 import {
   Table,
   TableBody,
@@ -14,8 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
-import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { formatCalendarDateShort } from "@/shared/utils/date-helpers";
+import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
+import type { CurrencyCode } from "@/shared/utils/format-currency";
 
 interface ExpensesTableProps {
   expenses: Expense[];
@@ -25,13 +26,7 @@ interface ExpensesTableProps {
   onDelete: (expense: Expense) => void;
 }
 
-// Desktop-only (see expenses-list.tsx - the card list still covers
-// mobile). Same standard as EnvelopesTable/CategoriesTable: a dense
-// table instead of the same cards stretched wider - this list didn't
-// have one yet even though it's the exact same "many rows, scanned at
-// once" shape those two already got a table for. Built on the shadcn
-// Table primitives, styled to match those two (rounded-2xl border card,
-// uppercase header, px-5 py-3.5 cells) rather than a one-off.
+// Desktop-only table; mobile renders ExpenseCard in expenses-list.tsx.
 export function ExpensesTable({
   expenses,
   envelopeId,
@@ -65,10 +60,7 @@ export function ExpensesTable({
           {expenses.map((expense) => (
             <TableRow key={expense.id} className="group border-border/60">
               <TableCell className="px-5 py-3.5">
-                {/* Name+avatar is the row's one link, same convention as
-                    EnvelopesTable's first cell - date/amount stay plain,
-                    selectable text instead of the whole row being a
-                    click target (see expense-card.tsx's own reasoning). */}
+                {/* Only name+avatar links to detail so date and amount stay selectable text. */}
                 <Link
                   href={`/dashboard/envelope/${envelopeId}/expenses/${expense.id}`}
                   className="flex min-w-0 items-center gap-3"
@@ -82,9 +74,6 @@ export function ExpensesTable({
                     <span className="block truncate font-medium hover:text-primary">
                       {expense.name}
                     </span>
-                    {/* Under the name, and only when there is one: a
-                        column of its own was mostly dashes for anyone
-                        who does not use payment methods. */}
                     {expense.paymentMethod && (
                       <PaymentMethodBadge
                         method={expense.paymentMethod}

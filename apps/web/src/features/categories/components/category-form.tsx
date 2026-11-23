@@ -1,13 +1,18 @@
 "use client";
-import { useIsDesktop } from "@/shared/hooks/use-media-query";
-import { useTranslations } from "next-intl";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { Check } from "lucide-react";
 
-import { Button } from "@/shared/components/ui/button";
-import { SubmitButton } from "@/shared/components/common/submit-button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import { Controller, useForm, useWatch } from "react-hook-form";
+
+import { useCategoryOptions } from "@/features/categories/providers/categories-provider";
+import {
+  buildCategoryFormSchema,
+  type CategoryFormValues,
+} from "@/features/categories/schemas/category.schema";
+import { ColorSwatchPicker } from "@/shared/components/common/color-swatch-picker";
 import { FormInput } from "@/shared/components/common/form-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
+import { Button } from "@/shared/components/ui/button";
 import {
   Field,
   FieldError,
@@ -15,13 +20,8 @@ import {
   FieldLabel,
   FieldSet,
 } from "@/shared/components/ui/field";
-import {
-  buildCategoryFormSchema,
-  CategoryFormValues,
-} from "@/features/categories/schemas/category.schema";
+import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import { CategoryIconPicker } from "./category-icon-picker";
-import { useCategoryOptions } from "@/features/categories/providers/categories-provider";
-import { cn } from "@/shared/lib/utils";
 
 interface CategoryFormProps {
   defaultValues?: Partial<CategoryFormValues>;
@@ -30,11 +30,6 @@ interface CategoryFormProps {
   onCloseDialog: () => void;
 }
 
-// Icon/color are curated choices (fetched from GET /categories/options -
-// see category.schema.ts for why that's not a hardcoded frontend
-// constant), not free-form input - keeps every category inside the
-// same visual system the original 9 predefined ones already followed.
-// Same Field/FormInput/Controller shape envelope-form.tsx uses.
 export const CategoryForm = ({
   defaultValues,
   isLoading,
@@ -58,9 +53,7 @@ export const CategoryForm = ({
 
   const color = useWatch({ control, name: "color" });
 
-  // Opened inside EnvelopeForm via CategoryPicker: stopPropagation keeps
-  // the nested React synthetic submit event from also submitting the
-  // parent envelope form through the dialog portal.
+  // Prevent portal submit events from bubbling into a parent EnvelopeForm.
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.stopPropagation();
     void handleSubmit(onSubmit)(event);
@@ -77,8 +70,6 @@ export const CategoryForm = ({
               label={t("name")}
               placeholder={t("namePlaceholder")}
               autoComplete="off"
-              // Desktop only: on a phone it opens the keyboard the moment the
-              // drawer appears, covering the form before anything is touched.
               autoFocus={isDesktop}
               disabled={isLoading}
             />
@@ -108,38 +99,19 @@ export const CategoryForm = ({
               name="color"
               render={({ field, fieldState }) => (
                 <Field>
-                  <FieldLabel htmlFor="color">{t("color")}</FieldLabel>
-                  <div
+                  <FieldLabel id="category-color-label">
+                    {t("color")}
+                  </FieldLabel>
+                  <ColorSwatchPicker
                     id="color"
-                    role="radiogroup"
-                    aria-invalid={fieldState.invalid}
-                    className="flex flex-wrap gap-2"
-                  >
-                    {colors.map((color) => {
-                      const selected = field.value === color;
-                      return (
-                        <button
-                          key={color}
-                          type="button"
-                          role="radio"
-                          aria-checked={selected}
-                          disabled={isLoading}
-                          onClick={() => field.onChange(color)}
-                          className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-transform",
-                            selected
-                              ? "scale-110 border-foreground/80"
-                              : "border-transparent",
-                          )}
-                          style={{ background: color }}
-                        >
-                          {selected && (
-                            <Check className="h-4 w-4 text-white drop-shadow" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                    colors={colors}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isLoading}
+                    ariaLabelPrefix={t("color")}
+                    ariaLabelledBy="category-color-label"
+                    ariaInvalid={fieldState.invalid}
+                  />
                   <FieldError errors={[fieldState.error]} />
                 </Field>
               )}

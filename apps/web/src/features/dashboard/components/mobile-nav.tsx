@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { cn } from "@/shared/lib/utils";
+import { useTranslations } from "next-intl";
+
 import { MAIN_NAV_ITEMS } from "@/features/dashboard/constants/nav-items";
+import { cn } from "@/shared/lib/utils";
 
 export const MobileNav = () => {
   const t = useTranslations("nav");

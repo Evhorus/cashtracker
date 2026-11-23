@@ -1,24 +1,18 @@
-import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { getLocale } from "next-intl/server";
-import { NextIntlClientProvider } from "next-intl";
-import { manrope, plexMono, sourceSerif } from "./fonts";
-import { Analytics } from "@vercel/analytics/next";
-import { Toaster } from "@/shared/components/ui/sonner";
-import { ThemeProvider } from "@/shared/providers/theme-provider";
-import { ScrollToTop } from "@/shared/components/common/scroll-to-top";
-import { env } from "@/shared/config/env.server";
-
 import "./globals.css";
 
-// App-wide defaults. Only (home)/page.tsx defined any metadata before,
-// so every other route - dashboard, sign-in, sign-up, the detail pages -
-// rendered with no <title> at all: browser tabs and bookmarks fell back
-// to the bare URL. `template` lets a route set just its own name and
-// still get the product name appended; `default` covers the routes that
-// set nothing.
-// metadataBase lives here rather than on the landing page so relative
-// OG/Twitter image URLs resolve on every route, not just "/".
+import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
+
+import { ScrollToTop } from "@/shared/components/common/scroll-to-top";
+import { Toaster } from "@/shared/components/ui/sonner";
+import { env } from "@/shared/config/env.server";
+import { ThemeProvider } from "@/shared/providers/theme-provider";
+import { manrope, plexMono, sourceSerif } from "./fonts";
+
+// App-wide metadata defaults and metadataBase so relative OG/Twitter URLs resolve on every route.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("home.meta");
 
@@ -33,18 +27,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// ClerkProvider intentionally lives in the (auth) and dashboard layouts
-// instead of here - the public marketing routes never render a signed-in
-// user, so they don't need Clerk's client bundle on the critical path.
-// See: https://clerk.com/docs/reference/nextjs/errors/auth-was-called
+// ClerkProvider lives in (auth) and dashboard layouts so public marketing routes omit Clerk's client bundle.
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // No `[locale]` route segment (see src/shared/config/i18n/request.ts) - the locale
-  // is resolved from a cookie server-side, so `<html lang>` has to ask
-  // for it explicitly rather than reading a route param.
+  // Locale is cookie-based (no [locale] route segment), so read it server-side for <html lang>.
   const locale = await getLocale();
 
   return (
@@ -53,10 +42,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${manrope.variable} ${sourceSerif.variable} ${plexMono.variable}`}
     >
-      {/* Font variables live on <html>, not <body>: globals.css's :root/.dark
-          blocks (which target html) reference them (--font-sans: var(--font-manrope), ...)
-          - defined one element lower, on body, they'd be invisible there and
-          --font-sans would resolve to nothing. */}
+      {/* Font CSS variables live on <html> so globals.css :root/.dark selectors can resolve them. */}
       <body className="antialiased">
         <ScrollToTop />
         <NextIntlClientProvider>

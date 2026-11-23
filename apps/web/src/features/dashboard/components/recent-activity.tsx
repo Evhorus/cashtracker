@@ -1,25 +1,18 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import { formatCalendarDateShort } from "@/shared/utils/date-helpers";
-import { cn } from "@/shared/lib/utils";
+
 import { Heading } from "@/shared/components/common/typography";
+import { cn } from "@/shared/lib/utils";
+import { formatCalendarDateShort } from "@/shared/utils/date-helpers";
+import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
 import type { DashboardRecentExpense } from "../types";
 
 interface RecentActivityProps {
   expenses: DashboardRecentExpense[];
-  /** Lets the parent grid span this card across both columns when
-   * "Sobres en alerta" isn't rendered alongside it - see dashboard/page.tsx. */
   className?: string;
 }
 
-// The "Actividad reciente" widget on Resumen (mockup: Main/DesktopDashboard)
-// - the last few expenses across every envelope, not scoped to one. Same
-// first-letter avatar as ExpenseCard (expenses feature), reused here as a
-// plain span since this compact row has no hover actions to make room for.
-// Renders nothing when there are no expenses yet - unlike "Sobres en
-// alerta" above it on the page, an empty state here ("no activity yet")
-// wouldn't tell the user anything the empty envelopes list doesn't already.
+// Cross-envelope recent expenses widget; renders nothing when empty.
 export async function RecentActivity({
   expenses,
   className,

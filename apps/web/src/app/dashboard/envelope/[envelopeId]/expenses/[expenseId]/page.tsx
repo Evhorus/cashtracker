@@ -1,41 +1,22 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getEnvelopeById } from "@/features/envelopes/data/get-envelope-by-id";
-import { getExpenseById } from "@/features/expenses/data/get-expense-by-id";
-import { DeleteExpenseAlertDialog } from "@/features/expenses/components/delete-expense-alert-dialog";
-import { UpdateExpenseDialog } from "@/features/expenses/components/update-expense-dialog";
-import { ExpenseActionsMenu } from "@/features/expenses/components/expense-actions-menu";
+
 import { PageHeader } from "@/features/dashboard/components/page-header";
-import { Text } from "@/shared/components/common/typography";
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
-
-import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import { formatDate, formatCalendarDate } from "@/shared/utils/date-helpers";
-import { PaymentMethodBadge } from "@/features/payment-methods/components/payment-method-badge";
-import {
-  Calendar,
-  FileText,
-  Infinity as InfinityIcon,
-  Receipt,
-} from "lucide-react";
-import Link from "next/link";
+import { getEnvelopeById } from "@/features/envelopes/data/get-envelope-by-id";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
-import { EnvelopeStatusBadge } from "@/features/envelopes/components/envelope-status-badge";
-import { ExpenseHelpers } from "@/features/expenses/lib/expense-helpers";
+import { DeleteExpenseAlertDialog } from "@/features/expenses/components/delete-expense-alert-dialog";
+import { ExpenseActionsMenu } from "@/features/expenses/components/expense-actions-menu";
+import {
+  ExpenseHighlightCard,
+  ExpenseImpactCard,
+  ExpenseSystemInfoCard,
+} from "@/features/expenses/components/expense-detail-cards";
+import { UpdateExpenseDialog } from "@/features/expenses/components/update-expense-dialog";
+import { getExpenseById } from "@/features/expenses/data/get-expense-by-id";
+import type { SupportedLocale } from "@/shared/config/i18n/config";
 
-// Force dynamic rendering because this page uses Clerk auth
-export const dynamic = "force-dynamic";
-
-// Same shared-fetch trick as the envelope detail route
-// (dashboard/envelope/[envelopeId]/page.tsx): getExpenseById is
-// wrapped in React's cache(), so this shares the page body's fetch.
 export async function generateMetadata({
   params,
 }: Pick<ExpensePageProps, "params">): Promise<Metadata> {
@@ -50,32 +31,18 @@ interface ExpensePageProps {
 
 export default async function ExpensePage({ params }: ExpensePageProps) {
   await auth.protect();
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
   const tCommon = await getTranslations("common");
   const t = await getTranslations("expenses");
   const { envelopeId, expenseId } = await params;
-  // In parallel, not one after the other: these two reads are
-  // independent, so awaiting them sequentially just added the slower
-  // one's latency on top of the faster one's for no reason.
+
   const [expense, envelope] = await Promise.all([
     getExpenseById(envelopeId, expenseId),
     getEnvelopeById(envelopeId),
   ]);
 
-  const isUnlimited = envelope.amount === null;
-  const envelopeAmount = EnvelopeHelpers.getAmount(envelope);
-  const envelopeSpent = EnvelopeHelpers.getSpent(envelope);
-  const expenseAmount = ExpenseHelpers.getAmount(expense);
-  const currencyConfig = CURRENCY_MAP[envelope.currency];
-  const impactPercentage = ExpenseHelpers.getImpactPercentage(
-    expense,
-    envelope,
-  );
-  const progressStatus = envelope.status;
-
   return (
     <div className="mx-auto max-w-5xl space-y-8 pb-10">
-      {/* Header Section */}
       <PageHeader
         title={t("detail.title")}
         backUrl={`/dashboard/envelope/${envelopeId}`}
@@ -122,174 +89,18 @@ export default async function ExpensePage({ params }: ExpensePageProps) {
         }
       />
 
-      {/* Main info (left on desktop) + Impacto en el Sobre (sidebar,
-          sticky on desktop, same as the envelope detail page's own
-          Historial/Resumen split). No mobile reorder here though, unlike
-          that page: there, Resumen is a quick overview ahead of a list,
-          so overview-first makes sense - here the hero card below already
-          *is* the overview (name/date/amount), so it stays first; only
-          the impact panel's sticky-on-desktop behavior is worth
-          matching. */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Main Info Column (2/3 width) */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Expense Highlight Card - border-0 bg-card/50 shadow-sm matches
-              every other card in the app (the envelope page's summary,
-              the statistics page, category cards...); this one stood out
-              with a gradient fill and a heavier shadow. */}
-          <Card className="overflow-hidden border-0 bg-card/50 shadow-sm">
-            <CardContent className="p-8">
-              <div className="flex flex-col items-start justify-between gap-4 sm:flex-row md:items-center">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner">
-                    <Receipt className="h-7 w-7" />
-                  </div>
-                  <div className="space-y-1">
-                    <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                      {expense.name}
-                    </h2>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex w-fit items-center gap-2 rounded-full bg-background/50 px-2.5 py-1 text-muted-foreground">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span className="text-xs font-medium sm:text-sm">
-                          {formatCalendarDate(expense.date, locale)}
-                        </span>
-                      </div>
-                      {expense.paymentMethod && (
-                        <PaymentMethodBadge
-                          method={expense.paymentMethod}
-                          variant="pill"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="pl-18 text-left sm:pl-0 md:text-right">
-                  <Text className="mb-0.5 text-xs font-medium sm:text-sm">
-                    {t("detail.totalAmount")}
-                  </Text>
-                  <p className="text-3xl font-extrabold tracking-tight text-primary sm:text-4xl">
-                    {formatCurrency(expenseAmount, currencyConfig)}
-                  </p>
-                </div>
-              </div>
-
-              {expense.description && (
-                <div className="mt-8 border-t border-border/50 pt-6">
-                  <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <FileText className="h-4 w-4" />
-                    {t("detail.description")}
-                  </h3>
-                  <p className="max-w-2xl text-base leading-relaxed text-foreground/80">
-                    {expense.description}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Additional Meta Info */}
-          <Card className="border-0 bg-card/50 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">
-                {t("detail.systemInfo")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-6 text-sm sm:grid-cols-2">
-              <div className="space-y-1">
-                <Text>{t("detail.createdAt")}</Text>
-                <p className="font-medium">
-                  {formatDate(expense.createdAt, locale)}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <Text>{t("detail.updatedAt")}</Text>
-                <p className="font-medium">
-                  {formatDate(expense.updatedAt, locale)}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <ExpenseHighlightCard
+            expense={expense}
+            currency={envelope.currency}
+            locale={locale}
+          />
+          <ExpenseSystemInfoCard expense={expense} locale={locale} />
         </div>
 
-        {/* Sidebar Column (1/3 width) - Impact & Context */}
         <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
-          {/* Impact Analysis */}
-          <Card className="overflow-hidden border-0 bg-card/50 shadow-sm">
-            <CardHeader className="pt-6 pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                {t("detail.envelopeImpact")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-4">
-              {isUnlimited ? (
-                <div className="flex flex-col items-center gap-2 py-2 text-center">
-                  <InfinityIcon className="h-6 w-6 text-muted-foreground" />
-                  <Text>{t("detail.noLimitEnvelope")}</Text>
-                </div>
-              ) : (
-                <div>
-                  <div className="mb-2 flex items-end justify-between">
-                    <span className="w-full text-sm font-medium text-muted-foreground">
-                      {t("detail.represents")}
-                    </span>
-                    <span className="text-2xl font-bold text-primary">
-                      {(impactPercentage ?? 0).toFixed(1)}%
-                    </span>
-                  </div>
-                  {/* Decorative - the same percentage is stated in the
-                      text directly above this bar. */}
-                  <div
-                    aria-hidden="true"
-                    className="h-3 w-full overflow-hidden rounded-full bg-secondary"
-                  >
-                    <div
-                      className="h-full rounded-full bg-primary transition-all duration-500"
-                      style={{
-                        width: `${Math.min(impactPercentage ?? 0, 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <Text className="mt-2 text-right text-xs">
-                    {t("detail.ofAssigned", {
-                      amount: formatCurrency(
-                        envelopeAmount ?? 0,
-                        currencyConfig,
-                      ),
-                    })}
-                  </Text>
-                </div>
-              )}
-
-              <div className="space-y-3 border-t border-border/50 pt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {t("detail.envelopeStatus")}
-                  </span>
-                  {/* Plain colored text, no badge box - the boxed
-                      all-caps treatment this used to have had no
-                      precedent anywhere else in the
-                      app; envelope-card.tsx's own status "badge" is just
-                      a thin colored strip, and every other status here
-                      (spentColorClass, progress bar) is color-coded text
-                      too, no boxes. Label/color both come from
-                      EnvelopeStatusBadge now, same as envelopes-table.tsx's
-                      pill - this is the one place either renders from. */}
-                  <EnvelopeStatusBadge status={progressStatus} variant="text" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {t("detail.totalSpent")}
-                    </span>
-                    <span className="font-semibold">
-                      {formatCurrency(envelopeSpent, currencyConfig)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ExpenseImpactCard expense={expense} envelope={envelope} />
         </div>
       </div>
     </div>

@@ -1,3 +1,23 @@
+import Link from "next/link";
+import {
+  ArrowRight,
+  Edit,
+  Infinity as InfinityIcon,
+  Trash2,
+} from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+
+import {
+  CategoryIcon,
+  CategoryLabel,
+} from "@/features/categories/components/category-badge";
+import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
+import { Envelope } from "@/features/envelopes/types";
+import {
+  ActionsDrawer,
+  type ActionItem,
+} from "@/shared/components/common/actions-drawer";
+import { Text } from "@/shared/components/common/typography";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -7,26 +27,6 @@ import {
 } from "@/shared/components/ui/card";
 import { Progress } from "@/shared/components/ui/progress";
 import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import {
-  ArrowRight,
-  Edit,
-  Infinity as InfinityIcon,
-  Trash2,
-} from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
-import {
-  CategoryIcon,
-  CategoryLabel,
-} from "@/features/categories/components/category-badge";
-
-import Link from "next/link";
-import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
-import { Envelope } from "@/features/envelopes/types";
-import { Text } from "@/shared/components/common/typography";
-import {
-  ActionsDrawer,
-  type ActionItem,
-} from "@/shared/components/common/actions-drawer";
 
 interface EnvelopeCardProps {
   envelope: Envelope;
@@ -75,16 +75,6 @@ export const EnvelopeCard = ({
   );
 
   return (
-    // No left-border accent bar - a flat color stripe down the side of
-    // every card read as generic template chrome, not something specific
-    // to this app (see the redesign notes on avoiding that pattern).
-    // border/60 (was border-0) does the "this card is its own thing"
-    // job instead, as a hairline all the way around.
-    //
-    // Compact single-glance shape (icon+name+percent row / thin bar /
-    // one-line totals) instead of a tall label-above-value stat block -
-    // matches the density of the mockup's own envelope list, and the
-    // grid can fit meaningfully more of a list without scrolling.
     <Card
       size="sm"
       className="group relative h-full overflow-hidden border-border/60 bg-card/50 shadow-sm transition-all duration-300 hover:bg-card hover:shadow-lg"
@@ -99,21 +89,11 @@ export const EnvelopeCard = ({
           />
 
           <div className="min-w-0 space-y-0.5">
-            {/* No fixed max-w here on purpose - min-w-0 on this and the
-                two ancestors above is what actually lets `truncate` cut
-                the name off against whatever space the actions on the
-                right leave, instead of a magic pixel value that either
-                truncated names way earlier than it had to or (on a
-                wider card) left space unused. */}
+            {/* min-w-0 here and on ancestors lets truncate fill whatever width the right-side actions leave. */}
             <CardTitle className="text-sm leading-none font-bold tracking-tight transition-colors duration-200 group-hover:text-primary">
               <span className="block truncate">{envelope.name}</span>
             </CardTitle>
-            {/* The period its expenses actually span ("9 oct – 8 nov
-                2026"), falling back to the creation month while it has
-                none. Names are free text and reused across years, so
-                this is what tells two "Agosto" envelopes apart - and the
-                creation date alone misleads for an envelope created
-                after the fact. */}
+            {/* Expense date span (falling back to creation month) disambiguates reused envelope names. */}
             <Text className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
               <span>{EnvelopeHelpers.formatPeriod(envelope, locale)}</span>
               {envelope.category && (
@@ -122,12 +102,7 @@ export const EnvelopeCard = ({
                   <CategoryLabel category={envelope.category} />
                 </>
               )}
-              {/* Shown for every currency, COP included - treating COP
-                  as an unlabeled "default" only reads fine when it's the
-                  only currency around. The moment a second one shows up,
-                  an unlabeled amount is ambiguous - popular multi-
-                  currency apps (Wise, Revolut) always tag the currency
-                  on every balance, never just the "other" ones. */}
+              {/* Always show currency code (including COP) so multi-currency amounts stay unambiguous. */}
               <span className="rounded-sm bg-secondary px-1 py-0.5 font-mono text-[10px] text-secondary-foreground">
                 {envelope.currency}
               </span>
@@ -135,25 +110,16 @@ export const EnvelopeCard = ({
           </div>
         </div>
 
-        {/* Percent (or the actions, on hover/desktop) sits where the
-            mockup's own trailing "64%" reads - front and center next to
-            the name, not buried below in a separate labeled row. */}
         {!calculations.isUnlimited && (
           <span
             className={`shrink-0 font-mono text-sm font-bold ${amountTextColorClass}`}
           >
-            {/* The real figure, not capped at 100. The bar below has to
-                cap - it cannot draw 133% of its own width - but the
-                number must not: "you are 33% over" is the single most
-                useful thing this card can say, and rounding it down to
-                100% hid it. The desktop table always showed the true
-                value, so the same envelope read 100% on a phone and 133%
-                on a laptop. */}
+            {/* Uncapped percentage (the bar below caps at 100%, but the numeral shows true overspend). */}
             {(calculations.percentage ?? 0).toFixed(0)}%
           </span>
         )}
 
-        {/* Mobile Actions - dialogs live once at EnvelopesGrid level. */}
+        {/* Dialogs live once at EnvelopesGrid level. */}
         <div className="flex shrink-0 items-center" data-no-nav>
           <ActionsDrawer actions={actions} title={t("optionsMenu")} />
         </div>
@@ -167,10 +133,6 @@ export const EnvelopeCard = ({
           />
         )}
 
-        {/* One line, ends split - the app's own equivalent of the
-            mockup's "$320.000 gastado ... $180.000 disp." footer,
-            instead of a label-above-value 2-column block that doubled
-            this section's height for the same two numbers. */}
         <div className="flex items-center justify-between font-mono text-xs">
           <span className={calculations.isUnlimited ? "font-bold" : ""}>
             <span
@@ -219,7 +181,6 @@ export const EnvelopeCard = ({
         />
       </CardContent>
 
-      {/* Status Badge */}
       {calculations.isExceeded && (
         <div className="absolute right-0 bottom-0 left-0 h-1 bg-destructive/50" />
       )}

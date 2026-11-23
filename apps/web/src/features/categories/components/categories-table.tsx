@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
-import type { Category } from "../types";
-import { resolveIcon } from "../lib/icon-registry";
+
+import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
 import {
   Table,
   TableBody,
@@ -9,11 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
+import { resolveIcon } from "../lib/icon-registry";
+import type { Category } from "../types";
 import { CategoryIconBadge } from "./category-icon-badge";
-import { UpdateCategoryDialog } from "./update-category-dialog";
-import { DeleteCategoryButton } from "./delete-category-button";
 import type { CategoryToDelete } from "./delete-category-alert-dialog";
+import { DeleteCategoryButton } from "./delete-category-button";
+import { UpdateCategoryDialog } from "./update-category-dialog";
 
 interface CategoriesTableProps {
   categories: Category[];
@@ -21,14 +22,7 @@ interface CategoriesTableProps {
   onDelete: (category: CategoryToDelete) => void;
 }
 
-// Desktop-only (see categories-section.tsx - the card list still covers
-// mobile). Same shape/classes as EnvelopesTable - the dense-table-on-
-// desktop, card-grid-on-mobile split is the app's standard for any list
-// page, not just Sobres. Built on the shadcn Table primitives
-// (components/ui/table.tsx) rather than raw <table> markup, with their
-// stock styling overridden to match that same standard (rounded-2xl
-// border card, uppercase header, px-5 py-3.5 cells) instead of shadcn's
-// defaults.
+// Desktop-only table; mobile renders CategoryCard in categories-section.tsx.
 export function CategoriesTable({
   categories,
   categoryCounts,

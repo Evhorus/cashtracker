@@ -1,8 +1,9 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
 import { Laptop, Loader2, LogOut, Smartphone } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
+import { ErrorMessage } from "@/shared/components/common/error-message";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -11,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { ErrorMessage } from "@/shared/components/common/error-message";
 import { formatRelativeTime } from "@/shared/utils/date-helpers";
 import { useSessions } from "../hooks/use-sessions";
 
@@ -49,10 +49,7 @@ export function SessionsSection() {
                     <DeviceIcon className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    {/* No truncate here - identifying whether a session is
-                        suspicious depends on reading this in full, so it
-                        wraps to another line instead of hiding behind an
-                        ellipsis (same criterion as envelope-card.tsx). */}
+                    {/* Wraps instead of truncating so users can inspect full session details. */}
                     <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
                       {session.browser} ·{" "}
                       {t(session.isMobile ? "mobile" : "desktop")}
@@ -76,11 +73,6 @@ export function SessionsSection() {
                     type="button"
                     variant="destructive"
                     size="sm"
-                    // Full width once the row has stacked (below sm:) -
-                    // a small w-fit button left-aligned under a
-                    // full-width row read as misplaced, floating with
-                    // dead space beside it. Back to fitted once the row
-                    // is side-by-side again.
                     className="w-full sm:w-fit"
                     disabled={revokingId === session.id}
                     onClick={() => revokeSession(session.id)}

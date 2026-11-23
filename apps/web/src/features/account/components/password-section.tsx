@@ -1,10 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { ErrorMessage } from "@/shared/components/common/error-message";
+import { FormInput } from "@/shared/components/common/form-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
 import {
   Card,
   CardContent,
@@ -12,9 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { ErrorMessage } from "@/shared/components/common/error-message";
-import { FormInput } from "@/shared/components/common/form-input";
-import { SubmitButton } from "@/shared/components/common/submit-button";
 import { useUpdatePassword } from "../hooks/use-update-password";
 import {
   type PasswordFormValues,

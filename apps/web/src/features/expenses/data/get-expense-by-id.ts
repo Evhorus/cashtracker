@@ -2,26 +2,14 @@ import "server-only";
 
 import { cache } from "react";
 import { redirect } from "next/navigation";
+
+import { ExpensesService } from "@/features/expenses/services/expenses.service";
 import { ApiError } from "@/shared/lib/api-client";
 import { isValidUuid } from "@/shared/utils/url-params";
-import { ExpensesService } from "@/features/expenses/services/expenses.service";
 
 /**
- * Read path for a single expense - see
- * envelopes/data/get-envelope-by-id.ts for why this is a plain
- * server-only function rather than a Server Action, and the same React
- * cache() wrapper so generateMetadata comes for free.
- *
- * A missing expense redirects to its parent envelope rather than
- * rendering the 404 page, which is the one place this app deliberately
- * differs from getEnvelopeById's notFound(). An expense only ever exists
- * inside an envelope, so "this expense is gone" has a genuinely useful
- * destination - and the common way to reach that state is deleting the
- * expense from its own detail page: completing a Server Action makes
- * Next re-render the current route, so the deleted expense's own page
- * re-renders as part of the delete. notFound() there showed the user a
- * 404 for an action that had just succeeded. Anything that isn't a 404
- * is still rethrown so dashboard/error.tsx can offer a retry.
+ * Request-deduped (`React.cache`) server read shared by `generateMetadata` and the page body.
+ * Redirects to the parent envelope on 404 (prevents a 404 flash after deleting an expense); rethrows other errors for `error.tsx`.
  */
 export const getExpenseById = cache(
   async (envelopeId: string, expenseId: string) => {

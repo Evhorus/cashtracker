@@ -1,12 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Camera, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Camera, Loader2 } from "lucide-react";
 
+import { ErrorMessage } from "@/shared/components/common/error-message";
+import { FormInput } from "@/shared/components/common/form-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
 import {
   Avatar,
   AvatarFallback,
@@ -19,9 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { ErrorMessage } from "@/shared/components/common/error-message";
-import { FormInput } from "@/shared/components/common/form-input";
-import { SubmitButton } from "@/shared/components/common/submit-button";
 import { useUpdateProfile } from "../hooks/use-update-profile";
 import {
   type ProfileFormValues,
@@ -33,10 +33,7 @@ interface ProfileSectionProps {
   user: AccountUser;
 }
 
-// `user` comes from the parent's useAccountUser() call (account-view.tsx)
-// rather than this component calling the hook itself, so a photo/name
-// update re-renders both this card and account-menu.tsx's trigger from
-// the same Clerk-managed state, with no separate fetch to keep in sync.
+// Receives user from parent useAccountUser() so updates stay in sync with account-menu.
 export function ProfileSection({ user }: ProfileSectionProps) {
   const t = useTranslations("account.profile");
   const tCommon = useTranslations("common");
@@ -95,10 +92,6 @@ export function ProfileSection({ user }: ProfileSectionProps) {
             className="hidden"
             onChange={onPhotoSelected}
           />
-          {/* Camera-badge-overlay avatar (redesign): the whole avatar is
-              the click target, badge just signals that - same
-              onPhotoSelected/isUpdatingPhoto flow as the old separate
-              change-photo button, not a new upload path. */}
           <button
             type="button"
             disabled={isUpdatingPhoto}

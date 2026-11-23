@@ -2,31 +2,13 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 
 interface PageHeaderSkeletonProps {
   withBackButton?: boolean;
-  /** False on pages whose real PageHeader passes no `description` (e.g.
-   * /dashboard/envelopes, since its count moved out of the header - see
-   * that page's own comment) - otherwise this skeleton shows a subtitle
-   * line that then vanishes once real content mounts, an extra bit of
-   * layout shift the real page never actually has. */
+  /** Set false when the matching PageHeader omits `description` to avoid layout shift. */
   withDescription?: boolean;
-  /**
-   * "none": no action at either breakpoint (the account page).
-   * "single": one action, same on both breakpoints.
-   * "icon-pair": two small icon buttons on desktop (edit/delete),
-   * collapsing to one icon button on mobile (an actions-menu trigger).
-   * "edit-delete": the envelope and expense detail pages - labelled
-   * Editar/Eliminar on desktop, one icon button on mobile.
-   */
+  /** Matches the page's responsive action slot layout to prevent shift. */
   actions?: "none" | "single" | "icon-pair" | "edit-delete";
-  /** Only pages below a nav section (an envelope, an expense) show a
-   * breadcrumb - see Breadcrumb. */
   withBreadcrumb?: boolean;
 }
 
-/**
- * Mirrors PageHeader: the title on the left and, on desktop, the
- * breadcrumb above the actions on the right, in one band. Mobile's
- * single action stays beside the title, as in the real thing.
- */
 export const PageHeaderSkeleton = ({
   withBackButton = true,
   withDescription = true,
@@ -38,7 +20,6 @@ export const PageHeaderSkeleton = ({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        {/* md:hidden - the real back button is mobile-only too. */}
         {withBackButton && (
           <Skeleton className="h-10 w-10 shrink-0 rounded-full md:hidden" />
         )}

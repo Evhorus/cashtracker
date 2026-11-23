@@ -1,12 +1,10 @@
 "use client";
 
 import { createContext, use } from "react";
+
 import type { Category, CategoryOptions } from "@/features/categories/types";
 
-// Promises, not resolved values: the layout starts the fetches without
-// awaiting them (see dashboard/layout.tsx), so the shell and each page's
-// loading skeleton can paint while a cold backend/database wakes up. Only
-// the components that actually read the data suspend, in `use()` below.
+// Promises (not awaited values) so dashboard/layout.tsx paints immediately and consumers suspend via `use()`.
 interface CategoriesContextValue {
   categories: Promise<Category[]>;
   options: Promise<CategoryOptions>;
@@ -19,22 +17,8 @@ interface CategoriesProviderProps extends CategoriesContextValue {
 }
 
 /**
- * Makes the current user's categories - and the icon/color whitelist the
- * create-category form's grid renders from (see category.schema.ts) -
- * available to client components that need them (CategoryPicker,
- * CreateExpenseDialog's subtitle, CategoriesSection, CategoryForm)
- * without prop-drilling through every intermediate component. Seeded
- * once in dashboard/layout.tsx from getCategories()/
- * getCategoryOptions(), the same loaders Server Components
- * (category-badge.tsx, category-breakdown.tsx) call directly themselves.
- *
- * `categories` carries the raw domain Category[] (icon as a string key),
- * not CategoryDef[] - a CategoryDef's `Icon` is a live component
- * reference, and React can't serialize a function as a prop crossing this
- * Server Component -> Client Component boundary. Consumers that need the
- * resolved Icon component call resolveIcon(category.icon) or
- * resolveCategory()/toCategoryDef() themselves (category-palette.ts,
- * icon-registry.ts) - plain function calls, not a boundary crossing.
+ * Provides the user's categories and icon/color whitelist seeded in dashboard/layout.tsx.
+ * Carries serializable `Category[]` (icon keys, not live components) across the Server -> Client boundary.
  */
 export function CategoriesProvider({
   categories,

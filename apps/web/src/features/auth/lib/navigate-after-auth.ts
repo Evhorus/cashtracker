@@ -1,8 +1,4 @@
-// Shared by every hook in features/auth/hooks/ that finalizes a session
-// (sign-in, sign-up, password reset). Structurally typed against Clerk's
-// finalize() "navigate" callback shape instead of importing its type, so
-// this file doesn't force a Clerk import outside the hooks that already
-// need one.
+// Structurally typed against Clerk's finalize() navigate callback to avoid Clerk imports outside auth hooks.
 export function navigateAfterAuth(
   router: { push: (url: string) => void },
   {
@@ -13,15 +9,11 @@ export function navigateAfterAuth(
     decorateUrl: (url: string) => string;
   },
 ) {
-  // A pending session task (e.g. org selection) means the flow isn't
-  // actually done yet - let the caller's own UI handle it instead of
-  // navigating away.
+  // Don't navigate away while a Clerk session task (e.g. org selection) is pending.
   if (session?.currentTask) return;
 
   const url = decorateUrl("/dashboard");
-  // decorateUrl can upgrade this to an absolute, different-origin URL
-  // when a cross-domain cookie refresh is needed (Safari ITP) - that
-  // case requires a real navigation, not client-side routing.
+  // Safari ITP cross-domain cookie refresh returns an absolute URL requiring full-page navigation.
   if (url.startsWith("http")) {
     window.location.href = url;
   } else {

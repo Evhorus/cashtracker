@@ -1,13 +1,9 @@
 import { PageHeaderSkeleton } from "@/features/dashboard/components/page-header-skeleton";
+import { EnvelopeChartSkeleton } from "@/features/envelopes/components/envelope-chart-skeleton";
+import { ExpensesListSkeleton } from "@/features/expenses/components/expenses-list-skeleton";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { ExpensesListSkeleton } from "@/features/expenses/components/expenses-list-skeleton";
-import { EnvelopeChartSkeleton } from "@/features/envelopes/components/envelope-chart-skeleton";
 
-// Mirrors the real page's layout: Historial de Gastos (main, left on
-// desktop) + a single "Resumen" panel (sidebar, sticky on desktop) -
-// replaced the old 3-separate-stat-cards + isolated chart layout, which
-// no longer matches since that page was consolidated into one panel.
 export default function EnvelopeDetailLoading() {
   return (
     <div className="space-y-8">
@@ -20,7 +16,6 @@ export default function EnvelopeDetailLoading() {
             <Skeleton className="h-10 w-10 sm:w-36" />
           </div>
 
-          {/* Matches ExpensesFilter */}
           <div className="flex flex-col gap-4 md:flex-row">
             <Skeleton className="h-9 flex-1" />
             <Skeleton className="h-9 w-52" />

@@ -1,41 +1,18 @@
 import type { useTranslations } from "next-intl";
 
-/**
- * The translator a form schema is built with.
- *
- * Form schemas are factories rather than module-level constants because
- * their messages are the ones the user actually reads, and a message
- * baked in at import time is stuck in whatever language the file was
- * written in. Only Client Components consume these (they're
- * react-hook-form resolvers - the Server Actions validate server-side
- * against the backend's own DTOs, not against these), so a plain
- * `useTranslations("validation")` in the form is all a factory needs.
- */
 export type ValidationTranslator = ReturnType<
   typeof useTranslations<"validation">
 >;
 
-/**
- * The largest amount the API can store.
- *
- * Both `expense.amount` and `envelope.amount` are `decimal(12, 2)` in
- * the backend, which tops out at ten integer digits. Above that the
- * insert fails and the response is a bare 500, which the UI shows
- * verbatim as "Internal server error" - in English, in a Spanish app,
- * for what is really a validation failure.
- *
- * Here rather than in either feature because both forms share the
- * limit, and it is a property of the column, not of envelopes or of
- * expenses.
- */
+/** Max value fitting backend `decimal(12, 2)` columns (`expense.amount`, `envelope.amount`). */
 export const MAX_AMOUNT = 9_999_999_999.99;
 
-/**
- * Whether a form amount (the plain decimal string PriceInput emits) is a
- * real, positive number. "0" passes a non-empty check, so without this
- * the form let a zero amount through and only the API refused it.
- */
+const MAX_TWO_DECIMALS = /^\d+(?:\.\d{1,2})?$/;
+
 export const isPositiveAmount = (value: string): boolean => {
   const amount = Number(value);
   return Number.isFinite(amount) && amount > 0;
 };
+
+export const hasAtMostTwoDecimals = (value: string): boolean =>
+  MAX_TWO_DECIMALS.test(value.trim());

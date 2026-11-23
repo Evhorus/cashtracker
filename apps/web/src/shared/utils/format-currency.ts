@@ -5,39 +5,9 @@ export interface CurrencyConfig {
   locale: string;
   currency: string;
   symbol: string;
-  /**
-   * Minor-unit digits for this currency (ISO 4217's "exponent"), e.g. 2
-   * for COP/USD/EUR (they all support cents, even though COP rarely
-   * shows them in everyday use) - matches the backend's own
-   * `@IsNumber({ maxDecimalPlaces: 2 })` on envelope/expense `amount`
-   * (see create-envelope.dto.ts / create-expense.dto.ts in
-   * cashtracker-backend). Drives both display formatting below and
-   * price-input.tsx's typing rules (how many fraction digits it accepts,
-   * and whether it accepts a decimal point at all - 0 means it doesn't).
-   *
-   * TO ADD A NEW CURRENCY: add one entry to CURRENCY_MAP with its own
-   * locale/symbol/decimalDigits (e.g. a 0-decimal currency like JPY, or
-   * a 3-decimal one like BHD), add its code to CURRENCY_CODES above,
-   * and add its *name* to `currencies` in both message catalogues -
-   * formatCurrency, formatNumber, and PriceInput all read from here,
-   * nothing else needs to change.
-   *
-   * The currency's display name is deliberately NOT here: this map is
-   * number-formatting data, identical for every reader, while
-   * "Dólar Estadounidense" / "US Dollar" is copy. It lives in
-   * `currencies.<code>` and is looked up where it's rendered
-   * (currency-selector.tsx, the statistics filters).
-   */
+  /** Minor-unit digits accepted by backend and PriceInput (0 disables decimals). Display names live in i18n `currencies.*`. */
   decimalDigits: number;
-  /**
-   * How many fraction digits `formatCurrency` actually shows, as opposed
-   * to `decimalDigits` (what the backend accepts and what PriceInput lets
-   * you type). Separate on purpose: COP is stored with up to 2 decimal
-   * places same as any currency, but nobody in Colombia reads or writes
-   * COP amounts with cents day-to-day, so every card/table/chart rounds
-   * it to a whole number for display while the exact value still round-
-   * trips to the backend untouched. USD/EUR keep showing their cents.
-   */
+  /** Display precision for `formatCurrency` (e.g. 0 for COP while still storing up to 2 decimals). */
   displayDecimalDigits: number;
 }
 
@@ -71,34 +41,14 @@ export const formatCurrency = (
   quantity: number,
   config: CurrencyConfig = DEFAULT_CURRENCY_CONFIG,
 ) => {
-  // A whole amount (no cents) shows with no decimals at all (COP reads
-  // as "$ 440.500", not "$ 440.500,00") - but the moment there ARE
-  // cents, every digit of them has to show, trailing zeros included.
-  // minimumFractionDigits pinned to 0 let Intl drop a trailing zero
-  // decimal whenever the value "fit" in fewer digits - e.g. 12.50 (USD)
-  // rendered as "$12.5", silently reading as a different amount.
-  // Rounding to displayDecimalDigits first (rather than checking
-  // `quantity` itself) absorbs any float noise from upstream arithmetic
-  // (e.g. totalAssigned - totalSpent) before deciding whether it's a
-  // whole number. Rounding to displayDecimalDigits, not decimalDigits,
-  // is what makes COP always show as a whole number here - the stored
-  // amount can still carry cents (decimalDigits), this only rounds what
-  // gets rendered.
-  //
-  // `|| 0` normalizes negative zero. That same float noise can land a
-  // value a hair BELOW zero (e.g. 300 - 199.99 - 100.01 is about
-  // -2.8e-14), which rounds to -0 - and Intl renders -0 as "-$ 0", a
-  // negative zero balance shown to the user. Reachable wherever the app
-  // subtracts two backend numbers, e.g. totalSpent - totalSpentCapped in
-  // hero-balance-card.tsx.
+  // Round first to absorb float noise; `|| 0` normalizes -0 so Intl never renders "-$ 0".
+  // Whole numbers omit decimals, while non-whole amounts keep all displayDecimalDigits (e.g. "$12.50").
   const rounded = Number(quantity.toFixed(config.displayDecimalDigits)) || 0;
   const minimumFractionDigits = Number.isInteger(rounded)
     ? 0
     : config.displayDecimalDigits;
 
-  // Formats `rounded`, not `quantity` - otherwise the -0 normalization
-  // above would decide the fraction-digit count while Intl still
-  // rendered the un-normalized value.
+  // Format `rounded`, not `quantity`, so -0 normalization applies to the rendered output.
   return new Intl.NumberFormat(config.locale, {
     style: "currency",
     currency: config.currency,
@@ -110,16 +60,7 @@ export const formatCurrency = (
 export const formatNumber = (
   value: number,
   config: CurrencyConfig = DEFAULT_CURRENCY_CONFIG,
-  /**
-   * Force this many fraction digits even when they're trailing zeros
-   * (e.g. 2 so 9.5 shows as "9,50") - a number alone can't tell "9.50"
-   * from "9.5" apart (Number() drops the difference), so callers that
-   * still have the original typed string need to decide this themselves
-   * based on whether it actually had a decimal point. See
-   * price-input.tsx's formattedValue for the one place that matters:
-   * without it, blurring a field where the user typed "9.50" showed
-   * "9,5", silently dropping the cent they'd just entered.
-   */
+  /** Preserves trailing zeros when callers know the user typed decimals (e.g. PriceInput blur). */
   minimumFractionDigits = 0,
 ): string => {
   return new Intl.NumberFormat(config.locale, {
@@ -128,18 +69,7 @@ export const formatNumber = (
   }).format(value);
 };
 
-/**
- * Parses this app's own canonical amount string (e.g. "1000000.03",
- * always "." as the decimal point, never locale-grouped) back into a
- * number. This is *not* for parsing raw user keystrokes - that's
- * price-input.tsx's handleChange, which has to deal with whatever
- * decimal mark the user actually typed and does its own thing. The
- * values this function ever sees are either this app's own normalized
- * form state (produced by price-input.tsx) or the plain decimal string
- * the backend returns for envelope.amount/expense.amount - neither is
- * ever locale-formatted with thousands grouping, so there's nothing
- * locale-specific to strip here.
- */
+/** Parses canonical "."-decimal strings (form state or backend decimals), not raw locale-formatted keystrokes. */
 export const parseNumericValue = (
   value: string | number | undefined,
 ): number => {

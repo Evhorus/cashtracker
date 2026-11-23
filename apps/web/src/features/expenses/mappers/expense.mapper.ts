@@ -1,34 +1,24 @@
-import { ExpenseFormValues } from "../schemas/expense.schema";
-import { Expense } from "../types";
-import { ExpenseAPIResponseSchema } from "../schemas/expense.schema";
+import { z } from "zod";
+
 import {
   parseDateInput,
   parseCalendarDate,
   formatCalendarDateForApi,
   toFormCalendarDate,
 } from "@/shared/utils/date-helpers";
-import { z } from "zod";
+import { ExpenseFormValues } from "../schemas/expense.schema";
+import { ExpenseAPIResponseSchema } from "../schemas/expense.schema";
+import { Expense } from "../types";
 
 type ApiExpense = z.infer<typeof ExpenseAPIResponseSchema>;
 
-/**
- * Payload crossing the client -> Server Action boundary. `date` is already
- * formatted client-side as a plain "yyyy-MM-dd" string so the visitor's
- * chosen calendar day never passes through a UTC server's local-time
- * formatting (which would shift UTC+ timezones back by one day).
- */
+/** Client -> Server Action payload with `date` pre-formatted as "yyyy-MM-dd" to avoid UTC server day shifts. */
 export type ExpenseActionPayload = Omit<ExpenseFormValues, "date"> & {
   date: string;
 };
 
 export const ExpenseMapper = {
-  /**
-   * UI -> API (Outbound)
-   * Handles Colombian currency formatting (removing dots) before converting to number.
-   * `date` is a pure calendar date (no time-of-day) - either already formatted
-   * on the client as "yyyy-MM-dd", or formatted from local components when
-   * called directly with form values.
-   */
+  /** Formats client/form data for the API (`date` as a "yyyy-MM-dd" calendar string). */
   toApiRequest: (data: ExpenseActionPayload | ExpenseFormValues) => ({
     name: data.name,
     amount: Number(data.amount),
@@ -42,14 +32,9 @@ export const ExpenseMapper = {
     paymentMethodId: data.paymentMethodId || null,
   }),
 
-  /**
-   * API -> UI (Inbound)
-   * Transforms raw API response into the domain model (Expense)
-   */
   fromApi: (apiExpense: ApiExpense): Expense => {
     return {
       id: apiExpense.id,
-      // Exactly as the user typed it.
       name: apiExpense.name,
       amount: apiExpense.amount,
       date: parseCalendarDate(apiExpense.date),
@@ -60,17 +45,7 @@ export const ExpenseMapper = {
     };
   },
 
-  /**
-   * Domain -> Form defaults (Outbound, edit flow)
-   * `expense.date` is UTC-anchored (see parseCalendarDate) - correct for
-   * display anywhere, wrong for the Calendar widget, which reads a
-   * Date's LOCAL getters to know what's selected. toFormCalendarDate
-   * bridges the two, always running client-side (this is only ever
-   * called from a "use client" dialog opening the edit form), so this
-   * lives here rather than in each dialog that needs it - same reasoning
-   * as toApiRequest/fromApi owning every other UI<->API/form shape
-   * change instead of leaving it to call sites.
-   */
+  /** Converts UTC-anchored `expense.date` to a browser-local Date for react-day-picker (client-only). */
   toFormValues: (
     expense: Expense,
   ): Pick<

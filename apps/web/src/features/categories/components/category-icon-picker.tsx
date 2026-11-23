@@ -1,9 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useId, useState } from "react";
-import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import { ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Popover,
@@ -30,23 +30,16 @@ const CategoryIconPickerGrid = dynamic(
 );
 
 interface CategoryIconPickerProps {
-  /** The selected icon key. */
   value: string;
   onChange: (key: string) => void;
-  /** Every key the backend accepts, in the order to show them. */
   icons: readonly string[];
-  /** Tints the preview, so the choice reads as it will on the list. */
   color?: string;
   disabled?: boolean;
   id?: string;
   "aria-invalid"?: boolean;
 }
 
-/**
- * Icon choice for the category form: a button showing the current icon that
- * opens a lazy-loaded searchable grid. Keeps the Spanish keyword dictionary
- * out of initial bundles until the picker is actually opened.
- */
+/** Icon selector button that lazy-loads the searchable grid to keep keyword data out of initial bundles. */
 export function CategoryIconPicker({
   value,
   onChange,

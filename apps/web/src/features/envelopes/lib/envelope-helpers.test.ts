@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import en from "../messages/en.json";
+import es from "../messages/es.json";
 import type { Envelope } from "../types";
 import {
   ENVELOPE_STATUS_TAB_VALUES,
   EnvelopeHelpers,
   type EnvelopeProgressStatus,
 } from "./envelope-helpers";
-import es from "../messages/es.json";
-import en from "../messages/en.json";
 
 /**
  * Status *derivation* is no longer tested here - it isn't done here. The
@@ -71,6 +71,15 @@ describe("amount helpers", () => {
     expect(
       EnvelopeHelpers.getRemaining(envelope("100", "140", "exceeded")),
     ).toBe(-40);
+  });
+
+  it("returns null percentage when the limit is zero or negative", () => {
+    expect(
+      EnvelopeHelpers.getPercentage(envelope("0", "50", "normal")),
+    ).toBeNull();
+    expect(
+      EnvelopeHelpers.getPercentage(envelope("-10", "50", "normal")),
+    ).toBeNull();
   });
 });
 

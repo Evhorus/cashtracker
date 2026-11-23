@@ -1,34 +1,18 @@
 import { Wallet } from "lucide-react";
+
+import type { EnvelopeCategory } from "@/features/envelopes/types";
 import { cn } from "@/shared/lib/utils";
 import { resolveIcon } from "../lib/icon-registry";
 import { withAlpha } from "../lib/with-alpha";
-import type { EnvelopeCategory } from "@/features/envelopes/types";
 
 interface CategoryIconProps {
-  /** The category as the API reports it, or null when unclassified. */
   category?: EnvelopeCategory | null;
   className?: string;
 }
 
-/**
- * The icon-in-a-tinted-square badge - same visual language
- * envelope-card.tsx already used for its (previously generic Wallet)
- * icon, now coloured per category. An envelope with no category keeps
- * exactly that old look (Wallet, primary tint) rather than rendering
- * nothing.
- *
- * Plain synchronous components now. These used to be async Server
- * Components that fetched the user's categories and resolved a free-text
- * label against them - N badges on a page all doing their own lookup.
- * The API reports the category whole, so there is nothing left to
- * resolve but the icon key, and nothing to fetch at all. That also means
- * they work in Client Components, which the async versions could not.
- */
+/** Tinted category icon badge; falls back to the primary Wallet icon when unclassified. */
 export function CategoryIcon({ category, className }: CategoryIconProps) {
-  // Held on an object rather than in a capitalized local: the React
-  // Compiler lint rule reads `const Icon = ...` in a render body as
-  // creating a component during render. Property access is fine, and it
-  // is the shape category-palette.ts's CategoryDef already uses.
+  // Property access avoids the React Compiler lint rule flagging `const Icon = ...` as component creation during render.
   const def = { Icon: category ? resolveIcon(category.icon) : Wallet };
   const color = category?.color ?? "var(--color-primary)";
 
@@ -53,12 +37,6 @@ interface CategoryLabelProps {
   className?: string;
 }
 
-/**
- * Inline icon + text, for the places a category renders alongside other
- * text (envelope-card.tsx's meta line, the envelope detail page's
- * subtitle) - legible at a glance instead of competing with the
- * surrounding copy.
- */
 export function CategoryLabel({ category, className }: CategoryLabelProps) {
   if (!category) return null;
 

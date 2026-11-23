@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import { MAX_AMOUNT } from "@/shared/lib/validation";
+import type { ValidationTranslator } from "@/shared/lib/validation";
 import { buildEnvelopeFormSchema } from "../schemas/envelope.schema";
 import type { EnvelopeApi } from "../schemas/envelope.schema";
 import { EnvelopeMapper } from "./envelope.mapper";
-import { MAX_AMOUNT } from "@/shared/lib/validation";
-import type { ValidationTranslator } from "@/shared/lib/validation";
 
 /**
  * The spending-limit toggle, end to end on this side of the wire.

@@ -8,15 +8,11 @@ const YEAR_REGEX = /^\d{4}$/;
 const MIN_YEAR = 2000;
 const MAX_YEAR = 2100;
 
-/** Strict UUID check used before passing route or query IDs to the backend. */
 export function isValidUuid(value: string | undefined): value is string {
   return typeof value === "string" && UUID_REGEX.test(value);
 }
 
-/**
- * Validates a plain ISO calendar date (`YYYY-MM-DD`) and verifies that the
- * calendar date actually exists (e.g. rejects `"2026-02-31"` or `"foo"`).
- */
+/** Validates an ISO date (YYYY-MM-DD) and verifies the calendar date exists (e.g. rejects 2026-02-31). */
 export function parseIsoDateParam(
   value: string | undefined,
 ): string | undefined {
@@ -39,17 +35,13 @@ export function parseIsoDateParam(
   return value;
 }
 
-/**
- * Validates a 4-digit year within the range the backend DTO accepts
- * (`2000..2100`).
- */
+/** Validates a 4-digit year within the backend's 2000..2100 range. */
 export function parseYearParam(value: string | undefined): number | undefined {
   if (!value || !YEAR_REGEX.test(value)) return undefined;
   const year = Number(value);
   return year >= MIN_YEAR && year <= MAX_YEAR ? year : undefined;
 }
 
-/** Validates a currency query param against supported currency codes. */
 export function parseCurrencyParam(
   value: string | undefined,
 ): CurrencyCode | undefined {
@@ -59,11 +51,7 @@ export function parseCurrencyParam(
     : undefined;
 }
 
-/**
- * Sanitizes a comma-separated list of UUID tokens plus optional allowed
- * sentinel literals (e.g. `"none"`). Invalid entries are dropped so
- * hand-edited URLs never trigger HTTP 400 validation errors on the backend.
- */
+/** Drops invalid tokens from a comma-separated UUID/sentinel list so hand-edited URLs don't 400. */
 export function sanitizeUuidListParam(
   value: string | undefined,
   allowedSentinels: readonly string[] = [],

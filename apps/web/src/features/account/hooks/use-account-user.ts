@@ -7,10 +7,6 @@ import type { AccountUser } from "../types";
 
 type ClerkUser = NonNullable<ReturnType<typeof useUser>["user"]>;
 
-/** Clerk's user object -> this app's display-only shape. A plain
- * function rather than an inline useMemo: it doesn't need to be a hook,
- * and the React Compiler (reactCompiler: true in next.config.ts) already
- * memoizes the call site. */
 function toAccountUser(user: ClerkUser): AccountUser {
   const firstName = user.firstName ?? "";
   const lastName = user.lastName ?? "";
@@ -31,11 +27,7 @@ function toAccountUser(user: ClerkUser): AccountUser {
   };
 }
 
-// The only file account-menu.tsx (and anything else that just needs to
-// display "who's logged in") needs to know about the auth provider
-// through - same reasoning as features/auth/hooks/use-sign-in.ts.
-// Read-only: use-update-profile.ts / use-update-password.ts /
-// use-delete-account.ts own the mutations.
+// Read-only Clerk user facade; mutations live in use-update-profile/password and use-delete-account.
 export function useAccountUser() {
   const { isLoaded, user } = useUser();
   const { signOut: clerkSignOut } = useClerk();
@@ -48,8 +40,7 @@ export function useAccountUser() {
     try {
       await clerkSignOut({ redirectUrl: "/" });
     } finally {
-      // Only reached if signOut() itself throws - a successful call
-      // navigates away before this line would run.
+      // Only reached if signOut() throws; a successful call navigates away first.
       setIsSigningOut(false);
     }
   }

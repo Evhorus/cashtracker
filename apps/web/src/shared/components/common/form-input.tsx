@@ -1,9 +1,9 @@
+import { useId } from "react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import { useId } from "react";
 
-import { Input } from "@/shared/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
+import { Input } from "@/shared/components/ui/input";
 
 type FormInputProps<TFieldValues extends FieldValues> = Omit<
   React.ComponentProps<typeof Input>,
@@ -13,29 +13,11 @@ type FormInputProps<TFieldValues extends FieldValues> = Omit<
   name: FieldPath<TFieldValues>;
   label: string;
   fieldClassName?: string;
-  /**
-   * An error from outside react-hook-form's own validation - e.g. a
-   * server/provider response for a field that passed client-side
-   * validation just fine (a correctly-shaped password that Clerk still
-   * rejects as wrong). Shown in the same slot, only when there's no
-   * client-side error already there (that one means the request was
-   * never even sent, so it takes priority), and still flips
-   * `aria-invalid` so the red border applies either way.
-   */
+  /** External (server/provider) field error; shown when no client validation error exists and sets `aria-invalid`. */
   serverError?: string;
 };
 
-/**
- * Wires up react-hook-form's Controller to Field/FieldLabel/Input in one
- * shot, including `aria-invalid` on the input - which is what actually
- * turns on the red border Input already supports (`aria-invalid:border-
- * destructive` is baked into its className) but that nothing was ever
- * setting. Covers the common case, a plain text/email/password input;
- * fields needing something else (a Switch, PriceInput, CurrencySelector,
- * a date picker, ...) still wire Controller directly and should still
- * pass `aria-invalid={fieldState.invalid}` themselves for the same
- * effect - see envelope-form.tsx/expense-form.tsx.
- */
+/** Wires react-hook-form `Controller` to `Field`/`Input` with `aria-invalid` for error styling. */
 export function FormInput<TFieldValues extends FieldValues>({
   control,
   name,
@@ -44,10 +26,7 @@ export function FormInput<TFieldValues extends FieldValues>({
   serverError,
   ...inputProps
 }: FormInputProps<TFieldValues>) {
-  // A generated id, not the field name: two forms open at once (the
-  // payment method form on top of the expense form, both with a "name"
-  // field) produced duplicate ids, and the top label pointed at the
-  // field underneath. A caller's own `id` still wins.
+  // Use a generated id so stacked forms with matching field names (e.g. "name") don't collide.
   const generatedId = useId();
   const id = inputProps.id ?? generatedId;
 

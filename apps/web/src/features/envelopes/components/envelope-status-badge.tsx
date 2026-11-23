@@ -1,34 +1,19 @@
 import { useTranslations } from "next-intl";
 
-import { cn } from "@/shared/lib/utils";
 import {
   EnvelopeHelpers,
   type EnvelopeProgressStatus,
 } from "@/features/envelopes/lib/envelope-helpers";
+import { cn } from "@/shared/lib/utils";
 
 interface EnvelopeStatusBadgeProps {
   status: EnvelopeProgressStatus;
-  /**
-   * "badge": a tinted pill (the envelopes table's desktop status
-   * column). "text": plain colored text, no pill (the expense detail
-   * page's envelope-status line). Same label and color either way -
-   * only the container changes. Defaults to "badge".
-   */
+  /** "badge" (default): tinted pill; "text": plain colored text. */
   variant?: "badge" | "text";
   className?: string;
 }
 
-/**
- * The one place an envelope's status word gets rendered - the label
- * comes from `envelopes.status.*` and the color from EnvelopeHelpers,
- * so every screen shows the same word for the same status. Before
- * this, the envelopes table's own "Activo"/"Alerta" badge and the
- * expense detail page's "Controlado"/"En riesgo" text were two
- * independently hand-rolled labels for the exact same two statuses.
- *
- * Runs on the server: `useTranslations` has a react-server build, so
- * this stays a Server Component and ships no JS.
- */
+/** Shared envelope status renderer (stays a Server Component via next-intl's react-server `useTranslations`). */
 export function EnvelopeStatusBadge({
   status,
   variant = "badge",

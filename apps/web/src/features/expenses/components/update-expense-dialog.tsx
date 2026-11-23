@@ -1,17 +1,18 @@
 "use client";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Edit } from "lucide-react";
-import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
-import { CardActionButton } from "@/shared/components/common/card-action-button";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
-import { ExpenseForm } from "./expense-form";
-import { Expense } from "@/features/expenses/types";
+import { useTranslations } from "next-intl";
+
 import { updateExpenseAction } from "@/features/expenses/actions/update-expense.action";
-import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
 import { ExpenseMapper } from "@/features/expenses/mappers/expense.mapper";
-import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
+import { Expense } from "@/features/expenses/types";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
+import { useActionDialog } from "@/shared/hooks/useActionDialog";
 import { formatCalendarDateForApi } from "@/shared/utils/date-helpers";
+import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { ExpenseForm } from "./expense-form";
 
 interface UpdateExpenseDialogProps {
   envelopeId: string;
@@ -19,12 +20,8 @@ interface UpdateExpenseDialogProps {
   expense: Expense;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Override the default trigger's a11y label - the expense detail page
-   * passes the shorter common.edit since there's only one edit button
-   * on that page, no ambiguity to resolve. */
+  /** Overrides the trigger's accessible label. */
   label?: string;
-  /** See CardActionButton - only the expense detail page's header turns
-   * this on. */
   showLabelOnDesktop?: boolean;
 }
 

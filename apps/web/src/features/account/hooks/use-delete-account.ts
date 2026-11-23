@@ -1,19 +1,16 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useReverification, useUser } from "@clerk/nextjs";
 import { isReverificationCancelledError } from "@clerk/nextjs/errors";
+import { useTranslations } from "next-intl";
 
 import type { AccountActionResult } from "../types";
 import { mapClerkError } from "./map-clerk-error";
 import { useReverificationGate } from "./use-reverification-gate";
 
-// Destructive and irreversible, so - like use-update-password.ts - the
-// actual delete() call goes through useReverification() rather than
-// trusting a still-fresh session alone. Same onNeedsReverification gate
-// as that hook - see use-reverification-gate.ts.
+// Wrapped in useReverification() via useReverificationGate for Clerk's sensitive-action check.
 export function useDeleteAccount() {
   const t = useTranslations("account.errors");
   const { user } = useUser();
@@ -34,9 +31,7 @@ export function useDeleteAccount() {
     try {
       await deleteWithReverification();
       router.push("/");
-      // Not resetting isDeleting here on purpose - same as
-      // use-account-user.ts's signOut(), the navigation above unmounts
-      // this component before it would matter.
+      // Intentionally skips resetting isDeleting; router.push("/") unmounts the component.
       return { error: null };
     } catch (err) {
       setIsDeleting(false);

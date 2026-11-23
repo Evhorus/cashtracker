@@ -2,39 +2,23 @@ import { z } from "zod";
 
 import type { ValidationTranslator } from "@/shared/lib/validation";
 
-/**
- * Auth form schemas. Every export is a factory taking the `validation`
- * translator - see ValidationTranslator for why these can't be plain
- * module constants.
- */
-
-// z.email() (not the deprecated .string().email()) covers "required" and
-// "valid format" in one message - an empty string already fails it, so
-// there's no separate .min(1) needed on top.
+// z.email() rejects empty strings too, so no separate .min(1) is needed.
 const emailSchema = (t: ValidationTranslator) =>
   z.email({ message: t("emailInvalid") });
 
-// Doesn't enforce Clerk's actual password policy (that's server-side and
-// configurable in the Dashboard) - just a sane client-side floor so
-// obviously-too-short passwords never round-trip to the API at all.
+// Client-side floor only; Clerk enforces the full password policy server-side.
 const newPasswordSchema = (t: ValidationTranslator) =>
   z.string().min(8, { message: t("passwordMin") });
 
 const confirmPasswordSchema = (t: ValidationTranslator) =>
   z.string().min(1, { message: t("passwordConfirm") });
 
-// Exported - features/account/schemas/account.schema.ts reuses this for
-// the reverification dialog's email_code step, same 6-digit shape, one
-// definition instead of two.
+// Shared with account reverification's 6-digit email_code step.
 export const codeSchema = (t: ValidationTranslator) =>
   z
     .string()
     .min(1, { message: t("codeRequired") })
     .regex(/^\d{6}$/, { message: t("codeSixDigits") });
-
-/*
- * Sign in
- */
 
 export const buildEmailFormSchema = (t: ValidationTranslator) =>
   z.object({
@@ -56,10 +40,6 @@ export const buildCodeFormSchema = (t: ValidationTranslator) =>
     code: codeSchema(t),
   });
 export type CodeFormValues = z.infer<ReturnType<typeof buildCodeFormSchema>>;
-
-/*
- * Sign up
- */
 
 export const buildSignUpFormSchema = (t: ValidationTranslator) =>
   z
@@ -83,10 +63,6 @@ export const buildSignUpFormSchema = (t: ValidationTranslator) =>
 export type SignUpFormValues = z.infer<
   ReturnType<typeof buildSignUpFormSchema>
 >;
-
-/*
- * Forgot password
- */
 
 export const buildNewPasswordFormSchema = (t: ValidationTranslator) =>
   z

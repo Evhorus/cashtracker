@@ -1,28 +1,24 @@
 "use client";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
+import { withAlpha } from "@/features/categories/lib/with-alpha";
+import type { EnvelopeCategory } from "@/features/envelopes/types";
+import { createExpenseAction } from "@/features/expenses/actions/create-expense.action";
+import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { Button } from "@/shared/components/ui/button";
 import { useActionDialog } from "@/shared/hooks/useActionDialog";
-import { ExpenseForm } from "./expense-form";
-import { createExpenseAction } from "@/features/expenses/actions/create-expense.action";
-import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
-import { resolveIcon } from "@/features/categories/lib/icon-registry";
-import type { EnvelopeCategory } from "@/features/envelopes/types";
-import { withAlpha } from "@/features/categories/lib/with-alpha";
-import type { CurrencyCode } from "@/shared/utils/format-currency";
 import { formatCalendarDateForApi } from "@/shared/utils/date-helpers";
+import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { ExpenseForm } from "./expense-form";
 
 interface CreateExpenseDialogProps {
   envelopeId: string;
   currency: CurrencyCode;
-  /** Optional context for the dialog's subtitle - only
-   * the one call site that already has the envelope object on hand
-   * (envelope/[envelopeId]/page.tsx) passes these; without them the
-   * subtitle falls back to the generic copy it always had. */
   envelopeName?: string;
-  /** "24 ago – 22 sep 2026" - see EnvelopeHelpers.formatPeriod. */
   envelopePeriod?: string;
   envelopeCategory?: EnvelopeCategory | null;
 }
@@ -34,8 +30,6 @@ function ExpenseDialogSubtitle({
 }: {
   envelopeName: string;
   envelopePeriod?: string;
-  /** The envelope's category as the API reports it - no longer a label
-   * this component has to resolve against the category list itself. */
   envelopeCategory?: EnvelopeCategory | null;
 }) {
   const t = useTranslations("expenses.createDialog");
@@ -53,9 +47,7 @@ function ExpenseDialogSubtitle({
           <def.Icon className="h-2.5 w-2.5" />
         </span>
       )}
-      {/* One inline span: t.rich returns several nodes, and as direct
-          flex children each became its own column - "Para el sobre"
-          squeezed into a narrow stack beside a long envelope name. */}
+      {/* Wrapper span keeps t.rich nodes inline instead of separate flex columns. */}
       <span className="min-w-0">
         {t.rich("forEnvelope", {
           name: () => <b className="font-semibold">{envelopeName}</b>,
@@ -112,8 +104,7 @@ export const CreateExpenseDialog = ({
       }
       dialogClassName="sm:max-w-125"
       trigger={
-        // aria-label: below sm the text is display:none, which leaves
-        // an icon-only button with no accessible name.
+        // Explicit aria-label because text label is hidden below sm.
         <Button variant="default" size="lg" aria-label={t("add")}>
           <Plus />
           <span className="hidden sm:inline-block">{t("add")}</span>

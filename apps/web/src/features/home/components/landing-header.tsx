@@ -1,14 +1,12 @@
-import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { buttonVariants } from "@/shared/components/ui/button";
+import { useTranslations } from "next-intl";
+
+import { LocaleToggle } from "@/features/locale/components/locale-toggle";
 import { Logo } from "@/shared/components/common/logo";
 import { ModeToggle } from "@/shared/components/common/mode-toggle";
-import { LocaleToggle } from "@/features/locale/components/locale-toggle";
+import { buttonVariants } from "@/shared/components/ui/button";
 
-// Header for the public marketing page only. The page that renders this
-// (app/(home)/page.tsx) already redirects signed-in users to /dashboard
-// server-side, so this is always the signed-out state - no need to pull
-// in Clerk's client SDK just to show a static "Iniciar sesión" link.
+// Public landing header only; signed-in users redirect server-side, so no Clerk client SDK is needed.
 export const LandingHeader = () => {
   const t = useTranslations("nav");
   return (

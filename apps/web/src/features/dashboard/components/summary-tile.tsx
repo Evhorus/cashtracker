@@ -1,33 +1,17 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+
 import { cn } from "@/shared/lib/utils";
 
 interface SummaryTileProps {
   icon: LucideIcon;
   label: string;
   value: number | string;
-  /**
-   * "primary" (the default) is the standard tile look. "alert" tints the
-   * icon amber for a non-zero count that wants attention, and "muted" is
-   * the resting look for a count of zero. The "En alerta" tile switches
-   * between alert and muted on its own count, which is why this is a
-   * prop rather than baked into a variant per tile.
-   */
+  /** Icon tint: "primary" (default), "alert" (non-zero warning count), or "muted" (zero count). */
   tone?: "primary" | "alert" | "muted";
-  /**
-   * Where the tile goes. Both of Resumen's tiles have one: a count of
-   * envelopes that a reader cannot open is a dead end, and this one
-   * looked clickable enough that it was reported as broken navigation.
-   */
   href: string;
 }
 
-/**
- * One of the summary page's small count tiles. Extracted from
- * dashboard/page.tsx, where the two were near-identical JSX blocks
- * assigned to local variables so they could be rendered in either of the
- * page's two layouts.
- */
 export function SummaryTile({
   icon: Icon,
   label,

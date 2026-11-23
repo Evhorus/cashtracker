@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+
 import {
   CURRENCY_MAP,
   formatCurrency,
@@ -7,21 +8,12 @@ import {
 
 interface CurrencyTotal {
   currency: CurrencyCode;
-  /** Straight from the summary's own `COUNT(*) ... GROUP BY currency`
-   * (getSummaryAggregate in cashtracker-backend). This used to be counted
-   * client-side from a fetched envelope list, which was both redundant
-   * and capped at 100 - so an account past that showed a count lower than
-   * the totals right beside it, which came from this same uncapped
-   * aggregate. */
+  /** Uncapped backend COUNT(*) grouped by currency (keeps count consistent with totals). */
   totalEnvelopes: number;
   totalAssigned: number;
-  /** Every envelope in this currency, capped or not - never used for the
-   * headline figure below (see totalSpentCapped, same reasoning as
-   * HeroBalanceCard). */
+  /** Spend across all envelopes (capped + unlimited); headline uses `totalSpentCapped`. */
   totalSpent: number;
-  /** Spend within capped envelopes only - what "de X presupuestados"
-   * actually measures against, so this is the headline figure instead
-   * of totalSpent. */
+  /** Spend within capped envelopes only (matches budgeted total). */
   totalSpentCapped: number;
 }
 
@@ -29,10 +21,7 @@ interface CurrencyBreakdownProps {
   totals: CurrencyTotal[];
 }
 
-// Real per-currency totals and counts, every figure from the same
-// backend aggregate so they can't disagree with each other. Only worth
-// rendering when there's more than one currency in play - see
-// statistics/page.tsx.
+// Per-currency totals from a single backend aggregate; rendered only when multiple currencies exist.
 export function CurrencyBreakdown({ totals }: CurrencyBreakdownProps) {
   const t = useTranslations("statistics");
   return (
@@ -40,10 +29,7 @@ export function CurrencyBreakdown({ totals }: CurrencyBreakdownProps) {
       {totals.map((total) => {
         const config = CURRENCY_MAP[total.currency];
         const count = total.totalEnvelopes;
-        // Same reasoning as HeroBalanceCard's unlimitedSpent - money
-        // spent outside any budget, real but not part of "de X
-        // presupuestados" below, so it's called out on its own line
-        // instead of silently folded into the headline figure.
+        // Uncapped spend is shown separately rather than folded into the budgeted headline figure.
         const unlimitedSpent = total.totalSpent - total.totalSpentCapped;
         return (
           <div

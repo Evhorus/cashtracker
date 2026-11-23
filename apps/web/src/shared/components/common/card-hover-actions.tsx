@@ -3,29 +3,11 @@ import { cn } from "@/shared/lib/utils";
 interface CardHoverActionsProps {
   children: React.ReactNode;
   className?: string;
-  /**
-   * Table rows (EnvelopesTable, CategoriesTable) pass this - a row's
-   * edit/delete only being discoverable on hover is a real problem
-   * there specifically (trackpads with imprecise hover, touchscreens
-   * with no hover at all, or just a user who never happens to rest the
-   * pointer on that exact row), so those always show the buttons
-   * instead. Cards (EnvelopeCard, ExpenseCard, CategoryCard) keep the
-   * hover-reveal default - same actions are still one tap away there
-   * via each card's own mobile drawer/menu, so hover is a bonus for
-   * desktop's less-cluttered look, not the only way in.
-   */
+  /** Keep buttons visible without hover (used in table rows; cards keep hover-reveal since they have a mobile menu). */
   alwaysVisible?: boolean;
 }
 
-/**
- * Wrapper for a card or table row's desktop-only action buttons
- * (edit/delete and friends). Takes any number of children - no fixed
- * action count - each one typically a <CardActionButton>.
- *
- * Mobile doesn't get hover, so every caller pairs this with its own
- * tap-friendly equivalent (a dropdown menu or drawer) shown only below
- * `md`.
- */
+/** Desktop-only action wrapper (hidden below `md`; callers pair with a tap-friendly mobile menu). */
 export function CardHoverActions({
   children,
   className,

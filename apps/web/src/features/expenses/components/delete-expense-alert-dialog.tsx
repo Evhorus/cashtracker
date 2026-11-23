@@ -1,33 +1,12 @@
 "use client";
-import { useTranslations } from "next-intl";
-import { deleteExpenseAction } from "@/features/expenses/actions/delete-expense.action";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/components/ui/alert-dialog";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/shared/components/ui/drawer";
-import { Button } from "@/shared/components/ui/button";
-import { CardActionButton } from "@/shared/components/common/card-action-button";
-import { cn } from "@/shared/lib/utils";
-import { Loader2, Trash2 } from "lucide-react";
+
 import { useState } from "react";
-import { useIsDesktop } from "@/shared/hooks/use-media-query";
+import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { deleteExpenseAction } from "@/features/expenses/actions/delete-expense.action";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { ConfirmDeleteDialog } from "@/shared/components/common/confirm-delete-dialog";
 import { useActionDialog } from "@/shared/hooks/useActionDialog";
 
 interface DeleteExpenseAlertDialogProps {
@@ -36,14 +15,7 @@ interface DeleteExpenseAlertDialogProps {
   className?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Override the default trigger's a11y label - the expense detail
-   * page's desktop header passes the shorter common.delete since
-   * there's only one delete button on that page, no ambiguity to
-   * resolve. Only applies to the desktop (AlertDialog) trigger below -
-   * the mobile Drawer trigger is unaffected. */
   label?: string;
-  /** See CardActionButton - only the expense detail page's header turns
-   * this on. Desktop-only trigger, same reasoning as `label`. */
   showLabelOnDesktop?: boolean;
 }
 
@@ -59,108 +31,44 @@ export const DeleteExpenseAlertDialog = ({
   const t = useTranslations("expenses");
   const tCommon = useTranslations("common");
   const [internalOpen, setInternalOpen] = useState(false);
-  const isDesktop = useIsDesktop();
-  const { dispatch, isPending } = useActionDialog(
-    deleteExpenseAction,
-    {
-      errors: [],
-      success: "",
-    },
-    {
-      setOpen: (open) => {
-        if (controlledOpen === undefined) {
-          setInternalOpen(open);
-        } else {
-          setControlledOpen?.(open);
-        }
-      },
-    },
-  );
 
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? setControlledOpen : setInternalOpen;
-
-  const handleDeleteExpense = async () => {
-    dispatch({ envelopeId, expenseId });
+  const setOpen = (nextOpen: boolean) => {
+    if (isControlled) {
+      setControlledOpen?.(nextOpen);
+    } else {
+      setInternalOpen(nextOpen);
+    }
   };
 
-  if (isDesktop) {
-    return (
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        {!isControlled && (
-          <AlertDialogTrigger
-            render={
-              <CardActionButton
-                icon={Trash2}
-                label={label ?? t("deleteAria")}
-                tone="destructive"
-                showLabelOnDesktop={showLabelOnDesktop}
-                className={className}
-              />
-            }
-          />
-        )}
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteDialog.description")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                handleDeleteExpense();
-              }}
-              className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 sm:w-auto"
-              disabled={isPending}
-            >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {tCommon("delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  }
+  const { dispatch, isPending } = useActionDialog(
+    deleteExpenseAction,
+    { errors: [], success: "" },
+    { setOpen },
+  );
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      {!isControlled && (
-        <DrawerTrigger
-          render={
-            <Button className={cn(className)} variant="ghost" size="icon">
-              <Trash2 className="h-4 w-4 text-muted-foreground transition-colors hover:text-destructive" />
-            </Button>
-          }
-        />
-      )}
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>{t("deleteDialog.title")}</DrawerTitle>
-          <DrawerDescription>{t("deleteDialog.description")}</DrawerDescription>
-        </DrawerHeader>
-        <DrawerFooter className="pt-2">
-          <Button
-            className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            onClick={handleDeleteExpense}
-            disabled={isPending}
-          >
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {tCommon("delete")}
-          </Button>
-          <DrawerClose
-            render={
-              <Button variant="outline" className="w-full">
-                {tCommon("cancel")}
-              </Button>
-            }
+    <ConfirmDeleteDialog
+      open={open}
+      onOpenChange={setOpen}
+      title={t("deleteDialog.title")}
+      description={t("deleteDialog.description")}
+      confirmLabel={tCommon("delete")}
+      cancelLabel={tCommon("cancel")}
+      isPending={isPending}
+      onConfirm={() => dispatch({ envelopeId, expenseId })}
+      trigger={
+        isControlled ? undefined : (
+          <CardActionButton
+            icon={Trash2}
+            label={label ?? t("deleteAria")}
+            tone="destructive"
+            showLabelOnDesktop={showLabelOnDesktop}
+            className={className}
           />
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        )
+      }
+    />
   );
 };

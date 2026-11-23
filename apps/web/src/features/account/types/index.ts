@@ -1,7 +1,4 @@
-// Provider-agnostic account types. Nothing in this file (or in
-// features/account/components/) should ever import an auth SDK directly -
-// that's confined to features/account/hooks/, same rule as features/auth/
-// (see src/features/auth/types/index.ts).
+// Provider-agnostic account types; keep auth SDK imports confined to features/account/hooks/.
 
 export interface AccountUser {
   firstName: string;
@@ -32,57 +29,34 @@ export interface AccountSession {
   id: string;
   isCurrent: boolean;
   lastActiveAt: Date;
-  /** null when Clerk reports no browser at all - the *word* for that
-   * ("unknown browser") is a translation, so it's the component's to
-   * supply, not this hook's. Same for `location`. */
+  /** Null when Clerk reports no browser; components supply the localized fallback label. */
   browser: string | null;
-  /** Which icon and which word to show; not the word itself. */
   isMobile: boolean;
   location: string | null;
 }
 
 export interface ConnectedAccount {
   id: string;
-  /** Clerk's own provider id (e.g. "google") - kept as a plain string
-   * since Clerk recognizes many more providers than the two this app's
-   * sign-up flow offers (see features/auth/types' narrower
-   * OAuthProvider). Used to hide a provider from "connect a new one"
-   * once it's already linked. */
+  /** Clerk provider id (e.g. "google"); kept as string since Clerk supports more providers than OAuthProvider. */
   providerId: string;
   label: string;
   identifier: string;
   imageUrl: string;
 }
 
-/**
- * Mirrors Clerk's SessionVerificationLevel by value, not by import - same
- * reason every other type in this file mirrors a Clerk shape instead of
- * importing it (see the file-level comment above). use-reverification-
- * gate.ts is the only place that converts a real Clerk level into one of
- * these.
- */
+/** Mirrors Clerk's SessionVerificationLevel by value so components stay SDK-agnostic. */
 export type ReverificationLevel =
   "first_factor" | "second_factor" | "multi_factor";
 
-/**
- * What ReverificationProvider needs to hand ReverificationDialog to drive
- * one reverification attempt - the `complete`/`cancel` callbacks come
- * straight from Clerk's useReverification(fn, { onNeedsReverification })
- * (see use-reverification-gate.ts), but nothing here reveals that; the
- * dialog itself is provider-agnostic.
- */
+/** Provider-agnostic callbacks and level handed to ReverificationDialog for one attempt. */
 export interface ReverificationRequest {
-  /** Resolves the original sensitive action so it retries automatically. */
+  /** Resolves the guarded action so it retries automatically. */
   complete: () => void;
-  /** Rejects the original action - called on cancel or on closing the dialog. */
+  /** Rejects the guarded action on cancel or dialog close. */
   cancel: () => void;
   level: ReverificationLevel;
 }
 
-/**
- * Which credential ReverificationDialog should currently collect, decided
- * by use-reverification-flow.ts once it knows what this account supports
- * (password, if the account has one, otherwise a 6-digit email code).
- */
+/** Credential ReverificationDialog collects (password if set, otherwise 6-digit email code). */
 export type ReverificationFactor =
   { kind: "password" } | { kind: "email_code"; safeIdentifier: string };

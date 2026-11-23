@@ -3,20 +3,14 @@ export interface Category {
   label: string;
   /** oklch() color string - one of CategoryOptions.colors. */
   color: string;
-  /** Icon key - one of CategoryOptions.icons, resolved to a LucideIcon
-   * component via resolveIcon (lib/icon-registry.ts) for rendering. */
+  /** Icon key from CategoryOptions.icons, resolved via resolveIcon(). */
   icon: string;
-  /** True for the ones every account starts with. Informational only:
-   * each user has their own copy, so they edit and delete like any other. */
+  /** True for starter categories; users own their copy and can edit/delete them. */
   isDefault: boolean;
   createdAt: Date;
 }
 
-/**
- * The icon/color whitelist the backend accepts (GET /categories/options,
- * fetched rather than hardcoded here - see category.schema.ts's
- * CategoryOptionsAPIResponseSchema for why).
- */
+/** Backend icon/color whitelist from GET /categories/options (see category.schema.ts). */
 export interface CategoryOptions {
   icons: string[];
   colors: string[];

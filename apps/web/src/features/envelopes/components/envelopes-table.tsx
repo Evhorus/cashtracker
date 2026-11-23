@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { Edit, Infinity as InfinityIcon, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Envelope } from "@/features/envelopes/types";
-import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
-import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import { cn } from "@/shared/lib/utils";
+
 import {
   CategoryIcon,
   CategoryLabel,
 } from "@/features/categories/components/category-badge";
+import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
+import { Envelope } from "@/features/envelopes/types";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
 import {
   Table,
   TableBody,
@@ -17,8 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
-import { CardActionButton } from "@/shared/components/common/card-action-button";
+import { cn } from "@/shared/lib/utils";
+import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
 import { EnvelopeStatusBadge } from "./envelope-status-badge";
 
 interface EnvelopesTableProps {
@@ -27,15 +28,7 @@ interface EnvelopesTableProps {
   onDelete: (envelope: Envelope) => void;
 }
 
-// Desktop-only (see envelopes-grid.tsx - the card grid still covers
-// mobile). A dense data table instead of a stretched-out card grid is
-// the one piece of the redesign mockup that most says "this is built for
-// a desktop power user, not a phone screen scaled up". Built on the
-// shadcn Table primitives (components/ui/table.tsx) rather than raw
-// <table> markup, with their stock styling overridden to match this
-// app's own standard (rounded-2xl border card, uppercase header, px-5
-// py-3.5 cells) instead of shadcn's defaults - see categories-table.tsx
-// for the same treatment.
+// Desktop-only table; mobile renders EnvelopeCard in envelopes-grid.tsx.
 export function EnvelopesTable({
   envelopes,
   onEdit,
@@ -91,9 +84,7 @@ export function EnvelopesTable({
                       category={envelope.category}
                       className="h-9 w-9 rounded-lg"
                     />
-                    {/* The period under the name: envelopes can share a
-                        name ("Gastos tarjetas de crédito" every month),
-                        and the dates are what tells them apart. */}
+                    {/* Show period under name since recurring envelopes can share names. */}
                     <span className="min-w-0">
                       <span className="block truncate font-medium hover:text-primary">
                         {envelope.name}
@@ -122,10 +113,7 @@ export function EnvelopesTable({
                     </span>
                   ) : (
                     <div className="flex items-center gap-2.5">
-                      {/* Decorative: the same percentage is spelled out
-                          in the text right next to it, so a
-                          role="progressbar" here would just make a
-                          screen reader announce it twice. */}
+                      {/* Decorative bar; adjacent percentage text avoids duplicate screen-reader announcements. */}
                       <div
                         aria-hidden="true"
                         className="h-1.5 w-24 shrink-0 overflow-hidden rounded-full bg-secondary/60"

@@ -1,8 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { XIcon } from "lucide-react";
-import { useIsDesktop } from "@/shared/hooks/use-media-query";
+import { useTranslations } from "next-intl";
+
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -21,16 +21,14 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/shared/components/ui/drawer";
+import { useIsDesktop } from "@/shared/hooks/use-media-query";
 
 interface ResponsiveFormSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Omit when the sheet is fully controlled from outside (same convention
-   * as the dialogs below - e.g. opened from a card's own actions menu). */
+  /** Omit when fully controlled from outside (e.g. opened from a card actions menu). */
   trigger?: React.ReactElement;
   title: string;
-  /** Usually a plain string, but accepts a richer node (e.g. an inline
-   * category icon + envelope name) - see create-expense-dialog.tsx. */
   description: React.ReactNode;
   dialogClassName?: string;
   children: React.ReactNode;
@@ -39,14 +37,7 @@ interface ResponsiveFormSheetProps {
 /** Roughly how long a phone's on-screen keyboard takes to slide in. */
 const KEYBOARD_OPEN_DELAY_MS = 300;
 
-/**
- * Scrolls the field being typed into back into view once the keyboard
- * is up. The drawer is anchored to the bottom of the screen, so on a
- * short phone (iPhone SE) the keyboard can cover the very field that
- * opened it; browsers do not always scroll inside this container on
- * their own. Text-entry elements only - a button or switch opens no
- * keyboard.
- */
+/** Scrolls focused text inputs into view after the mobile on-screen keyboard animates in inside the bottom drawer. */
 function keepFocusedFieldVisible(event: React.FocusEvent<HTMLDivElement>) {
   const field = event.target;
   if (!(
@@ -64,13 +55,7 @@ function keepFocusedFieldVisible(event: React.FocusEvent<HTMLDivElement>) {
   }, KEYBOARD_OPEN_DELAY_MS);
 }
 
-// Dialog on desktop, Drawer (bottom sheet) on mobile - same
-// isDesktop/useMediaQuery split delete-expense-alert-dialog.tsx already
-// uses, pulled out here since it's now shared by four create/edit forms
-// (create/update-envelope-dialog.tsx, create/update-expense-dialog.tsx)
-// instead of duplicated in each. The Drawer branch shows a swipe handle
-// and scrolls its own body - a full envelope/expense form is taller than
-// the drawer's max height, and DrawerContent itself doesn't scroll.
+// Dialog on desktop, scrollable bottom Drawer on mobile (DrawerContent does not scroll on its own).
 export function ResponsiveFormSheet({
   open,
   onOpenChange,

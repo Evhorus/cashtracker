@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { useActionDialog } from "@/shared/hooks/useActionDialog";
 import { createPaymentMethodAction } from "../actions/create-payment-method.action";
@@ -14,13 +15,9 @@ interface PaymentMethodDialogProps {
   onOpenChange: (open: boolean) => void;
   /** Present to edit, absent to create. */
   paymentMethod?: PaymentMethod;
-  /** Fires once a new payment method is created, with its id - e.g. so
-   * PaymentMethodPicker can auto-select it. */
   onCreated?: (paymentMethodId: string) => void;
 }
 
-/** Create or edit a payment method; opened from the account section or
- * from the expense form's "+ Nuevo". */
 export function PaymentMethodDialog({
   open,
   onOpenChange,

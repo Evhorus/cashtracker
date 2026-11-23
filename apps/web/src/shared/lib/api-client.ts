@@ -1,8 +1,9 @@
+import { z } from "zod";
+
 import {
   authenticatedFetch,
-  AuthenticatedFetchOptions,
+  type AuthenticatedFetchOptions,
 } from "./authenticated-fetch";
-import { z } from "zod";
 
 export class ApiError extends Error {
   constructor(
@@ -15,13 +16,26 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Fetch wrapper that automatically handles JSON parsing,
- * optional Zod validation, and throws typed ApiError.
- *
- * T is the expected return type. If a schema is provided,
- * the return type will be the output of that schema.
- */
+function extractApiErrorMessage(data: unknown): string | null {
+  if (!data || typeof data !== "object" || !("message" in data)) {
+    return null;
+  }
+
+  const { message } = data as { message?: unknown };
+  if (typeof message === "string") {
+    return message.trim() || null;
+  }
+  if (Array.isArray(message)) {
+    const joined = message
+      .filter((entry): entry is string => typeof entry === "string")
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .join(". ");
+    return joined || null;
+  }
+  return null;
+}
+
 export async function fetchApi<T>(
   path: string,
   options?: AuthenticatedFetchOptions,
@@ -29,19 +43,15 @@ export async function fetchApi<T>(
 ): Promise<T> {
   const response = await authenticatedFetch(path, options);
 
-  let data: unknown;
   const contentType = response.headers.get("content-type");
-
-  if (contentType?.includes("application/json")) {
-    data = await response.json().catch(() => null);
-  } else {
-    data = await response.text().catch(() => null);
-  }
+  const data: unknown = contentType?.includes("application/json")
+    ? await response.json().catch(() => null)
+    : await response.text().catch(() => null);
 
   if (!response.ok) {
     throw new ApiError(
       response.status,
-      ((data as Record<string, unknown>)?.message as string) ||
+      extractApiErrorMessage(data) ||
         response.statusText ||
         "API request error",
       data,
@@ -57,7 +67,7 @@ export async function fetchApi<T>(
     console.error(`API Validation Error at ${path}:`, result.error.issues);
     throw new ApiError(
       response.status,
-      `Server response does not match the expected format.`,
+      "Server response does not match the expected format.",
       result.error,
     );
   }

@@ -1,38 +1,27 @@
 import { useTranslations } from "next-intl";
+
 import { Progress } from "@/shared/components/ui/progress";
+import { cn } from "@/shared/lib/utils";
 import {
   CURRENCY_MAP,
   formatCurrency,
   type CurrencyCode,
 } from "@/shared/utils/format-currency";
-import { cn } from "@/shared/lib/utils";
 
 interface HeroBalanceCardProps {
   currency: CurrencyCode;
   totalAssigned: number;
-  /** Every envelope in this currency, capped or not - never used for
-   * the Gastado figure or the progress bar below (see totalSpentCapped). */
+  /** Spend across all envelopes (capped + unlimited); budget progress uses `totalSpentCapped`. */
   totalSpent: number;
-  /** Spend within capped envelopes only - what "Gastado" and the
-   * progress bar compare against totalAssigned. */
+  /** Spend within capped envelopes only, compared against `totalAssigned`. */
   totalSpentCapped: number;
-  /** What is left in envelopes still under their limit - never negative.
-   * The envelopes' state today, not filtered by any month: the same
-   * number whether someone keeps one envelope per month or one per
-   * purpose for good. */
+  /** Remaining balance in under-limit envelopes (never negative, not month-filtered). */
   totalAvailable: number;
-  /** How far envelopes over their limit went past it, shown on its own
-   * line rather than netted against totalAvailable. */
+  /** Overspend above limits, shown separately rather than netted against `totalAvailable`. */
   totalExceeded: number;
-  /** Lets the parent grid span this card across both columns when it's
-   * the odd one out in its row - see dashboard/page.tsx. */
   className?: string;
 }
 
-// The redesign's "hero" treatment for the Resumen page - previously this
-// data only ever rendered as one of StatsCards' small grid tiles. Serif
-// display numeral + thin progress bar + tabular Gastado figure, same
-// visual language the mockup used for the balance.
 export function HeroBalanceCard({
   currency,
   totalAssigned,
@@ -49,10 +38,7 @@ export function HeroBalanceCard({
     totalAssigned > 0
       ? Math.min((totalSpentCapped / totalAssigned) * 100, 100)
       : 0;
-  // Spent in envelopes with no limit - real money, just not part of any
-  // budget, so it can't be folded into Gastado/percentage above without
-  // making them inconsistent with Disponible (see totalSpentCapped's
-  // doc comment). Surfaced as its own line instead of hidden.
+  // Uncapped spend is shown on its own line so budget progress stays consistent with totalAvailable.
   const unlimitedSpent = totalSpent - totalSpentCapped;
   const isOverBudget = totalSpentCapped > totalAssigned;
 
@@ -64,10 +50,7 @@ export function HeroBalanceCard({
       )}
     >
       <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-        {/* Always shown, even with a single currency in play - money
-            amounts read as ambiguous without it (is this pesos or
-            dollars?). Not "este mes": this is the envelopes' state, and
-            envelopes are not necessarily monthly. */}
+        {/* Always tag currency (even with one currency) to keep amounts unambiguous. */}
         {t("available")} · {currency}
       </span>
 
@@ -86,8 +69,7 @@ export function HeroBalanceCard({
 
       {totalAssigned > 0 && (
         <>
-          {/* Red once the capped envelopes together are over budget: a
-              full green bar there read as "all good". */}
+          {/* Show red when aggregate capped spend exceeds totalAssigned. */}
           <Progress
             value={percentage}
             className={cn(

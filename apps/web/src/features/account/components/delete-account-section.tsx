@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
+import { ErrorMessage } from "@/shared/components/common/error-message";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { ErrorMessage } from "@/shared/components/common/error-message";
 import { Input } from "@/shared/components/ui/input";
 import { useDeleteAccount } from "../hooks/use-delete-account";
 import type { AccountUser } from "../types";
@@ -32,10 +32,6 @@ interface DeleteAccountSectionProps {
   user: AccountUser;
 }
 
-// Same "type it to confirm" idiom as
-// features/envelopes/components/delete-envelope-alert-dialog.tsx, using
-// the user's own email as the string to type - there's no shorter name
-// to reuse here the way an envelope/expense has one.
 export function DeleteAccountSection({ user }: DeleteAccountSectionProps) {
   const t = useTranslations("account.danger");
   const tCommon = useTranslations("common");

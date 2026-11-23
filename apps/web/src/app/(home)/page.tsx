@@ -1,32 +1,25 @@
-import { features } from "@/features/home/constants/features";
-import { LandingHeader } from "@/features/home/components/landing-header";
-import { Button } from "@/shared/components/ui/button";
-import { auth } from "@clerk/nextjs/server";
 import { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { Check, Sparkles, Wallet } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
+import { LandingHeader } from "@/features/home/components/landing-header";
+import { features } from "@/features/home/constants/features";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { redirect } from "next/navigation";
-import Link from "next/link";
 
-// metadataBase is inherited from the root layout (it used to be
-// declared here, pointing at port 3000 while the dev server runs on
-// 3001). Everything below is landing-page specific and stays.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("home.meta");
 
   return {
-    // No `title` here on purpose. The root layout's `default` is already
-    // t("home.meta.title") - this same string - and setting it again sends
-    // it through that layout's "%s | CashTracker" template, which rendered
-    // "CashTracker - Control de Finanzas Personales | CashTracker".
-    // openGraph.title below is separate and unaffected: it has no template.
+    // Omit `title` so the root layout's default is used without wrapping it in the "%s | CashTracker" template.
     description: t("description"),
     keywords: t("keywords").split(", "),
     authors: [{ name: "CashTracker Team" }],
@@ -57,11 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
-// Resource-level check (not middleware - see proxy.ts) so a signed-in
-// visitor is redirected to /dashboard instead of seeing the marketing
-// page again. auth() reads the already-verified session (no network
-// call, unlike currentUser()), so this is cheap even though it does
-// mean the route can no longer prerender as fully static.
+// Resource-level auth check (not middleware) redirects signed-in users to /dashboard using the verified session.
 export default async function Home() {
   const t = await getTranslations("home");
   const { isAuthenticated } = await auth();
@@ -71,7 +60,6 @@ export default async function Home() {
     <div className="min-h-svh bg-background">
       <LandingHeader />
 
-      {/* Hero Section */}
       <section className="relative overflow-hidden px-4 py-20 text-center md:py-32">
         <div
           aria-hidden
@@ -101,17 +89,10 @@ export default async function Home() {
                 {t("ctaStart")}
               </Button>
             </Link>
-
-            {/* <Link href="/demo">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Ver Demo
-              </Button>
-            </Link> */}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="container mx-auto bg-muted/30 px-4 py-20">
         <div className="mb-16 text-center">
           <h2 className="mb-4 text-3xl font-bold md:text-4xl">
@@ -145,7 +126,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Benefits Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="mx-auto max-w-4xl">
           <div className="grid items-center gap-12 md:grid-cols-2">
@@ -206,7 +186,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="container mx-auto bg-muted/30 px-4 py-20">
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <h2 className="text-3xl font-bold md:text-4xl">{t("finalTitle")}</h2>
@@ -219,7 +198,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-border/40 py-8">
         <div className="container mx-auto flex flex-col items-center gap-3 px-4 text-center text-muted-foreground">
           <div className="flex items-center gap-2">

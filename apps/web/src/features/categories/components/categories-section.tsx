@@ -1,61 +1,41 @@
 "use client";
+
 import { useState } from "react";
-import { useTranslations } from "next-intl";
 import { SearchX } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { useCategories } from "@/features/categories/providers/categories-provider";
 import { EmptyState } from "@/shared/components/common/empty-state";
 import { ListFilterBar } from "@/shared/components/common/list-filter-bar";
-import { useCategories } from "@/features/categories/providers/categories-provider";
+import { SearchInput } from "@/shared/components/common/search-input";
+import { Text } from "@/shared/components/common/typography";
 import { resolveIcon } from "../lib/icon-registry";
-import { CategoryCard } from "./category-card";
 import { CategoriesTable } from "./categories-table";
+import { CategoryCard } from "./category-card";
 import {
   DeleteCategoryAlertDialog,
   type CategoryToDelete,
 } from "./delete-category-alert-dialog";
-import { CategoriesSearch } from "./categories-search";
-import { useCategoriesFilter } from "./categories-filter-context";
-import { Text } from "@/shared/components/common/typography";
 
 interface CategoriesSectionProps {
-  /** Per-category envelope count, keyed by CategoryDef.id - computed in
-   * dashboard/categories/page.tsx from the real envelope list, not
-   * estimated. Missing keys just mean 0. */
   categoryCounts: Record<string, number>;
-  /** Right-aligned on the same row as the search and filter, desktop
-   * only - see ListFilterBar. */
   actions?: React.ReactNode;
 }
 
-// Same standard as EnvelopesGrid/EnvelopesFilter: a search box, a count line, then a mobile card list + desktop table. Search
-// filtering reads CategoriesFilterProvider's context (search state
-// lives there, not here, so the search box itself can render inline in
-// the page header on desktop - see categories/page.tsx) rather than
-// EnvelopesFilter's debounced URL-param round-trip - the full category
-// list already lives on the client (useCategories()), no backend call
-// needed to filter it, so instant is both simpler and better UX here.
 export function CategoriesSection({
   categoryCounts,
   actions,
 }: CategoriesSectionProps) {
   const t = useTranslations("categories");
-  // One dialog for the whole list, owned here. A per-row dialog lost its
-  // own success toast - see delete-category-alert-dialog.tsx.
+  const [search, setSearch] = useState("");
   const [toDelete, setToDelete] = useState<CategoryToDelete | null>(null);
   const categories = useCategories();
-  const { search } = useCategoriesFilter();
 
-  // No useMemo: the React Compiler (reactCompiler: true in
-  // next.config.ts) memoizes this on the same three dependencies.
   const term = search.trim().toLowerCase();
   const filtered = categories.filter(
     (category) => !term || category.label.toLowerCase().includes(term),
   );
 
-  // Scoped to the current search/type filter - matches EnvelopesGrid's
-  // meta.total, which is always "however many match what's on screen
-  // right now", not a static grand total that stops making sense once
-  // you've filtered the list down (found while testing: searching down
-  // to 1 category still showed the full unfiltered "15 sobres").
   const totalEnvelopesCategorized = filtered.reduce(
     (sum, category) => sum + (categoryCounts[category.id] ?? 0),
     0,
@@ -63,13 +43,17 @@ export function CategoriesSection({
 
   return (
     <div className="space-y-6">
-      {/* Kept out of the page header (see categories/page.tsx) so the
-          search box isn't isolated top-right, far from both the title
-          and the table it filters, on a wide viewport - see
-          ListFilterBar. */}
       <ListFilterBar
         actions={actions}
-        renderSearch={(className) => <CategoriesSearch className={className} />}
+        renderSearch={(className) => (
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t("searchPlaceholder")}
+            aria-label={t("searchAria")}
+            className={className}
+          />
+        )}
       />
 
       <Text>

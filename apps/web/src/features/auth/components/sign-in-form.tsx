@@ -1,18 +1,17 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { SubmitButton } from "@/shared/components/common/submit-button";
 import { ErrorMessage } from "@/shared/components/common/error-message";
 import { FormInput } from "@/shared/components/common/form-input";
+import { OtpInput } from "@/shared/components/common/otp-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
 import { Text } from "@/shared/components/common/typography";
-import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,13 +20,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
+import { Input } from "@/shared/components/ui/input";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import { OAuthButtons } from "./oauth-buttons";
 import { useSignIn } from "../hooks/use-sign-in";
 import {
   type CodeFormValues,
@@ -37,21 +37,11 @@ import {
   type SignInPasswordFormValues,
   buildSignInPasswordFormSchema,
 } from "../schemas/auth.schema";
+import { OAuthButtons } from "./oauth-buttons";
 
 type Method = "password" | "code";
 
-// Custom-built sign-in UI on top of the useSignIn() hook (features/auth/
-// hooks/use-sign-in.ts) - that hook owns all provider-specific auth
-// state/validation; this component only ever calls its methods and reads
-// fieldErrors/globalErrors, same spirit as the rest of the app leaving
-// submission state to its own data layer. Client-side validation (schema-
-// driven, react-hook-form + zodResolver + FormInput) follows the same
-// pattern as envelope-form.tsx/expense-form.tsx - it catches shape
-// problems (empty fields, malformed email) before ever calling Clerk;
-// fieldErrors (passed to FormInput as serverError) is whatever Clerk
-// itself reports once a request is actually made (wrong password, no
-// such account, etc.) - both share the same field slot, client-side
-// taking priority since it means the request was never sent.
+// Delegates Clerk state to useSignIn(); react-hook-form validates shape client-side, Clerk errors surface via serverError.
 export function SignInForm() {
   const t = useTranslations("auth.signIn");
   const tCommon = useTranslations("common");
@@ -155,9 +145,7 @@ export function SignInForm() {
                 disabled={isSubmitting}
                 serverError={fieldErrors.identifier}
               />
-              {/* Password needs a "forgot password?" link next to its
-                  label, so it stays a manual Controller instead of
-                  FormInput. */}
+              {/* Uses Controller directly to place the "forgot password?" link beside the label. */}
               <Controller
                 control={passwordForm.control}
                 name="password"
@@ -241,14 +229,32 @@ export function SignInForm() {
                     ),
                   })}
                 </Text>
-                <FormInput
+                <Controller
                   control={codeVerifyForm.control}
                   name="code"
-                  label={tCommon("code")}
-                  placeholder="123456"
-                  autoComplete="one-time-code"
-                  disabled={isSubmitting}
-                  serverError={fieldErrors.code}
+                  render={({ field, fieldState }) => {
+                    const message =
+                      fieldState.error?.message ?? fieldErrors.code;
+                    return (
+                      <Field>
+                        <FieldLabel htmlFor="sign-in-code">
+                          {tCommon("code")}
+                        </FieldLabel>
+                        <OtpInput
+                          id="sign-in-code"
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={isSubmitting}
+                          autoFocus
+                          aria-invalid={
+                            fieldState.invalid || !!fieldErrors.code
+                          }
+                        />
+                        {message && <FieldError>{message}</FieldError>}
+                      </Field>
+                    );
+                  }}
                 />
                 <SubmitButton
                   type="submit"

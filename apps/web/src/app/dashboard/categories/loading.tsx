@@ -1,10 +1,6 @@
 import { PageHeaderSkeleton } from "@/features/dashboard/components/page-header-skeleton";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
-// Route-level fallback for /dashboard/categories. Without it the page
-// borrowed dashboard/loading.tsx - the Resumen skeleton - while its usage
-// counts loaded. Mirrors the real page: header, the search/type filter
-// row, then cards on mobile and a table on desktop.
 export default function CategoriesLoading() {
   return (
     <div className="space-y-6">

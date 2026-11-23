@@ -1,16 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-
-import { ChevronLeft } from "lucide-react";
-import { ClerkProvider } from "@clerk/nextjs";
-import { getClerkLocalization } from "@/shared/config/i18n/clerk-localization";
-import { auth } from "@clerk/nextjs/server";
-import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { ClerkProvider } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { ChevronLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-// Covers /sign-in, /sign-up and /forgot-password (sso-callback lives
-// outside this group - see its own layout for why). Resource-level
-// check per Clerk's current guidance, not middleware - see proxy.ts.
+import { getClerkLocalization } from "@/shared/config/i18n/clerk-localization";
+
+// Resource-level auth guard per Clerk guidance (not middleware; see proxy.ts). /sso-callback lives outside this group.
 export default async function AuthLayout({
   children,
 }: Readonly<{
@@ -25,7 +23,6 @@ export default async function AuthLayout({
     <ClerkProvider localization={clerkLocalization}>
       <div className="grid min-h-svh lg:grid-cols-2">
         <div className="relative hidden items-center justify-center overflow-hidden bg-linear-to-br from-primary/90 via-primary to-primary/80 px-10 lg:flex">
-          {/* Decorative elements */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.08),transparent_50%)]" />
 
@@ -48,7 +45,6 @@ export default async function AuthLayout({
         </div>
 
         <div className="relative flex flex-col overflow-y-auto bg-background px-4 py-10">
-          {/* <ModeToggle className="absolute right-5 top-5" /> */}
           <div className="mx-auto mb-8 flex w-full max-w-xl items-center">
             <Link
               href="/"

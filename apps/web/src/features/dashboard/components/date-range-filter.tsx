@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { DateRange } from "react-day-picker";
 import { CalendarIcon, X } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import type { DateRange } from "react-day-picker";
 
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
@@ -13,6 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
+import type { SupportedLocale } from "@/shared/config/i18n/config";
 import {
   DATE_FNS_LOCALES,
   formatCalendarDateForApi,
@@ -21,36 +22,17 @@ import {
   parseCalendarDate,
   toFormCalendarDate,
 } from "@/shared/utils/date-helpers";
-import type { SupportedLocale } from "@/shared/config/i18n/config";
 
 interface DateRangeFilterProps {
   startDate?: string;
   endDate?: string;
-  /** The boundary this control itself last applied (see PeriodFilterSelect's
-   * own doc comment on the same pair) - preferred over startDate/endDate
-   * below whenever set, since PeriodFilterSelect freely overwrites those
-   * with whichever month/quarter/etc. is currently selected. Without this,
-   * picking "Semestre" after marking 1 Jul 2025 - 1 Jul 2026 made this
-   * button silently show "1 jul - 31 dic 2025" instead of the range you
-   * actually drew. */
+  /** Last user-drawn range boundary; preserved when PeriodFilterSelect narrows startDate/endDate. */
   markedStart?: string;
   markedEnd?: string;
 }
 
-// An exact date range, alternative to YearFilterSelect's whole-year
-// shortcut - picking one clears the other (see handleApply/
-// YearFilterSelect.handleChange), so the two never disagree about
-// which period is active.
-//
-// Needs an explicit "Aplicar" rather than closing on the first
-// complete-looking selection: react-day-picker's range mode reports a
-// *complete* {from, to} pair (both ends equal to the same day) after
-// the very first click, then keeps reporting a complete pair as the
-// second click extends it - there's no "still picking" signal to tell
-// a real range apart from a same-day one just clicked once. Committing
-// to the URL on every onSelect call would apply and close the popover
-// right after that first click, before the user can pick the actual
-// end date.
+// Exact date range (mutually exclusive with YearFilterSelect). Requires explicit Apply because
+// react-day-picker emits a complete {from, to} pair on the very first click.
 export const DateRangeFilter = ({
   startDate,
   endDate,
@@ -65,30 +47,17 @@ export const DateRangeFilter = ({
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
 
-  // The boundary this control shows/edits - the marked one when there is
-  // one (it survives PeriodFilterSelect narrowing startDate/endDate to a
-  // single month/quarter/etc.), otherwise startDate/endDate themselves
-  // (a range picked with no period involved, or an old bookmarked URL
-  // from before markedStart/markedEnd existed).
+  // Prefer marked boundary so PeriodFilterSelect narrowing doesn't overwrite the displayed range.
   const shownStart = markedStart ?? startDate;
   const shownEnd = markedEnd ?? endDate;
 
-  // UTC-anchored - correct for the *label* below (formatCalendarDateShort
-  // reads it that way), but NOT for feeding the Calendar widgets: those
-  // read a Date's LOCAL getters, and this app's TZ (America/Bogota) sits
-  // behind UTC - reading e.g. "2025-07-01T00:00:00Z" locally lands on 30
-  // June. See appliedRangeForCalendar below, and toFormCalendarDate's
-  // own doc comment (date-helpers.ts) for the general hazard - the
-  // expense form already routes through it for the same reason.
+  // UTC-anchored for label formatting; Calendar widgets require browser-local Dates (see below).
   const appliedRange: DateRange | undefined =
     shownStart && shownEnd
       ? { from: parseCalendarDate(shownStart), to: parseCalendarDate(shownEnd) }
       : undefined;
 
-  // The same range, converted to browser-local-anchored Dates - what the
-  // Calendar widgets below actually need (their `selected`/`defaultMonth`
-  // and the draft state derived from it), so reopening the popover shows
-  // the day you actually picked instead of the one before it.
+  // Browser-local Dates for Calendar selected/defaultMonth (avoids off-by-one-day behind UTC).
   const appliedRangeForCalendar: DateRange | undefined = appliedRange
     ? {
         from: toFormCalendarDate(appliedRange.from!),
@@ -96,18 +65,10 @@ export const DateRangeFilter = ({
       }
     : undefined;
 
-  // The in-progress selection while the popover is open - only written
-  // to the URL on "Aplicar". Local-anchored throughout: a fresh pick
-  // from the Calendar is already local-anchored, and appliedRangeForCalendar
-  // (below) keeps a reopen consistent with that, so handleApply's
-  // formatCalendarDateForApi (itself local-anchored, see date-helpers.ts)
-  // never has to guess which kind of Date it was handed.
+  // Local-anchored draft selection; written to URL only on Apply via formatCalendarDateForApi.
   const [draftRange, setDraftRange] = useState(appliedRangeForCalendar);
 
-  // Reset the draft from the applied range right as the popover opens
-  // (not in an effect - there's no external system to synchronize
-  // with, just an event to react to), so a cancelled edit never leaks
-  // into the next open.
+  // Reset draft on open so a cancelled edit never leaks into the next open.
   const handleOpenChange = (next: boolean) => {
     if (next) setDraftRange(appliedRangeForCalendar);
     setOpen(next);
@@ -122,21 +83,14 @@ export const DateRangeFilter = ({
     if (!draftRange?.from || !draftRange?.to) return;
     const params = new URLSearchParams(searchParams);
     params.delete("year");
-    // A hand-picked range isn't any of PeriodFilterSelect's period
-    // types - drop its bookkeeping params so that control falls back to
-    // showing "Todo el tiempo" instead of a stale month/quarter/etc.
+    // Clear period params so PeriodFilterSelect resets to all-time.
     params.delete("period");
     params.delete("periodValue");
     const start = formatCalendarDateForApi(draftRange.from);
     const end = formatCalendarDateForApi(draftRange.to);
     params.set("startDate", start);
     params.set("endDate", end);
-    // markedStart/markedEnd record this boundary on its own, separately
-    // from startDate/endDate - PeriodFilterSelect overwrites the latter
-    // with whatever month/quarter/etc. you land on, but keeps clipping
-    // its own instance lists to *this* pair until a new range is drawn
-    // here (or cleared below), so "solo lo que marqué" holds even after
-    // switching between period types (see that component's own notes).
+    // Persist the drawn boundary separately so PeriodFilterSelect keeps clipping to it.
     params.set("markedStart", start);
     params.set("markedEnd", end);
     navigate(params);
@@ -155,10 +109,7 @@ export const DateRangeFilter = ({
     setOpen(false);
   };
 
-  // "1 jul – 30 jun" reads as backwards (and is ambiguous about which
-  // year is which) once the range crosses a calendar year - only then
-  // is the year worth the extra width, same call the chart's own axis
-  // labels make (see statistics/page.tsx's spansMultipleYears).
+  // Show years only when the range crosses a calendar year boundary.
   const spansMultipleYears =
     appliedRange &&
     hasMultipleYears([
@@ -186,14 +137,7 @@ export const DateRangeFilter = ({
           }
         />
         <PopoverContent className="w-auto p-0" align="end">
-          {/* Two independently-navigable single-date calendars, not one
-              range calendar with numberOfMonths={2} - that linked both
-              panels to always-adjacent months sharing one navigation
-              state, so picking the "from" year (e.g. 2025) and then
-              the "to" year (e.g. 2026) on the other panel silently
-              dragged the first panel's year along with it. Each side
-              here owns its month/year independently; `disabled` below
-              is what still keeps the pair from crossing. */}
+          {/* Two independent single-date calendars: numberOfMonths={2} links month/year navigation across panels. */}
           <div className="flex flex-col divide-y divide-border/60 sm:flex-row sm:divide-x sm:divide-y-0">
             <div>
               <p className="px-3 pt-3 text-xs font-medium text-muted-foreground">

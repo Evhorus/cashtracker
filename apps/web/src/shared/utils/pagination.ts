@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-/**
- * Shape of the `meta` block on every paginated API response
- * (mirrors PaginatedResponseDto on the backend).
- */
+/** Mirrors backend `PaginatedResponseDto` meta shape. */
 export const PaginationMetaSchema = z.object({
   total: z.number(),
   page: z.number(),
@@ -15,7 +12,6 @@ export const PaginationMetaSchema = z.object({
 
 export type PaginationMeta = z.infer<typeof PaginationMetaSchema>;
 
-/** Wraps an item schema into the standard `{ data, meta }` paginated shape. */
 export const paginatedSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
   z.object({
     data: z.array(itemSchema),
@@ -27,7 +23,6 @@ export interface PaginationParams {
   limit?: number;
 }
 
-/** Appends page/limit (if present) to a URLSearchParams instance. */
 export function appendPaginationParams(
   params: URLSearchParams,
   { page, limit }: PaginationParams,

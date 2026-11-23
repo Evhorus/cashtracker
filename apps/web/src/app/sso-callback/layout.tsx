@@ -1,12 +1,8 @@
 import { ClerkProvider } from "@clerk/nextjs";
+
 import { getClerkLocalization } from "@/shared/config/i18n/clerk-localization";
 
-// Scoped ClerkProvider, same reasoning as (auth)/layout.tsx and
-// dashboard/layout.tsx. This route is intentionally its own top-level
-// segment (not under (auth)/) so it does NOT inherit that layout's
-// "redirect away if already signed in" check - this is exactly the
-// page where a session is being created, so it must be reachable
-// mid-flow regardless of auth state.
+// Kept outside (auth)/ so it skips the "redirect if signed in" guard while an OAuth session is being created.
 export default async function SSOCallbackLayout({
   children,
 }: Readonly<{

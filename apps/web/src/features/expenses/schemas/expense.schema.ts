@@ -1,12 +1,14 @@
 import { z } from "zod";
-import type { CurrencyCode } from "@/shared/utils/format-currency";
-import { PaginationMetaSchema } from "@/shared/utils/pagination";
+
 import { ExpensePaymentMethodAPISchema } from "@/features/payment-methods/schemas/payment-method.schema";
 import {
-  MAX_AMOUNT,
+  hasAtMostTwoDecimals,
   isPositiveAmount,
+  MAX_AMOUNT,
   type ValidationTranslator,
 } from "@/shared/lib/validation";
+import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { PaginationMetaSchema } from "@/shared/utils/pagination";
 
 export const ExpenseAPIResponseSchema = z.object({
   id: z.string(),
@@ -14,10 +16,7 @@ export const ExpenseAPIResponseSchema = z.object({
   amount: z.string(),
   currency: z.string().default("COP"),
   date: z.string(),
-  // The API can send explicit `null` (not just an absent key) - needs
-  // `.nullable()` alongside `.optional()`, same as EnvelopeAPIResponseSchema.
   description: z.string().nullable().optional(),
-  // Optional for responses from before payment methods existed.
   paymentMethod: ExpensePaymentMethodAPISchema.nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -25,16 +24,6 @@ export const ExpenseAPIResponseSchema = z.object({
 
 export type ExpenseApi = z.infer<typeof ExpenseAPIResponseSchema>;
 
-/**
- * Expenses-only `meta` block: adds `totalAmount`, the SUM(amount) over
- * the full filtered set (same search/startDate/endDate as the list),
- * computed server-side before pagination - not the page in hand, not
- * the envelope's global `spent`. Kept off the shared
- * `PaginationMetaSchema` (mirrors the backend's own
- * ExpensesPaginationMetaDto) since no other paginated list has an
- * amount to sum. `z.coerce.number()` because, like every other money
- * field in this API, a numeric aggregate can come back as a string.
- */
 const ExpensesPaginationMetaSchema = PaginationMetaSchema.extend({
   totalAmount: z.coerce.number(),
 });
@@ -48,37 +37,34 @@ export type ExpensesPaginationMeta = z.infer<
   typeof ExpensesPaginationMetaSchema
 >;
 
-/**
- * Expense form schema, built per-envelope. The currency is never chosen
- * freely by the user - it's always locked to the currency of the envelope
- * the expense belongs to (`z.literal(currency)`), so it's structurally
- * impossible to submit an expense whose currency doesn't match its
- * envelope.
- */
+/** Built per-envelope so currency is structurally locked to the parent envelope. */
 export const buildExpenseSchema = (
   currency: CurrencyCode,
   t: ValidationTranslator,
 ) =>
   z.object({
-    name: z.string().min(1, { message: t("expenseNameRequired") }),
+    name: z
+      .string()
+      .min(1, { message: t("expenseNameRequired") })
+      .refine((value) => value.trim().length > 0, {
+        message: t("notOnlySpaces"),
+      })
+      .transform((value) => value.trim()),
     amount: z
       .string({ message: t("amountRequired") })
       .min(1, { message: t("amountEmpty") })
       .refine(isPositiveAmount, { message: t("amountMustBePositive") })
-      // Without this the number reaches the API and overflows a
-      // decimal(12, 2), which comes back as a 500 and renders as
-      // "Internal server error".
+      .refine(hasAtMostTwoDecimals, { message: t("amountMaxDecimals") })
       .refine((value) => Number(value) <= MAX_AMOUNT, {
         message: t("amountTooLarge"),
       }),
     currency: z.literal(currency),
     date: z.coerce.date<Date>({ message: t("dateRequired") }),
-
     description: z
       .string()
       .max(500, { message: t("descriptionTooLong") })
       .optional(),
-    /** A payment method id, or "" for none. */
+    /** Payment method id, or "" for none. */
     paymentMethodId: z.string(),
   });
 

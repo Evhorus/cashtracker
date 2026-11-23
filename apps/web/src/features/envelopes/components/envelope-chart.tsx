@@ -1,39 +1,22 @@
 "use client";
-import { Cell, Label, Pie, PieChart } from "recharts";
 import { useTranslations } from "next-intl";
+import { Cell, Label, Pie, PieChart } from "recharts";
+
+import type { EnvelopeProgressStatus } from "@/features/envelopes/lib/envelope-helpers";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
-import type { EnvelopeProgressStatus } from "@/features/envelopes/lib/envelope-helpers";
 
 interface EnvelopeChartProps {
   spent: number;
   total: number;
-  /** From `envelope.status`, reported by the API - the chart colors
-   * itself off the same status every other view (the envelopes list's
-   * progress bars, envelope-card.tsx, this same page's own spent
-   * figure right next to it) uses, instead of a bespoke `spent > total`
-   * check of its own. That used to mean the chart could show green at
-   * 92% (only "exceeded" flips it, no warning state) while the number
-   * beside it was already amber - same envelope, two different verdicts
-   * on the same page. Never "unlimited" here - the page only renders
-   * this chart for a capped envelope; unlimited ones show a running
-   * total instead (see envelope/[envelopeId]/page.tsx).
-   */
+  /** Backend-reported status so chart colors match other views; unlimited envelopes never render this chart. */
   status: Exclude<EnvelopeProgressStatus, "unlimited">;
 }
 
-// "Donut Chart - Text" pattern from ui.shadcn.com/charts/pie: the stats
-// next to this on the envelope detail page already spell out the exact
-// spent/limit numbers and percentage, so this chart's only job is to be the
-// one *visual* read of that same ratio - the center label carries the
-// number so nobody has to eyeball a slice size, and there's no separate
-// legend competing with it (the two colors are self-explained by the
-// center label plus the surrounding numbers). No Card wrapper here - it's
-// embedded inside the envelope detail page's own summary panel.
 export const EnvelopeChart = ({ spent, total, status }: EnvelopeChartProps) => {
   const t = useTranslations("envelopes.chart");
   const isExceeded = status === "exceeded";
@@ -42,11 +25,7 @@ export const EnvelopeChart = ({ spent, total, status }: EnvelopeChartProps) => {
   const remaining = Math.max(0, total - spent);
   const overspent = Math.max(0, spent - total);
 
-  // Which config key colors the "spent" wedge itself - green normally,
-  // amber in the warning zone. Exceeded keeps the wedge up to the limit
-  // green and adds a second red "overspent" wedge for the overage
-  // instead, same idea as everywhere else that shows "how much was
-  // within budget" separately from "how much went over."
+  // Warning uses amber; exceeded keeps the within-budget wedge green and adds a red overspent wedge.
   const spentKey = isWarning ? "warningSpent" : "spent";
 
   const data = isExceeded
@@ -70,9 +49,7 @@ export const EnvelopeChart = ({ spent, total, status }: EnvelopeChartProps) => {
     },
     available: {
       label: t("available"),
-      // A neutral "track" tone rather than a data color - --muted matches
-      // --card's lightness in dark mode (near-invisible), so this uses
-      // --muted-foreground instead, softened via Cell's fillOpacity below.
+      // Uses --muted-foreground (softened via Cell fillOpacity) because --muted blends into --card in dark mode.
       color: "var(--muted-foreground)",
     },
     overspent: {

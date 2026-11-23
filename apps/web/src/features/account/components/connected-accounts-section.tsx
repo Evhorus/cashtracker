@@ -1,8 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Loader2, Unlink } from "lucide-react";
+import { useTranslations } from "next-intl";
 
+import { OAuthButtons } from "@/features/auth/components/oauth-buttons";
+import type { OAuthProvider } from "@/features/auth/types";
+import { ErrorMessage } from "@/shared/components/common/error-message";
+import { Text } from "@/shared/components/common/typography";
 import {
   Avatar,
   AvatarFallback,
@@ -16,10 +20,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { ErrorMessage } from "@/shared/components/common/error-message";
-import { Text } from "@/shared/components/common/typography";
-import { OAuthButtons } from "@/features/auth/components/oauth-buttons";
-import type { OAuthProvider } from "@/features/auth/types";
 import { useConnectedAccounts } from "../hooks/use-connected-accounts";
 
 const OAUTH_PROVIDERS: OAuthProvider[] = ["google", "facebook"];
@@ -35,9 +35,6 @@ export function ConnectedAccountsSection() {
     disconnectAccount,
   } = useConnectedAccounts();
 
-  // Only offer providers not already linked - "Google" still showing up
-  // under "connect a new provider" right next to an already-connected
-  // Google account reads as broken, not as a real second option.
   const linkedProviders = connectedAccounts
     .map((account) => account.providerId)
     .filter((id): id is OAuthProvider =>

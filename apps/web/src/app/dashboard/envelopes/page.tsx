@@ -1,35 +1,29 @@
-import type { Metadata } from "next";
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
-import { getEnvelopes } from "@/features/envelopes/data/get-envelopes";
-import { EnvelopesGrid } from "@/features/envelopes/components/envelopes-grid";
-import { EnvelopesFilter } from "@/features/envelopes/components/envelopes-filter";
-import { CreateEnvelopeDialog } from "@/features/envelopes/components/create-envelope-dialog";
+
 import { PageHeader } from "@/features/dashboard/components/page-header";
-import { PaginationControls } from "@/shared/components/common/pagination-controls";
-import { Text } from "@/shared/components/common/typography";
+import { CreateEnvelopeDialog } from "@/features/envelopes/components/create-envelope-dialog";
+import { EnvelopesFilter } from "@/features/envelopes/components/envelopes-filter";
+import { EnvelopesGrid } from "@/features/envelopes/components/envelopes-grid";
 import { EnvelopesResultsSkeleton } from "@/features/envelopes/components/envelopes-list-skeleton";
 import {
   ENVELOPE_STATUS_TAB_VALUES,
-  parseEnvelopeSort,
-  type EnvelopeSort,
   ENVELOPES_DEFAULT_PAGE_SIZE,
   ENVELOPES_PAGE_SIZE_OPTIONS,
+  parseEnvelopeSort,
+  type EnvelopeSort,
   type EnvelopeStatusTab,
 } from "@/features/envelopes/lib/envelope-helpers";
+import { EnvelopesService } from "@/features/envelopes/services/envelopes.service";
+import { PaginationControls } from "@/shared/components/common/pagination-controls";
+import { Text } from "@/shared/components/common/typography";
 
-// generateMetadata, not a static `metadata` object: the tab title has
-// to follow the reader's language, and a module-level constant is
-// evaluated once at build time with no request (and so no locale) in
-// scope. Same reason every other page in this app switched.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("envelopes");
   return { title: t("title") };
 }
-
-// Force dynamic rendering because this page uses Clerk auth
-export const dynamic = "force-dynamic";
 
 interface EnvelopesPageProps {
   searchParams: Promise<{
@@ -69,33 +63,15 @@ export default async function EnvelopesPage({
 
   return (
     <div className="space-y-6">
-      {/* Static - no live count here anymore (see EnvelopesCount below).
-          Tying this to the fetch meant the whole header sat inside the
-          same Suspense boundary as the slow part, so clicking a status
-          tab froze the header along with it instead of reacting
-          instantly. */}
       <PageHeader
         title={t("title")}
         backUrl="/dashboard"
-        // Desktop's create button lives on the filter row instead (see
-        // below), pinned right on the same line as the search and
-        // filter. Mobile keeps it here, icon-only beside the title.
         mobileActions={<CreateEnvelopeDialog />}
       />
 
-      {/* Outside the Suspense boundary below on purpose - EnvelopesFilter
-          is pure client UI (its active tab/search value reads the URL
-          directly via useSearchParams), so it re-renders instantly on
-          click regardless of how slow the actual data fetch is. Without
-          this split, the entire page was one async Server Component, so
-          a transition had nothing to commit until the backend responded
-          - the tab click just sat there looking unresponsive. */}
       <EnvelopesFilter actions={<CreateEnvelopeDialog />} />
 
-      {/* key remounts this boundary (and re-shows the fallback) on every
-          filter change instead of quietly swapping content once ready -
-          the visible "yes, that click registered" feedback the tabs
-          alone can't give while the new list is still loading. */}
+      {/* Key remounts on filter change so the skeleton shows immediately while refetching. */}
       <Suspense
         key={`${page}-${search ?? ""}-${status}-${sort}-${limit}`}
         fallback={
@@ -132,13 +108,7 @@ async function EnvelopesResults({
   limit,
 }: EnvelopesResultsProps) {
   const t = await getTranslations("envelopes");
-  // The backend applies the status filter in SQL, so `meta` counts the
-  // filtered set and one page is one request. This used to fetch every
-  // envelope (capped at 100) and filter/paginate in memory, which meant
-  // the count and the tabs quietly under-reported once an account passed
-  // that cap - and, in a finance app, silently incomplete numbers are the
-  // worst kind of wrong.
-  const { data, meta } = await getEnvelopes({
+  const { data, meta } = await EnvelopesService.getAll({
     page,
     limit,
     search,
@@ -146,18 +116,9 @@ async function EnvelopesResults({
     sort,
   });
 
-  // meta.total is already scoped to `search`/`status` - a live count of
-  // whatever's actually showing, not a fixed page size, and correctly
-  // reads as "3 envelopes" while filtering instead of a static subtitle that
-  // never moves. No budget total alongside it - envelopes span multiple
-  // currencies (COP/USD/EUR), and summing across them into one number
-  // would be meaningless, same reasoning as everywhere else in the app
-  // that keeps currency totals separate.
-  const total = meta.total;
-
   return (
     <div className="space-y-6">
-      <Text>{t("count", { count: total })}</Text>
+      <Text>{t("count", { count: meta.total })}</Text>
 
       <EnvelopesGrid
         envelopes={data}

@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+
 import {
   Card,
   CardContent,
@@ -16,9 +17,6 @@ export default function StatisticsLoadingSkeleton() {
           <Skeleton className="mb-2 h-9 w-full max-w-48" />
           <Skeleton className="h-5 w-full max-w-64" />
         </div>
-        {/* Breadcrumb + the year/currency filters, matching this page's
-            own header row (it doesn't use PageHeader - see
-            statistics/page.tsx for why). */}
         <div className="flex w-full items-center gap-4 sm:w-auto">
           <Skeleton className="hidden h-4 w-40 md:block" />
           <Skeleton className="h-10 w-full sm:w-40" />

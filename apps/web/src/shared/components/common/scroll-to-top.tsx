@@ -1,13 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
-/**
- * Forces the window to scroll to top whenever the pathname changes.
- * This ensures navigating between different "Envelopes" or "Details"
- * always starts from the top position.
- */
 export function ScrollToTop() {
   const pathname = usePathname();
 

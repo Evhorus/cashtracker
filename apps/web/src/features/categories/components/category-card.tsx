@@ -1,26 +1,21 @@
-import { useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Card, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import type { Category } from "../types";
 import { CategoryIconBadge } from "./category-icon-badge";
-import { UpdateCategoryDialog } from "./update-category-dialog";
-import { DeleteCategoryButton } from "./delete-category-button";
 import type { CategoryToDelete } from "./delete-category-alert-dialog";
+import { DeleteCategoryButton } from "./delete-category-button";
+import { UpdateCategoryDialog } from "./update-category-dialog";
 
 interface CategoryCardProps {
   category: Category;
   count: number;
-  /** Already resolved by the caller's .map() (categories-section.tsx) -
-   * see category-icon-badge.tsx for why it's never resolved in here. */
+  /** Pre-resolved via resolveIcon() by the caller (see category-icon-badge.tsx). */
   Icon: LucideIcon;
   onDelete: (category: CategoryToDelete) => void;
 }
 
-// Mobile-only (see categories-section.tsx). Same visual language as
-// EnvelopeCard - elevated hover (-translate-y-1, shadow-lg), the
-// gradient overlay, the bigger icon that scales on hover, bold tracked
-// title - just without a progress bar/amount, since a category has
-// neither.
 export function CategoryCard({
   category,
   count,
@@ -29,7 +24,7 @@ export function CategoryCard({
 }: CategoryCardProps) {
   const t = useTranslations("categories");
   return (
-    <Card className="group relative h-full overflow-hidden border-border/60 bg-card/50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-card hover:shadow-lg md:hidden">
+    <Card className="group relative h-full overflow-hidden border-border/60 bg-card/50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-card hover:shadow-lg">
       <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-transparent to-primary/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <CardHeader className="relative z-10 flex flex-row items-center justify-between gap-2 space-y-0">
@@ -51,10 +46,6 @@ export function CategoryCard({
           </div>
         </div>
 
-        {/* No hover concept on mobile (this card is md:hidden - the
-            desktop rows use CardHoverActions instead) - shown plainly,
-            same as EnvelopeActionsMenu's role for EnvelopeCard, just
-            without a dropdown since there are only ever two actions. */}
         <div className="flex shrink-0 items-center">
           <UpdateCategoryDialog category={category} />
           <DeleteCategoryButton

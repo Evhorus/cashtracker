@@ -1,20 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
 import { RotateCw, TriangleAlert } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Text } from "@/shared/components/common/typography";
+import { useTranslations } from "next-intl";
 
-// Catches any render/data error anywhere under /dashboard that doesn't
-// handle it itself - none of these routes had an error boundary before
-// (a thrown error surfaced Next.js's own generic page). Client Component
-// per the App Router's error.tsx contract.
-//
-// "Retry" calls retry(), not reset(): retry() re-fetches and re-renders the
-// boundary's children, so the layout starts its categories and payment
-// methods requests again. reset() only clears the error state, and the
-// providers would hand back the same rejected promise.
+import { Text } from "@/shared/components/common/typography";
+import { Button } from "@/shared/components/ui/button";
+
+// Dashboard error boundary; uses retry() instead of reset() so the layout re-fetches
+// categories and payment methods rather than re-throwing the same rejected promise.
 export default function DashboardError({
   error,
   retry,

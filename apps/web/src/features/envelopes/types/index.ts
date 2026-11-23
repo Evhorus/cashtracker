@@ -8,8 +8,6 @@ export interface EnvelopesResponse {
   meta: PaginationMeta;
 }
 
-/** An envelope's category as the API reports it - enough to render the
- * chip without a lookup. */
 export interface EnvelopeCategory {
   id: string;
   label: string;
@@ -20,32 +18,18 @@ export interface EnvelopeCategory {
 export interface Envelope {
   id: string;
   name: string;
-  /**
-   * Spending limit. `null` means this envelope is an unlimited running
-   * counter (no cap, no progress bar) rather than a capped budget.
-   */
+  /** Spending limit, or `null` for an unlimited running counter. */
   amount: string | null;
-  /**
-   * Fixed at creation time. Every expense in this envelope must use this
-   * same currency (enforced by ExpenseForm - never chosen freely).
-   */
+  /** Fixed at creation; all expenses in this envelope inherit this currency. */
   currency: CurrencyCode;
   spent: string;
-  /**
-   * Reported by the API, not derived here. The backend owns the warning
-   * threshold and the edge cases so every client - this one, a future
-   * mobile app - shows the same status for the same envelope. See
-   * src/envelopes/utils/envelope-status.ts in cashtracker-backend.
-   */
+  /** Backend-computed status (warning thresholds live in cashtracker-backend). */
   status: EnvelopeProgressStatus;
-  /** Reported whole by the API (label/colour/icon), or null when the
-   * envelope is unclassified. Never resolved client-side any more. */
+  /** Embedded by the API, or `null` when unclassified. */
   category: EnvelopeCategory | null;
   description?: string;
   expenses: Expense[];
-  /** The span of its expenses' dates (UTC-anchored calendar dates), or
-   * null without expenses: the period the envelope really covers, which
-   * neither its free-text name nor its creation date can say. */
+  /** UTC-anchored span of this envelope's expense dates, or `null` when empty. */
   expenseDateRange: { first: Date; last: Date } | null;
   createdAt: Date;
   updatedAt: Date;

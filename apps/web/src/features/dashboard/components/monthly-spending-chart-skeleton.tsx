@@ -1,11 +1,12 @@
 import { useTranslations } from "next-intl";
-import { Skeleton } from "@/shared/components/ui/skeleton";
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export const MonthlySpendingChartSkeleton = () => {
   const t = useTranslations("statistics");

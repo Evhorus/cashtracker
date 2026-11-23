@@ -1,8 +1,9 @@
 "use client";
 
+import { useId, useState } from "react";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+
 import { FieldLabel } from "@/shared/components/ui/field";
 import { Switch } from "@/shared/components/ui/switch";
 import { cn } from "@/shared/lib/utils";
@@ -19,12 +20,7 @@ interface PaymentMethodPickerProps {
 const chip =
   "flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm transition-colors disabled:opacity-50";
 
-/**
- * The field is optional, so it starts as a single switch and only shows
- * the chips once the user turns it on - most expenses never need them.
- * Turning it off clears the choice. Chips rather than a dropdown: on a
- * phone that is one touch instead of two, and the list is short.
- */
+/** Optional payment-method switch + chip picker; toggling off clears the selection. */
 export function PaymentMethodPicker({
   value,
   onChange,

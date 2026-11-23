@@ -1,7 +1,7 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 import {
   isSupportedLocale,
@@ -9,16 +9,7 @@ import {
   type SupportedLocale,
 } from "@/shared/config/i18n/config";
 
-/**
- * Writes the locale cookie. A Server Action rather than a client-side
- * `document.cookie` write because the locale is read on the server (in
- * i18n/request.ts) to pick the messages: setting it in the browser would
- * leave the already-rendered server output in the old language until
- * something happened to re-render it.
- *
- * A year, matching how long a language preference is reasonably
- * remembered, and `lax` so following a link into the app keeps it.
- */
+/** Persists the locale cookie on the server (read by i18n/request.ts) and revalidates all layouts. */
 export async function setLocaleAction(locale: SupportedLocale) {
   if (!isSupportedLocale(locale)) return;
 
@@ -29,6 +20,5 @@ export async function setLocaleAction(locale: SupportedLocale) {
     sameSite: "lax",
   });
 
-  // Every page's text depends on this, so the whole tree is stale.
   revalidatePath("/", "layout");
 }

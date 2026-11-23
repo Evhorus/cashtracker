@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { LucideIcon, MoreVertical } from "lucide-react";
+
+import { Button } from "@/shared/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -8,8 +11,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/shared/components/ui/drawer";
-import { Button } from "@/shared/components/ui/button";
-import { LucideIcon, MoreVertical } from "lucide-react";
 
 export interface ActionItem {
   label: string;
@@ -20,21 +21,11 @@ export interface ActionItem {
 
 interface ActionsDrawerProps {
   actions: ActionItem[];
-  /** Drawer heading. Required: it used to default to a hardcoded
-   * Spanish word, which every caller overrode anyway. */
   title: string;
   triggerClassName?: string;
 }
 
-// Mobile-only by design: every caller already restricts this to mobile
-// (wrapped in `md:hidden`, or handed to PageHeader's mobileActions slot,
-// which does the same) - desktop already has its own action affordance,
-// CardHoverActions on list cards (envelope-card.tsx/expense-card.tsx) or
-// PageHeader's `actions` icon pair on detail pages. This used to also
-// render a DropdownMenu on desktop via its own useMediaQuery check, but
-// that branch was unreachable everywhere it's actually used - a "drawer"
-// component that silently became a dropdown depending on viewport was
-// more confusing to read than useful, so it's gone.
+// Mobile-only drawer (callers wrap in md:hidden; desktop uses inline/hover actions).
 export const ActionsDrawer = ({
   actions,
   title,
@@ -46,11 +37,7 @@ export const ActionsDrawer = ({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger
         render={
-          // aria-label, because the trigger is an icon with no text: a
-          // screen reader announced it as an unnamed button, and there is
-          // one per row, so "button" was all a user got. `title` is
-          // already the drawer's own heading ("Opciones de Sobre"), so
-          // reusing it keeps the name and the panel saying the same thing.
+          // Reuse title as aria-label for the icon-only trigger.
           <Button
             variant="ghost"
             size="icon"

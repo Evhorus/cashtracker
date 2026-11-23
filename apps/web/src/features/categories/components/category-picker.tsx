@@ -1,29 +1,25 @@
 "use client";
-import { useIsDesktop } from "@/shared/hooks/use-media-query";
-
-import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import { Check, ChevronDown, Plus, Search } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { useTranslations } from "next-intl";
+
+import { useCategories } from "@/features/categories/providers/categories-provider";
+import { Text } from "@/shared/components/common/typography";
 import { Input } from "@/shared/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
+import { useIsDesktop } from "@/shared/hooks/use-media-query";
+import { cn } from "@/shared/lib/utils";
 import { resolveIcon } from "../lib/icon-registry";
 import { withAlpha } from "../lib/with-alpha";
-import { useCategories } from "@/features/categories/providers/categories-provider";
-import { Text } from "@/shared/components/common/typography";
 import { CreateCategoryDialog } from "./create-category-dialog";
 
-// Same minimal explicit prop shape as currency-selector.tsx (not the full
-// react-hook-form ControllerRenderProps) - envelope-form.tsx spreads
-// `{...field}` onto this the same way it does onto CurrencySelector; the
-// extra field props (onBlur, name, ref) just go unused.
+// Minimal Controller-compatible prop shape; extra spread props from react-hook-form are ignored.
 export interface CategoryPickerProps {
-  /** The selected category's id, or "" / undefined for none. Used to be
-   * a label; envelopes reference categories by id now. */
+  /** Selected category id, or "" / undefined for none. */
   value?: string;
   onChange: (value: string) => void;
   disabled?: boolean;
@@ -49,8 +45,6 @@ export function CategoryPicker({
   const listboxId = useId();
   const categories = useCategories();
 
-  // A direct lookup by id - no more matching a free-text label against
-  // the list case-insensitively.
   const selected = categories.find((category) => category.id === value) ?? null;
   // On an object, not a capitalized local - see category-badge.tsx.
   const selectedDef = selected
@@ -112,8 +106,7 @@ export function CategoryPicker({
       />
       <PopoverContent align="start" className="w-72 gap-0 p-0">
         <div className="p-2">
-          {/* Desktop only, like the forms: on a phone it opens the keyboard
-              over the very list this popover is for. */}
+          {/* Desktop only: on mobile autoFocus opens the keyboard over the option list. */}
           <Input
             autoFocus={isDesktop}
             value={search}

@@ -4,30 +4,21 @@ import { useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { SearchInput } from "@/shared/components/common/search-input";
-import { useDebouncedSearchParam } from "@/shared/hooks/use-debounced-search-param";
-import { ListFilterBar } from "@/shared/components/common/list-filter-bar";
-import { FilterSelect } from "@/shared/components/common/filter-select";
 import {
   ENVELOPE_SORT_VALUES,
   ENVELOPE_STATUS_TAB_VALUES,
   ENVELOPES_DEFAULT_PAGE_SIZE,
-  parseEnvelopeSort,
-  type EnvelopeSort,
   ENVELOPES_MAX_PAGE_SIZE,
   ENVELOPES_PAGE_SIZE_OPTIONS,
+  parseEnvelopeSort,
+  type EnvelopeSort,
   type EnvelopeStatusTab,
 } from "@/features/envelopes/lib/envelope-helpers";
+import { FilterSelect } from "@/shared/components/common/filter-select";
+import { ListFilterBar } from "@/shared/components/common/list-filter-bar";
+import { SearchInput } from "@/shared/components/common/search-input";
+import { useDebouncedSearchParam } from "@/shared/hooks/use-debounced-search-param";
 
-/**
- * The word for a tab. A status tab reads the status's own message - the
- * same one the row badge renders - so the tab bar and the table cannot
- * drift into two vocabularies, which is what happened while every tab
- * had its own `filters.*` label.
- *
- * "all" and "alert" are the exceptions because they are not statuses:
- * they keep their own words under `filters.*`.
- */
 export function statusFilterLabel(
   t: ReturnType<typeof useTranslations<"envelopes">>,
   filter: EnvelopeStatusTab,
@@ -37,11 +28,31 @@ export function statusFilterLabel(
   return t(`status.${filter}`);
 }
 
-// Debounced URL-param search - envelopes are filtered server-side (a
-// paginated backend call), unlike categories/categories-search.tsx,
-// whose full list already lives on the client. The debounce/URL
-// plumbing itself lives in useDebouncedSearchParam, shared with the
-// expenses list.
+/** Updates a single URL query param and resets pagination back to page 1. */
+function useUrlFilterParam(key: string, defaultValue: string) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
+
+  const update = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === defaultValue) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    params.delete("page");
+
+    startTransition(() => {
+      const query = params.toString();
+      router.replace(`${pathname}${query ? `?${query}` : ""}`);
+    });
+  };
+
+  return { rawValue: searchParams.get(key), update };
+}
+
 const EnvelopesSearch = ({ className }: { className?: string }) => {
   const t = useTranslations("envelopes");
   const { value, onChange } = useDebouncedSearchParam();
@@ -60,57 +71,29 @@ const EnvelopesSearch = ({ className }: { className?: string }) => {
 export const EnvelopesStatusFilter = () => {
   const t = useTranslations("envelopes");
   const tCommon = useTranslations("common");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const { rawValue, update } = useUrlFilterParam("status", "all");
 
-  const statusParam = searchParams.get("status");
   const status: EnvelopeStatusTab = ENVELOPE_STATUS_TAB_VALUES.some(
-    (filter) => filter === statusParam,
+    (filter) => filter === rawValue,
   )
-    ? (statusParam as EnvelopeStatusTab)
+    ? (rawValue as EnvelopeStatusTab)
     : "all";
-
-  const handleStatusChange = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-
-    if (value === "all") {
-      params.delete("status");
-    } else {
-      params.set("status", value);
-    }
-
-    // Same reasoning as the search handler above - a narrower filter can
-    // shrink the result set below the current page.
-    params.delete("page");
-
-    startTransition(() => {
-      const query = params.toString();
-      router.replace(`${pathname}${query ? `?${query}` : ""}`);
-    });
-  };
 
   return (
     <FilterSelect
       label={tCommon("status")}
       value={status}
-      onValueChange={handleStatusChange}
+      onValueChange={update}
       className="w-full sm:w-auto"
       options={ENVELOPE_STATUS_TAB_VALUES.map((filter) => ({
         value: filter,
         label: statusFilterLabel(t, filter),
-        // The union sits below a divider - it is a saved view, not one
-        // more state, and the line says so without a word.
         separatorBefore: filter === "alert",
       }))}
     />
   );
 };
 
-// The largest option means "everything" rather than a literal count, so
-// it reads as a word; the other two are just their number. Mirrors
-// ExpensesFilter's pageSizeLabel.
 const pageSizeLabel = (
   t: ReturnType<typeof useTranslations<"envelopes">>,
   size: number,
@@ -118,42 +101,23 @@ const pageSizeLabel = (
 
 export const EnvelopesPageSizeFilter = () => {
   const t = useTranslations("envelopes");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const { rawValue, update } = useUrlFilterParam(
+    "limit",
+    String(ENVELOPES_DEFAULT_PAGE_SIZE),
+  );
 
-  const limitParam = Number(searchParams.get("limit"));
+  const limitParam = Number(rawValue);
   const pageSize = ENVELOPES_PAGE_SIZE_OPTIONS.some(
     (option) => option === limitParam,
   )
     ? limitParam
     : ENVELOPES_DEFAULT_PAGE_SIZE;
 
-  const handlePageSizeChange = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-
-    if (Number(value) === ENVELOPES_DEFAULT_PAGE_SIZE) {
-      params.delete("limit");
-    } else {
-      params.set("limit", value);
-    }
-
-    // Same reasoning as the status handler above - a bigger page can
-    // land past the last one the previous page size had.
-    params.delete("page");
-
-    startTransition(() => {
-      const query = params.toString();
-      router.replace(`${pathname}${query ? `?${query}` : ""}`);
-    });
-  };
-
   return (
     <FilterSelect
       label={t("perPage")}
       value={String(pageSize)}
-      onValueChange={handlePageSizeChange}
+      onValueChange={update}
       className="w-full sm:w-auto"
       options={ENVELOPES_PAGE_SIZE_OPTIONS.map((option) => ({
         value: String(option),
@@ -165,32 +129,14 @@ export const EnvelopesPageSizeFilter = () => {
 
 export const EnvelopesSortFilter = () => {
   const t = useTranslations("envelopes");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
-  const sort = parseEnvelopeSort(searchParams.get("sort"));
-
-  const handleSortChange = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "recent") {
-      params.delete("sort");
-    } else {
-      params.set("sort", value);
-    }
-    // Back to the first page: page N of a new order is arbitrary.
-    params.delete("page");
-    startTransition(() => {
-      const query = params.toString();
-      router.replace(`${pathname}${query ? `?${query}` : ""}`);
-    });
-  };
+  const { rawValue, update } = useUrlFilterParam("sort", "recent");
+  const sort = parseEnvelopeSort(rawValue);
 
   return (
     <FilterSelect
       label={t("sortLabel")}
       value={sort}
-      onValueChange={handleSortChange}
+      onValueChange={update}
       className="w-full sm:w-auto"
       options={ENVELOPE_SORT_VALUES.map((value: EnvelopeSort) => ({
         value,
@@ -200,21 +146,11 @@ export const EnvelopesSortFilter = () => {
   );
 };
 
-// Search full-width above the status tabs on mobile; the two sharing
-// one row on desktop, right above the table they filter - see
-// ListFilterBar for why this is a shared shell, not bespoke markup.
-export const EnvelopesFilter = ({
-  actions,
-}: {
-  /** Right-aligned on the same row, desktop only - see ListFilterBar. */
-  actions?: React.ReactNode;
-}) => {
+export const EnvelopesFilter = ({ actions }: { actions?: React.ReactNode }) => {
   return (
     <ListFilterBar
       actions={actions}
       filters={
-        // On a phone: status on its own row, order and page size side
-        // by side beneath it, rather than three full-width rows.
         <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
           <div className="col-span-2 sm:contents">
             <EnvelopesStatusFilter />

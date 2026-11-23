@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { ExpenseMapper } from "./expense.mapper";
 import type { ExpenseApi } from "../schemas/expense.schema";
+import { ExpenseMapper } from "./expense.mapper";
 
 // Runs under TZ=America/Bogota (UTC-5) - see vitest.config.mts. That is
 // what makes the calendar-date assertions below meaningful: a naive

@@ -5,10 +5,7 @@ import { useSignIn as useClerkSignIn } from "@clerk/nextjs";
 
 import { navigateAfterAuth } from "../lib/navigate-after-auth";
 
-// The only file the forgot-password form needs to know about the auth
-// provider through - see use-sign-in.ts for the full reasoning. Reuses
-// Clerk's signIn resource (password reset is a sign-in variant there),
-// but that's an implementation detail this hook hides.
+// Wraps Clerk's signIn resource (which handles password resets) behind a provider-agnostic hook.
 export function useForgotPassword() {
   const { signIn, errors, fetchStatus } = useClerkSignIn();
   const router = useRouter();

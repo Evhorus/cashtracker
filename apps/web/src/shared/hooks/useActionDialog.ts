@@ -2,12 +2,9 @@
 
 import { startTransition, useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { useActionWithToast } from "@/shared/hooks/useActionWithToast";
 
-interface ActionState {
-  errors?: string[];
-  success?: string;
-}
+import { useActionWithToast } from "@/shared/hooks/useActionWithToast";
+import type { ActionState } from "@/shared/lib/safe-action";
 
 interface UseActionDialogOptions<State extends ActionState> {
   setOpen?: (open: boolean) => void;
@@ -15,17 +12,6 @@ interface UseActionDialogOptions<State extends ActionState> {
   refreshOnSuccess?: boolean;
 }
 
-/**
- * Reusable helper for dialogs that submit a server action and need
- * common success/error handling without coupling to a specific form.
- *
- * @template State The action state shape, typically containing success/errors.
- * @template Payload The payload passed to the server action, such as form values.
- * @param action A server action that accepts the previous state and a payload.
- * @param initialState The initial state used by the action.
- * @param options Optional dialog behaviors such as closing the modal or refreshing the route.
- * @returns An object with the current state, a dispatch helper, and the pending flag.
- */
 export const useActionDialog = <State extends ActionState, Payload>(
   action: (prevState: State, payload: Payload) => Promise<State> | State,
   initialState: State,
@@ -41,12 +27,10 @@ export const useActionDialog = <State extends ActionState, Payload>(
 
   useActionWithToast(state, {
     onSuccess: () => {
-      // Close the dialog after a successful mutation.
       options?.setOpen?.(false);
       options?.onSuccess?.(state);
 
-      // Every write Server Action already calls refreshDashboard(), so an
-      // extra router.refresh() is opt-in to avoid a duplicate RSC round-trip.
+      // Write Server Actions already call refreshDashboard(); extra refresh is opt-in.
       if (options?.refreshOnSuccess === true) {
         router.refresh();
       }

@@ -1,9 +1,4 @@
-// Provider-agnostic auth types. Nothing in this file (or in
-// features/auth/components/) should ever import from an auth SDK
-// directly - that's confined to features/auth/hooks/ and
-// sso-callback-handler.tsx. Swapping providers later means rewriting
-// those, not chasing every place a strategy string or error shape leaked
-// into the UI.
+// Provider-agnostic auth types; direct auth SDK imports stay confined to features/auth/hooks/ and sso-callback-handler.tsx.
 
 export type OAuthProvider = "google" | "facebook";
 

@@ -1,15 +1,11 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
 import { Compass } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Text } from "@/shared/components/common/typography";
+import { getTranslations } from "next-intl/server";
 
-// A real 404, not a redirect. This used to `redirect("/")`, which turned
-// every wrong URL into a silent bounce to the marketing page: the user
-// got no explanation, a signed-in user got bounced again from "/" to
-// /dashboard, and crawlers saw a 302 where a 404 belongs. Rendering the
-// page keeps the correct status code and actually tells the visitor what
-// happened.
+import { Text } from "@/shared/components/common/typography";
+import { Button } from "@/shared/components/ui/button";
+
+// Renders a real 404 page instead of redirecting so status codes stay accurate.
 export default async function NotFound() {
   const t = await getTranslations("errors");
   return (
@@ -27,8 +23,7 @@ export default async function NotFound() {
         <Text className="mx-auto max-w-sm">{t("notFoundBody")}</Text>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row">
-        {/* render + nativeButton={false} is this app's convention for a
-            link that looks like a button - see back-link-button.tsx. */}
+        {/* Base UI convention for a Link styled as a Button (see back-link-button.tsx). */}
         <Button render={<Link href="/dashboard" />} nativeButton={false}>
           {t("goToSummary")}
         </Button>

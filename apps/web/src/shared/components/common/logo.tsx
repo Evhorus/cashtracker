@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { Wallet } from "lucide-react";
 
-// Presentational only - no Clerk dependency, so it can render on the
-// public marketing pages without pulling in Clerk's client bundle.
-// Callers that know the auth state (e.g. CustomHeader) pass `href`.
+// Intentionally free of Clerk imports so public pages don't pull in Clerk's client bundle; callers pass auth-aware `href`.
 export const Logo = ({ href = "/" }: { href?: string }) => {
   return (
     <Link href={href} className="flex items-center gap-2">

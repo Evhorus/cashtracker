@@ -1,17 +1,21 @@
 "use client";
-import { useIsDesktop } from "@/shared/hooks/use-media-query";
-import { useTranslations, useLocale } from "next-intl";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
-import { formatDate, getToday } from "@/shared/utils/date-helpers";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { useTranslations, useLocale } from "next-intl";
+import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@/shared/components/ui/button";
-import { SubmitButton } from "@/shared/components/common/submit-button";
+import {
+  ExpenseFormValues,
+  buildExpenseSchema,
+} from "@/features/expenses/schemas/expense.schema";
+import { PaymentMethodPicker } from "@/features/payment-methods/components/payment-method-picker";
 import { FormInput } from "@/shared/components/common/form-input";
+import { PriceInput } from "@/shared/components/common/price-input";
+import { SubmitButton } from "@/shared/components/common/submit-button";
+import { Button } from "@/shared/components/ui/button";
+import { Calendar } from "@/shared/components/ui/calendar";
 import {
   Field,
   FieldError,
@@ -19,31 +23,22 @@ import {
   FieldLabel,
   FieldSet,
 } from "@/shared/components/ui/field";
-
-import {
-  ExpenseFormValues,
-  buildExpenseSchema,
-} from "@/features/expenses/schemas/expense.schema";
-import { Textarea } from "@/shared/components/ui/textarea";
-import { PriceInput } from "@/shared/components/common/price-input";
-import {
-  CURRENCY_MAP,
-  type CurrencyCode,
-} from "@/shared/utils/format-currency";
-import { Calendar } from "@/shared/components/ui/calendar";
-import { PaymentMethodPicker } from "@/features/payment-methods/components/payment-method-picker";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { useIsDesktop } from "@/shared/hooks/use-media-query";
+import { cn } from "@/shared/lib/utils";
+import { formatDate, getToday } from "@/shared/utils/date-helpers";
+import {
+  CURRENCY_MAP,
+  type CurrencyCode,
+} from "@/shared/utils/format-currency";
 
 interface ExpenseFormProps {
-  /**
-   * Currency the expense is created/edited in. Always the currency of the
-   * envelope this expense belongs to - never chosen freely here, so it's
-   * structurally impossible to mix currencies within one envelope.
-   */
+  /** Envelope currency (locked so expenses never mix currencies within an envelope). */
   currency: CurrencyCode;
   defaultValues?: Partial<ExpenseFormValues>;
   isLoading: boolean;
@@ -63,8 +58,7 @@ export const ExpenseForm = ({
   const isDesktop = useIsDesktop();
   const locale = useLocale();
   const tCommon = useTranslations("common");
-  // No useMemo: the React Compiler (reactCompiler: true in
-  // next.config.ts) memoizes this on `currency` the same way.
+  // Memoized automatically by React Compiler.
   const expenseSchema = buildExpenseSchema(currency, tValidation);
   const currencyConfig = CURRENCY_MAP[currency];
 
@@ -159,12 +153,7 @@ export const ExpenseForm = ({
                         }
                       />
                       <PopoverContent className="w-auto p-0" align="start">
-                        {/* `required`: in single mode react-day-picker
-                            deselects when the selected day is clicked
-                            again - the natural way to confirm it. The form
-                            then held no date while this trigger kept
-                            showing the default one, and saving failed with
-                            "La fecha es obligatoria". */}
+                        {/* required prevents react-day-picker from deselecting the active date on re-click. */}
                         <Calendar
                           mode="single"
                           required

@@ -4,9 +4,7 @@ import { getRequestConfig } from "next-intl/server";
 import { DEFAULT_LOCALE, isSupportedLocale, LOCALE_COOKIE } from "./config";
 import { MESSAGES } from "./messages";
 
-// The locale is a cookie, not a route segment - see i18n/config.ts for
-// why. Written by setLocaleAction (features/locale/actions), read here.
-// The catalogue itself is assembled per feature - see i18n/messages.ts.
+// Locale is cookie-based (set by setLocaleAction) rather than route-segmented; see i18n/config.ts.
 export default getRequestConfig(async () => {
   const store = await cookies();
   const cookieLocale = store.get(LOCALE_COOKIE)?.value;

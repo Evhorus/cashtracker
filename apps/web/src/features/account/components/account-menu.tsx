@@ -1,8 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Loader2, LogOut, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Avatar,
@@ -21,20 +21,11 @@ import {
 import { useAccountUser } from "../hooks/use-account-user";
 
 interface AccountMenuProps {
-  /** Custom trigger content, e.g. dashboard-sidebar.tsx's full identity
-   * card (avatar + name + email). Defaults to the avatar-only button
-   * custom-header.tsx has always used - passing this doesn't change that
-   * call site. Must be a single element (DropdownMenuTrigger's `render`
-   * prop, like Base UI's elsewhere), not any ReactNode. */
+  /** Optional single-element trigger for Base UI's `render` prop (defaults to the avatar button). */
   trigger?: React.ReactElement;
 }
 
-// Replaces Clerk's <UserButton> in custom-header.tsx with a dropdown built
-// from our own primitives, "consuming" Clerk only through
-// use-account-user.ts - see docs/pending-account-management.md for the
-// full reasoning. Only ever rendered once dashboard/layout.tsx has already
-// confirmed a session via auth.protect(), but isLoaded still gates the
-// brief render before Clerk's client-side user data arrives.
+// Custom replacement for Clerk's <UserButton>; `isLoaded` guards the brief client hydration gap.
 export function AccountMenu({ trigger }: AccountMenuProps = {}) {
   const t = useTranslations("account");
   const { isLoaded, user, isSigningOut, signOut } = useAccountUser();
@@ -56,16 +47,9 @@ export function AccountMenu({ trigger }: AccountMenuProps = {}) {
         aria-label={t("menu")}
         render={trigger ?? defaultTrigger}
       />
-      {/* DropdownMenuContent defaults to w-(--anchor-width) - fine for a
-          menu anchored to a normal button, but the trigger here is just
-          the avatar, so left alone the popup would clamp to that same
-          tiny width and truncate the name/email/wrap the sign-out label. An
-          explicit width overrides that. */}
+      {/* Explicit width overrides DropdownMenuContent's default w-(--anchor-width) on the small avatar trigger. */}
       <DropdownMenuContent align="end" className="w-64">
-        {/* Base UI's GroupLabel throws outside a Menu.Group, unlike
-            Radix's ungrouped Label - see dropdown-menu.tsx (base-vega
-            style). Grouping the identity label with "Mi cuenta" reads
-            fine anyway: both are about this account. */}
+        {/* Base UI throws if GroupLabel is rendered outside a Menu.Group. */}
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col gap-0.5 font-normal">
             <span className="truncate text-sm font-medium text-foreground">
