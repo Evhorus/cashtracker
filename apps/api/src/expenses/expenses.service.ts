@@ -82,12 +82,14 @@ export class ExpensesService {
    */
   private async assertPaymentMethodIsUsable(
     userId: string,
-    paymentMethodId?: string | null,
+    paymentMethodId: string | null | undefined,
+    manager: EntityManager,
   ) {
     if (!paymentMethodId) return;
     const method = await this.paymentMethodsRepository.findForUserById(
       userId,
       paymentMethodId,
+      manager,
     );
     if (!method) {
       throw new NotFoundException(ERROR_MESSAGES.PAYMENT_METHOD_NOT_FOUND);
@@ -101,6 +103,7 @@ export class ExpensesService {
       await this.assertPaymentMethodIsUsable(
         envelope.userId,
         createExpenseDto.paymentMethodId,
+        manager,
       );
 
       await this.expensesRepository.create(
@@ -167,6 +170,7 @@ export class ExpensesService {
       await this.assertPaymentMethodIsUsable(
         lockedEnvelope.userId,
         updateExpenseDto.paymentMethodId,
+        manager,
       );
       await this.findExpenseInEnvelope(envelope.id, expenseId, manager);
 

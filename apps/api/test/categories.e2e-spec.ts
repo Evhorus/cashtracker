@@ -96,12 +96,41 @@ describe('Categories (e2e)', () => {
       .send({ label: 'Mi casa' })
       .expect(200);
     await request(app.getHttpServer())
+      .patch(`/categories/${first.id}`)
+      .send({ label: 'MI CASA' })
+      .expect(200);
+    await request(app.getHttpServer())
       .delete(`/categories/${second.id}`)
       .expect(200);
 
     const after = await list();
-    expect(after.map((c) => c.label)).toContain('Mi casa');
+    expect(after.map((c) => c.label)).toContain('MI CASA');
     expect(after.map((c) => c.id)).not.toContain(second.id);
+  });
+
+  it('returns the created id on POST and rejects case-insensitive duplicates', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/categories')
+      .send({
+        label: 'Suscripciones',
+        color: 'oklch(0.72 0.14 153)',
+        icon: 'tag',
+      })
+      .expect(201);
+
+    expect(created.body).toEqual({
+      id: expect.any(String),
+      message: 'Categoría creada',
+    });
+
+    await request(app.getHttpServer())
+      .post('/categories')
+      .send({
+        label: 'suscripciones',
+        color: 'oklch(0.72 0.14 153)',
+        icon: 'tag',
+      })
+      .expect(409);
   });
 
   it('does not bring deleted categories back', async () => {

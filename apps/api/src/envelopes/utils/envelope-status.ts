@@ -93,9 +93,16 @@ export function deriveEnvelopeStatus(
   // (or flip sign on a negative limit) and misreport both cases.
   if (limit <= 0) return used > 0 ? 'exceeded' : 'normal';
 
-  const ratio = used / limit;
-  if (ratio > 1) return 'exceeded';
-  if (ratio >= ENVELOPE_WARNING_THRESHOLD) return 'warning';
+  // Compare in integer thousandths using BigInt instead of `used / limit`
+  // in float: IEEE-754 evaluates values like `5.6 / 7` as
+  // `0.7999999999999999 < 0.8`, making this disagree with Postgres's
+  // exact `numeric` predicate (`spent >= amount * 0.8`).
+  const limitScaled = BigInt(Math.round(limit * 1000));
+  const usedScaled = BigInt(Math.round(used * 1000));
+  const warningPercent = BigInt(Math.round(ENVELOPE_WARNING_THRESHOLD * 100));
+
+  if (usedScaled > limitScaled) return 'exceeded';
+  if (usedScaled * 100n >= limitScaled * warningPercent) return 'warning';
   return 'normal';
 }
 

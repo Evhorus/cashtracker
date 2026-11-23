@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 import { PaginatedResponseDto } from 'src/common/dto/paginated-response.dto';
 import { EnvelopeResponseDto } from './dto/envelope-response.dto';
@@ -11,7 +12,6 @@ import { EnvelopeWithExpensesResponseDto } from './dto/envelope-with-expenses-re
 import { CreateEnvelopeDto } from './dto/create-envelope.dto';
 import { UpdateEnvelopeDto } from './dto/update-envelope.dto';
 import { EnvelopesRepository } from './repositories/envelopes.repository';
-import { Envelope } from './entities/envelope.entity';
 import { CategoriesRepository } from '../categories/repositories/categories.repository';
 
 @Injectable()
@@ -19,6 +19,7 @@ export class EnvelopesService {
   constructor(
     private readonly envelopesRepository: EnvelopesRepository,
     private readonly categoriesRepository: CategoriesRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -116,23 +117,44 @@ export class EnvelopesService {
    * has expenses the currency is fixed: relabelling COP 100.000 as USD
    * 100.000 would be silently wrong. Re-sending the same currency (the
    * edit form always sends it) is not a change.
+   *
+   * When the currency actually changes, the check and update run under
+   * the same `SELECT ... FOR UPDATE` row lock that ExpensesService.create
+   * takes, so a concurrent expense in the old currency cannot land
+   * between `hasExpenses()` and `update()`.
    */
-  private async assertCurrencyCanChange(envelope: Envelope, currency?: string) {
-    if (currency === undefined || currency === envelope.currency) return;
-
-    if (await this.envelopesRepository.hasExpenses(envelope.id)) {
-      throw new ConflictException(ERROR_MESSAGES.ENVELOPE_CURRENCY_LOCKED);
-    }
-  }
-
   async update(id: string, updateEnvelopeDto: UpdateEnvelopeDto) {
     const envelope = await this.findOne(id);
     await this.assertCategoryIsUsable(
       envelope.userId,
       updateEnvelopeDto.categoryId,
     );
-    await this.assertCurrencyCanChange(envelope, updateEnvelopeDto.currency);
-    await this.envelopesRepository.update(id, updateEnvelopeDto);
+
+    const nextCurrency: string | undefined = updateEnvelopeDto.currency;
+    const isCurrencyChange =
+      nextCurrency !== undefined && nextCurrency !== envelope.currency;
+
+    if (isCurrencyChange) {
+      await this.dataSource.transaction(async (manager) => {
+        const locked = await this.envelopesRepository.findByIdForUpdate(
+          id,
+          manager,
+        );
+        if (!locked) {
+          throw new NotFoundException(ERROR_MESSAGES.ENVELOPE_NOT_FOUND);
+        }
+        if (
+          nextCurrency !== locked.currency &&
+          (await this.envelopesRepository.hasExpenses(id, manager))
+        ) {
+          throw new ConflictException(ERROR_MESSAGES.ENVELOPE_CURRENCY_LOCKED);
+        }
+        await this.envelopesRepository.update(id, updateEnvelopeDto, manager);
+      });
+    } else {
+      await this.envelopesRepository.update(id, updateEnvelopeDto);
+    }
+
     return {
       message: 'Sobre actualizado',
     };
@@ -140,6 +162,9 @@ export class EnvelopesService {
 
   async remove(id: string) {
     const envelope = await this.findOne(id);
-    return await this.envelopesRepository.remove(envelope);
+    await this.envelopesRepository.remove(envelope);
+    return {
+      message: 'Sobre eliminado',
+    };
   }
 }

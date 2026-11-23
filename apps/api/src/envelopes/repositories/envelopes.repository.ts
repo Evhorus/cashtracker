@@ -206,8 +206,9 @@ export class EnvelopesRepository {
   }
 
   /** Whether the envelope has at least one expense. */
-  async hasExpenses(id: string) {
-    return this.repository.manager.exists(Expense, {
+  async hasExpenses(id: string, manager?: EntityManager) {
+    const queryManager = manager ?? this.repository.manager;
+    return queryManager.exists(Expense, {
       where: { envelopeId: id },
     });
   }

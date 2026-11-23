@@ -150,6 +150,7 @@ describe('ExpensesService', () => {
       expect(paymentMethodsRepository.findForUserById).toHaveBeenCalledWith(
         mockEnvelope.userId,
         '5b8e2c4e-1f3a-4c7e-9d2b-8a6f0e1c2d3b',
+        entityManager,
       );
       expect(expensesRepository.create).not.toHaveBeenCalled();
     });

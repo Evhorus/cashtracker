@@ -19,7 +19,7 @@ interface RecentExpenseRow {
   name: string;
   amount: string;
   currency: string;
-  date: Date;
+  date: string;
   envelopeId: string;
   envelopeName: string;
 }
@@ -395,7 +395,9 @@ export class DashboardRepository {
       .addSelect('expense.name', 'name')
       .addSelect('expense.amount', 'amount')
       .addSelect('expense.currency', 'currency')
-      .addSelect('expense.date', 'date')
+      // Cast to text so pg returns the plain calendar date ("YYYY-MM-DD")
+      // instead of a server-local midnight Date serialized as a timestamp.
+      .addSelect('expense.date::text', 'date')
       .addSelect('envelope.id', 'envelopeId')
       .addSelect('envelope.name', 'envelopeName')
       .orderBy('expense.date', 'DESC')

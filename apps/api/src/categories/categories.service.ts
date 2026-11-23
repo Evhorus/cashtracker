@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+import { isUniqueViolation } from 'src/common/utils/postgres-errors';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoriesRepository } from './repositories/categories.repository';
@@ -65,14 +66,22 @@ export class CategoriesService {
       throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
     }
 
-    await this.categoriesRepository.create({
-      ...createCategoryDto,
-      userId,
-    });
+    try {
+      const created = await this.categoriesRepository.create({
+        ...createCategoryDto,
+        userId,
+      });
 
-    return {
-      message: 'Categoría creada',
-    };
+      return {
+        id: created.id,
+        message: 'Categoría creada',
+      };
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
+      }
+      throw error;
+    }
   }
 
   async findOne(id: string) {
@@ -98,12 +107,20 @@ export class CategoriesService {
         category.userId as string,
         updateCategoryDto.label,
       );
-      if (existing) {
+      if (existing && existing.id !== category.id) {
         throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
       }
     }
 
-    await this.categoriesRepository.update(id, updateCategoryDto);
+    try {
+      await this.categoriesRepository.update(id, updateCategoryDto);
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
+      }
+      throw error;
+    }
+
     return {
       message: 'Categoría actualizada',
     };
@@ -111,6 +128,9 @@ export class CategoriesService {
 
   async remove(id: string) {
     const category = await this.findOne(id);
-    return await this.categoriesRepository.remove(category);
+    await this.categoriesRepository.remove(category);
+    return {
+      message: 'Categoría eliminada',
+    };
   }
 }

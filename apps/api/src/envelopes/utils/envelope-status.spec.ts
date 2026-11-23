@@ -31,6 +31,15 @@ describe('deriveEnvelopeStatus', () => {
     expect(deriveEnvelopeStatus(1000, 800)).toBe('warning');
   });
 
+  it('matches Postgres numeric at IEEE-754 float boundaries (e.g. 5.6 / 7)', () => {
+    // In IEEE-754 float, `5.6 / 7 === 0.7999999999999999 < 0.8`, whereas
+    // Postgres numeric evaluates `5.6 >= 7 * 0.8` as true.
+    expect(deriveEnvelopeStatus(7, 5.6)).toBe('warning');
+    expect(deriveEnvelopeStatus(14, 11.2)).toBe('warning');
+    expect(deriveEnvelopeStatus(28, 22.4)).toBe('warning');
+    expect(deriveEnvelopeStatus(29, 23.2)).toBe('warning');
+  });
+
   it('is still warning at exactly the limit, not exceeded', () => {
     // Spending the whole budget is not overspending.
     expect(deriveEnvelopeStatus(1000, 1000)).toBe('warning');

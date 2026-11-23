@@ -63,7 +63,7 @@ export class CategoriesRepository {
         // and re-pointing the envelopes to it (it would otherwise leave
         // them with no category for good - the marker commits regardless).
         const [owned] = await manager.query<{ id: string }[]>(
-          `SELECT "id" FROM "category" WHERE "userId" = $1 AND "label" = $2 FOR UPDATE`,
+          `SELECT "id" FROM "category" WHERE "userId" = $1 AND LOWER("label") = LOWER($2) FOR UPDATE`,
           [userId, template.label],
         );
         if (owned) {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { PaymentMethod } from '../entities/payment-method.entity';
 
 @Injectable()
@@ -21,8 +21,11 @@ export class PaymentMethodsRepository {
     return this.repository.findOneBy({ id });
   }
 
-  findForUserById(userId: string, id: string) {
-    return this.repository.findOneBy({ id, userId });
+  findForUserById(userId: string, id: string, manager?: EntityManager) {
+    const repo = manager
+      ? manager.getRepository(PaymentMethod)
+      : this.repository;
+    return repo.findOneBy({ id, userId });
   }
 
   /** Case-insensitive: "Davivienda" and "DAVIVIENDA" are the same card. */

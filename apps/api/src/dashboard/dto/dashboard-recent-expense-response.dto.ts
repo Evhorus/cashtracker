@@ -11,7 +11,8 @@ export class DashboardRecentExpenseDto {
   name: string;
   amount: number;
   currency: string;
-  date: Date;
+  /** Plain calendar date (`YYYY-MM-DD`). */
+  date: string;
   envelopeId: string;
   envelopeName: string;
 }

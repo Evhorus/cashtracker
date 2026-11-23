@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { DataSource, EntityManager } from 'typeorm';
 import { EnvelopesService } from './envelopes.service';
 import { EnvelopesRepository } from './repositories/envelopes.repository';
 import { Envelope } from './entities/envelope.entity';
@@ -11,6 +12,8 @@ import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 describe('EnvelopesService', () => {
   let service: EnvelopesService;
   let repository: jest.Mocked<EnvelopesRepository>;
+  let dataSource: jest.Mocked<DataSource>;
+  let entityManager: EntityManager;
 
   const mockCategory: Category = {
     id: 'cat-1',
@@ -46,10 +49,21 @@ describe('EnvelopesService', () => {
       // No expenses unless a test says otherwise.
       findExpenseDateRanges: jest.fn().mockResolvedValue(new Map()),
       findById: jest.fn(),
+      findByIdForUpdate: jest.fn(),
       findByIdWithExpenses: jest.fn(),
       update: jest.fn(),
       remove: jest.fn(),
       hasExpenses: jest.fn(),
+    };
+
+    const mockEntityManager = {
+      getRepository: jest.fn(),
+    } as unknown as EntityManager;
+
+    const mockDataSource = {
+      transaction: jest.fn((cb: (manager: EntityManager) => Promise<any>) =>
+        cb(mockEntityManager),
+      ),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -67,11 +81,17 @@ describe('EnvelopesService', () => {
           provide: EnvelopesRepository,
           useValue: mockRepo,
         },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
+        },
       ],
     }).compile();
 
     service = module.get<EnvelopesService>(EnvelopesService);
     repository = module.get(EnvelopesRepository);
+    dataSource = module.get(DataSource);
+    entityManager = mockEntityManager;
   });
 
   afterEach(() => {
@@ -285,6 +305,7 @@ describe('EnvelopesService', () => {
 
     it('refuses a currency change once the envelope has expenses', async () => {
       repository.findById.mockResolvedValue(mockEnvelope);
+      repository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
       repository.hasExpenses.mockResolvedValue(true);
 
       await expect(
@@ -292,18 +313,31 @@ describe('EnvelopesService', () => {
       ).rejects.toThrow(
         new ConflictException(ERROR_MESSAGES.ENVELOPE_CURRENCY_LOCKED),
       );
+      expect(dataSource.transaction).toHaveBeenCalled();
+      expect(repository.findByIdForUpdate).toHaveBeenCalledWith(
+        'envelope-123',
+        entityManager,
+      );
+      expect(repository.hasExpenses).toHaveBeenCalledWith(
+        'envelope-123',
+        entityManager,
+      );
       expect(repository.update).not.toHaveBeenCalled();
     });
 
     it('allows a currency change on an envelope without expenses', async () => {
       repository.findById.mockResolvedValue(mockEnvelope);
+      repository.findByIdForUpdate.mockResolvedValue(mockEnvelope);
       repository.hasExpenses.mockResolvedValue(false);
 
       await service.update('envelope-123', { currency: Currency.USD });
 
-      expect(repository.update).toHaveBeenCalledWith('envelope-123', {
-        currency: Currency.USD,
-      });
+      expect(dataSource.transaction).toHaveBeenCalled();
+      expect(repository.update).toHaveBeenCalledWith(
+        'envelope-123',
+        { currency: Currency.USD },
+        entityManager,
+      );
     });
 
     it('does not treat re-sending the same currency as a change', async () => {
@@ -313,6 +347,7 @@ describe('EnvelopesService', () => {
         currency: mockEnvelope.currency as Currency,
       });
 
+      expect(dataSource.transaction).not.toHaveBeenCalled();
       expect(repository.hasExpenses).not.toHaveBeenCalled();
       expect(repository.update).toHaveBeenCalled();
     });
@@ -340,7 +375,8 @@ describe('EnvelopesService', () => {
       const result = await service.remove('envelope-123');
 
       // Assert
-      expect(result).toEqual(mockEnvelope);
+      expect(result).toEqual({ message: 'Sobre eliminado' });
+      expect(result).not.toHaveProperty('userId');
       expect(repository.findById).toHaveBeenCalledWith('envelope-123');
       expect(repository.remove).toHaveBeenCalledWith(mockEnvelope);
     });

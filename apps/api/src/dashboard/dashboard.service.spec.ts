@@ -335,7 +335,7 @@ describe('DashboardService', () => {
           name: 'Supermercado Éxito',
           amount: 85_000,
           currency: 'COP',
-          date: new Date('2026-08-12'),
+          date: '2026-08-12',
           envelopeId: 'env-1',
           envelopeName: 'Mercado',
         },
