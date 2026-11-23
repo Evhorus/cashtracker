@@ -60,7 +60,7 @@ describe('EnvelopesService', () => {
           useValue: {
             // Envelopes validate the category id against what the user
             // may see - see EnvelopesService.assertCategoryIsUsable.
-            findVisibleForUserById: jest.fn().mockResolvedValue(mockCategory),
+            findOwnedById: jest.fn().mockResolvedValue(mockCategory),
           },
         },
         {

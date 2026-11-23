@@ -34,7 +34,7 @@ export class EnvelopesService {
   ) {
     if (!categoryId) return;
 
-    const category = await this.categoriesRepository.findVisibleForUserById(
+    const category = await this.categoriesRepository.findOwnedById(
       userId,
       categoryId,
     );

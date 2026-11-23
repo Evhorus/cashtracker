@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, IsNull, Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
 
 /**
@@ -15,20 +15,86 @@ export class CategoriesRepository {
   ) {}
 
   /**
-   * Find every category visible to a user: the global set (userId IS
-   * NULL - the 9 predefined ones, shared read-only by everyone, seeded
-   * once as data - see migration 1787942400000-make-category-userid-
-   * nullable) plus whatever they've personally created. Globals first,
-   * then the user's own oldest-first - stable order for the picker.
+   * Gives a user their own copy of the predefined categories, once.
+   *
+   * The `category_seed` insert is both the "already done" check and the
+   * lock: its primary key makes a second concurrent transaction wait for
+   * the first to commit and then insert nothing, so two simultaneous
+   * first requests cannot duplicate the set. It is a marker rather than
+   * "the user has no categories" so that someone who deletes them all
+   * does not get them back.
+   *
+   * Envelopes that still point at a shared template (every account that
+   * existed before this change) are re-pointed to the user's copy, so no
+   * envelope loses its category.
    */
-  async findVisibleForUser(userId: string) {
-    return this.repository
-      .createQueryBuilder('category')
-      .where('category.userId = :userId', { userId })
-      .orWhere('category.userId IS NULL')
-      .orderBy('category.isDefault', 'DESC')
-      .addOrderBy('category.createdAt', 'ASC')
-      .getMany();
+  async seedDefaultsFor(userId: string): Promise<void> {
+    await this.repository.manager.transaction(async (manager) => {
+      const claimed = await manager.query<unknown[]>(
+        `INSERT INTO "category_seed" ("userId") VALUES ($1) ON CONFLICT DO NOTHING RETURNING "userId"`,
+        [userId],
+      );
+      if (claimed.length === 0) return;
+
+      const templates = await manager.find(Category, {
+        where: { userId: IsNull() },
+        order: { createdAt: 'ASC' },
+      });
+
+      for (const template of templates) {
+        // A label the user already has keeps their row; the template's
+        // envelopes are still re-pointed to it below.
+        await manager
+          .createQueryBuilder()
+          .insert()
+          .into(Category)
+          .values({
+            userId,
+            label: template.label,
+            color: template.color,
+            icon: template.icon,
+            isDefault: true,
+            createdAt: template.createdAt,
+          })
+          .orIgnore()
+          .execute();
+
+        // Locked, so a rename of this row cannot land between resolving it
+        // and re-pointing the envelopes to it (it would otherwise leave
+        // them with no category for good - the marker commits regardless).
+        const [owned] = await manager.query<{ id: string }[]>(
+          `SELECT "id" FROM "category" WHERE "userId" = $1 AND "label" = $2 FOR UPDATE`,
+          [userId, template.label],
+        );
+        if (owned) {
+          await manager.query(
+            `UPDATE "envelope" SET "categoryId" = $1 WHERE "userId" = $2 AND "categoryId" = $3`,
+            [owned.id, userId, template.id],
+          );
+        }
+      }
+    });
+  }
+
+  async hasBeenSeeded(userId: string): Promise<boolean> {
+    const rows = await this.repository.manager.query<unknown[]>(
+      `SELECT 1 FROM "category_seed" WHERE "userId" = $1`,
+      [userId],
+    );
+    return rows.length > 0;
+  }
+
+  /**
+   * Every category the user owns - their copies of the predefined ones
+   * and whatever they added. The shared templates (userId NULL) are never
+   * returned. Seeded copies first, in template order, then the rest
+   * oldest-first - a stable order for the picker.
+   */
+  async findAllOwned(userId: string) {
+    return this.repository.find({
+      where: { userId },
+      order: { isDefault: 'DESC', createdAt: 'ASC', label: 'ASC' },
+    });
   }
 
   /**
@@ -38,17 +104,6 @@ export class CategoriesRepository {
     return this.repository.findOneBy({ id });
   }
 
-  /**
-   * Find one category visible to a user (their own, or a global one) by
-   * label, case-insensitive - used to reject duplicates before create, so
-   * a user can't shadow a global category's name with a personal one.
-   */
-  /**
-   * One category by id, but only if this user may use it - their own, or
-   * a global one. Envelopes reference categories by id now, so this is
-   * what stops a well-formed uuid belonging to someone else from being
-   * attached to an envelope.
-   */
   /**
    * How many envelopes this user has in each category. One row per
    * category they actually use - categories with none are simply absent,
@@ -81,22 +136,20 @@ export class CategoriesRepository {
     }));
   }
 
-  async findVisibleForUserById(userId: string, id: string) {
-    return this.repository
-      .createQueryBuilder('category')
-      .where('category.id = :id', { id })
-      .andWhere('(category.userId = :userId OR category.userId IS NULL)', {
-        userId,
-      })
-      .getOne();
+  /**
+   * One category by id, only if this user owns it. Envelopes reference
+   * categories by id, so this is what stops a well-formed uuid belonging
+   * to someone else (or a shared template) from being attached to one.
+   */
+  async findOwnedById(userId: string, id: string) {
+    return this.repository.findOneBy({ id, userId });
   }
 
-  async findVisibleForUserByLabel(userId: string, label: string) {
+  /** Case-insensitive, among the user's own categories. */
+  async findOwnedByLabel(userId: string, label: string) {
     return this.repository
       .createQueryBuilder('category')
-      .where('(category.userId = :userId OR category.userId IS NULL)', {
-        userId,
-      })
+      .where('category.userId = :userId', { userId })
       .andWhere('LOWER(category.label) = LOWER(:label)', { label })
       .getOne();
   }

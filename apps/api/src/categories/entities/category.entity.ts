@@ -12,10 +12,10 @@ export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Nullable: NULL means a global category, shared read-only by every
-  // user (the 9 predefined ones - seeded once as data, not per-user - see
-  // migration 1787942400000-make-category-userid-nullable). Only ever set
-  // by CategoriesService.create, never by an update - a category's
+  // The owner. NULL only on the 9 predefined rows, which are templates:
+  // never shown or used directly, copied to each user the first time they
+  // load categories (see CategoriesRepository.seedDefaultsFor). Only ever
+  // set by CategoriesService.create, never by an update - a category's
   // ownership doesn't change after creation.
   @Column({ nullable: true, type: 'varchar' })
   @Index() // Add index for performance

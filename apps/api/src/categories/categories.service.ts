@@ -28,13 +28,20 @@ export class CategoriesService {
   }
 
   /**
-   * List everything visible to a user: the 9 predefined categories
-   * (global rows, userId NULL - seeded once as data, not per-user - see
-   * migration 1787942400000-make-category-userid-nullable) plus whatever
-   * they've personally created.
+   * The user's own categories. The first call for an account also gives
+   * them their copy of the predefined set (see seedDefaultsFor), so every
+   * category here can be renamed or deleted - none is shared.
    */
   async findAllForUser(userId: string) {
-    return this.categoriesRepository.findVisibleForUser(userId);
+    await this.ensureSeeded(userId);
+    return this.categoriesRepository.findAllOwned(userId);
+  }
+
+  private async ensureSeeded(userId: string) {
+    // The cheap read first: the transaction only runs for the one request
+    // that actually needs it.
+    if (await this.categoriesRepository.hasBeenSeeded(userId)) return;
+    await this.categoriesRepository.seedDefaultsFor(userId);
   }
 
   /**
@@ -47,7 +54,10 @@ export class CategoriesService {
   }
 
   async create(userId: string, createCategoryDto: CreateCategoryDto) {
-    const existing = await this.categoriesRepository.findVisibleForUserByLabel(
+    // Before the duplicate check, so a name the predefined set would have
+    // brought in is not silently taken by a category created first.
+    await this.ensureSeeded(userId);
+    const existing = await this.categoriesRepository.findOwnedByLabel(
       userId,
       createCategoryDto.label,
     );
@@ -80,13 +90,14 @@ export class CategoriesService {
 
     if (updateCategoryDto.label && updateCategoryDto.label !== category.label) {
       // Only ever reachable via the CategoryExists guard, which already
-      // confirmed category.userId === the caller's own id (never a global,
-      // NULL-owned row) - safe to treat as non-null here.
-      const existing =
-        await this.categoriesRepository.findVisibleForUserByLabel(
-          category.userId as string,
-          updateCategoryDto.label,
-        );
+      // confirmed category.userId === the caller's own id - safe to treat
+      // as non-null here. Seeded first, so a name the predefined set brings
+      // in (differing only by case) is rejected like any other duplicate.
+      await this.ensureSeeded(category.userId as string);
+      const existing = await this.categoriesRepository.findOwnedByLabel(
+        category.userId as string,
+        updateCategoryDto.label,
+      );
       if (existing) {
         throw new ConflictException(ERROR_MESSAGES.CATEGORY_ALREADY_EXISTS);
       }

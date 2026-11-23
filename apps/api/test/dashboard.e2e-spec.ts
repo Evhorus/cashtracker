@@ -57,13 +57,11 @@ describe('Dashboard category breakdown (e2e)', () => {
   afterEach(async () => {
     await dataSource.query('DELETE FROM expense');
     await dataSource.query('DELETE FROM envelope');
-    // Personal categories too: they outlived the run, so a test that
-    // renames one collided (409) with the previous run's leftover.
-    // Global ones (userId NULL) are seeded data and stay.
+    // Every user's categories (their seeded copies included) and the seed
+    // marker with them, so each test starts from a fresh account. The
+    // templates (userId NULL) are seeded data and stay.
     await dataSource.query('DELETE FROM category WHERE "userId" IS NOT NULL');
-    // Personal categories only - the global set (userId IS NULL) is
-    // seeded data every user shares.
-    await dataSource.query('DELETE FROM category WHERE "userId" IS NOT NULL');
+    await dataSource.query('DELETE FROM category_seed');
   });
 
   interface BreakdownRow {
@@ -75,11 +73,9 @@ describe('Dashboard category breakdown (e2e)', () => {
   /** Creates a category and returns its id - envelopes reference
    * categories by id now. */
   async function createCategory(label: string): Promise<string> {
-    // Reuse an existing visible category when there is one. Several of
-    // these labels ("Hogar", "Transporte") are among the nine global
-    // categories every user already sees, and a guard rejects creating a
-    // personal category that shadows a global label - so blindly POSTing
-    // returns 409.
+    // Reuse an existing category when there is one. Several of these
+    // labels ("Hogar", "Transporte") are among the nine every account is
+    // seeded with, and creating a duplicate label returns 409.
     const existing = await request(app.getHttpServer())
       .get('/categories')
       .expect(200);
