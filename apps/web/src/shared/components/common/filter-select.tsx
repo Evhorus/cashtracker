@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 
-export interface FilterOption {
+interface FilterOption {
   value: string;
   label: string;
   /** Draws a divider above this option (e.g. separating composite views from plain statuses). */

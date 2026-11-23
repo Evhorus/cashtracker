@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { ConfirmDeleteDialog } from "@/shared/components/common/confirm-delete-dialog";
 import { Button } from "@/shared/components/ui/button";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 import { deletePaymentMethodAction } from "../actions/delete-payment-method.action";
 import { usePaymentMethods } from "../providers/payment-methods-provider";
 import type { PaymentMethod } from "../types";

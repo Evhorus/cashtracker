@@ -16,6 +16,8 @@ under a heading in that file; everything that applies to any agent belongs here.
 - Lint: `pnpm run lint` (runs ESLint)
 - Typecheck: `pnpm run typecheck` (`tsc --noEmit`)
 - Format: `pnpm run format` (write) / `pnpm run format:check` (verify)
+- Dead code: `pnpm run knip` (unused files, exports, types, and dependencies)
+- Full gate: `pnpm run check` (`typecheck`, `lint`, `format:check`, `test`, `knip`)
 
 ## End-to-end tests
 
@@ -94,8 +96,8 @@ The five commands above are the gate set, and they run in two places:
 - **`.husky/commit-msg`** — `commitlint`, Conventional Commits. Milliseconds, and it is
   the one check guarding something the others cannot reach: a malformed message is in
   the history the instant it lands, and removing it means rewriting history.
-- **`.husky/pre-commit`** — typecheck, lint, format:check, test (~5s).
-- **`.github/workflows/ci.yml`** — all five, on every PR and every push to `main`.
+- **`.husky/pre-commit`** — `pnpm check` (`typecheck`, `lint`, `format:check`, `test`, `knip`, ~6s).
+- **`.github/workflows/ci.yml`** — `pnpm check` + `pnpm build`, on every PR and every push to `main`.
 
 CI is the gate that counts: a Husky hook is skippable with `--no-verify`, so it catches
 the distracted mistake but guarantees nothing. Keep both lists in step — if you add a
@@ -372,7 +374,7 @@ This is a Next.js 16 project using the App Router and TypeScript.
   (`src/features/dashboard/lib/refresh-dashboard.ts`), which revalidates the whole `/dashboard` layout -
   the server render and the client router cache - so no page can be missed. The same test
   fails if a `*.action.ts` (other than locale) does not call it.
-- **UI Feedback**: Use `useActionWithToast` (`src/shared/hooks/useActionWithToast.ts`) and `useActionDialog` (`src/shared/hooks/useActionDialog.ts`) for toast notifications and dialog lifecycle. `router.refresh()` is opt-in (`refreshOnSuccess`), because write Server Actions already call `refreshDashboard()`.
+- **UI Feedback**: Use `useActionWithToast` (`src/shared/hooks/use-action-with-toast.ts`) and `useActionDialog` (`src/shared/hooks/use-action-dialog.ts`) for toast notifications and dialog lifecycle. `router.refresh()` is opt-in (`refreshOnSuccess`), because write Server Actions already call `refreshDashboard()`.
 - **List-Level Dialogs**: Mount edit/delete dialogs once at list level (`EnvelopesGrid`, `ExpensesList`, `CategoriesSection`, `PaymentMethodsSection`) rather than once per row/card.
 
 #### Domain Organization

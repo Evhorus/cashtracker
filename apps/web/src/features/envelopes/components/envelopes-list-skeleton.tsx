@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 // Matches EnvelopeCard's compact size="sm" layout to prevent CLS on mount.
-export const EnvelopeCardSkeleton = () => {
+const EnvelopeCardSkeleton = () => {
   return (
     <Card size="sm" className="h-full border-border/60 bg-card/50 shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
@@ -97,7 +97,7 @@ const EnvelopesTableSkeleton = () => {
   );
 };
 
-export const EnvelopesListSkeleton = () => {
+const EnvelopesListSkeleton = () => {
   return (
     <>
       <div className="grid grid-cols-1 gap-4 md:hidden">

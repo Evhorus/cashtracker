@@ -37,15 +37,42 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    // shared/components/ui is stock shadcn output (regenerable via
-    // `shadcn add --overwrite`), not code we hand-write. Relax the one
-    // rule most likely to fire on upstream shadcn registry source
-    // (some official components use `any` in third-party type glue,
-    // e.g. chart tooltip formatters) so the team never needs to hand-edit
-    // generated files just to satisfy lint. No other rules are disabled
-    // here - there's no evidence today that anything else fires on this
-    // folder; add further scoped exceptions only if a real
-    // `shadcn add`/`shadcn diff` run actually produces a finding.
+    files: ["src/shared/**/*.{ts,tsx}"],
+    // messages.ts is the single intentional i18n aggregator that merges feature JSON catalogues.
+    ignores: ["src/shared/config/i18n/messages.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/features/*", "@/app/*"],
+              message:
+                "src/shared/ must stay domain-free and never import from features/ or app/.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/features/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/app/*"],
+              message:
+                "src/features/ must not depend on Next.js route modules in src/app/.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["src/shared/components/ui/**/*.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",

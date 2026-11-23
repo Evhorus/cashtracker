@@ -9,7 +9,7 @@ import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
 import { Expense } from "@/features/expenses/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 import { formatCalendarDateForApi } from "@/shared/utils/date-helpers";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 import { ExpenseForm } from "./expense-form";

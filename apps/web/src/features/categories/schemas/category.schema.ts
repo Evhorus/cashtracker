@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { ValidationTranslator } from "@/shared/lib/validation";
 
-export const CategoryAPIResponseSchema = z.object({
+const CategoryAPIResponseSchema = z.object({
   id: z.string(),
   label: z.string(),
   color: z.string(),

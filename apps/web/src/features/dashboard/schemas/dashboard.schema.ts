@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-export const DashboardChartEntrySchema = z.object({
+const DashboardChartEntrySchema = z.object({
   /** "YYYY-MM" key formatted client-side. */
   month: z.string(),
   spent: z.number(),
 });
 
 // Loose currency string at the network boundary; narrowed to CurrencyCode in domain mapping.
-export const DashboardCurrencyTotalsSchema = z.object({
+const DashboardCurrencyTotalsSchema = z.object({
   currency: z.string(),
   totalEnvelopes: z.number(),
   totalAssigned: z.number(),
@@ -35,7 +35,7 @@ export type DashboardSummary = z.infer<
 >;
 
 // Cross-envelope recent expenses aggregate (amount is numeric, unlike raw ExpenseAPIResponseSchema).
-export const DashboardRecentExpenseAPISchema = z.object({
+const DashboardRecentExpenseAPISchema = z.object({
   id: z.string(),
   name: z.string(),
   amount: z.number(),
@@ -62,7 +62,7 @@ export interface DashboardBreakdownFilters {
 }
 
 // GET /dashboard/category-breakdown (grouped by category id and expense date).
-export const DashboardCategoryBreakdownRowSchema = z.object({
+const DashboardCategoryBreakdownRowSchema = z.object({
   category: z
     .object({
       id: z.string(),
@@ -84,7 +84,7 @@ export type DashboardCategoryBreakdownRow = z.infer<
 >;
 
 // GET /dashboard/envelope-breakdown
-export const DashboardEnvelopeBreakdownRowSchema = z.object({
+const DashboardEnvelopeBreakdownRowSchema = z.object({
   envelopeId: z.string(),
   envelopeName: z.string(),
   spent: z.number(),
@@ -103,7 +103,7 @@ export type DashboardEnvelopeBreakdownRow = z.infer<
 >;
 
 // GET /dashboard/name-breakdown (grouped by normalized expense name).
-export const DashboardNameBreakdownRowSchema = z.object({
+const DashboardNameBreakdownRowSchema = z.object({
   name: z.string(),
   spent: z.number(),
   expenseCount: z.number(),

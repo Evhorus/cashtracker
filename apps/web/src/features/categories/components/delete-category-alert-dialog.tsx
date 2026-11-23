@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { deleteCategoryAction } from "@/features/categories/actions/delete-category.action";
 import { ConfirmDeleteDialog } from "@/shared/components/common/confirm-delete-dialog";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 
 export interface CategoryToDelete {
   id: string;

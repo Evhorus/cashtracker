@@ -8,7 +8,7 @@ import { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema
 import { EditableEnvelope } from "@/features/envelopes/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 import { EnvelopeForm } from "./envelope-form";
 
 interface UpdateEnvelopeDialogProps {

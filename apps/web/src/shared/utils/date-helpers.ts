@@ -33,7 +33,10 @@ export function parseDateInput(dateInput: Date | string | number): Date {
  * runtimes always read identical Y/M/D via UTC getters. For form Calendar state, use `toFormCalendarDate`.
  */
 export function parseCalendarDate(dateInput: string): Date {
-  const [year, month, day] = dateInput.slice(0, 10).split("-").map(Number);
+  const [year = 0, month = 1, day = 1] = dateInput
+    .slice(0, 10)
+    .split("-")
+    .map(Number);
   return new Date(Date.UTC(year, month - 1, day));
 }
 

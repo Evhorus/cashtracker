@@ -49,7 +49,8 @@ describe("getAlertEnvelopes", () => {
     ]);
 
     expect(result.map((entry) => entry.envelope.id)).toEqual(["b", "c", "a"]);
-    expect(result[0].percentage).toBeGreaterThan(result[1].percentage);
+    const [first, second] = result;
+    expect(first?.percentage).toBeGreaterThan(second?.percentage ?? Infinity);
   });
 
   it("narrows the status to the two alert states", () => {
@@ -57,7 +58,7 @@ describe("getAlertEnvelopes", () => {
       envelope("x", "1000", "1200", "exceeded"),
     ]);
 
-    expect(first.status).toBe("exceeded");
+    expect(first?.status).toBe("exceeded");
   });
 
   it("is empty when nothing needs attention", () => {

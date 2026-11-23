@@ -7,7 +7,7 @@ import { createEnvelopeAction } from "@/features/envelopes/actions/create-envelo
 import { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { Button } from "@/shared/components/ui/button";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 import { EnvelopeForm } from "./envelope-form";
 
 export const CreateEnvelopeDialog = () => {

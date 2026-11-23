@@ -167,7 +167,8 @@ test.afterAll(async ({ browser }) => {
     if ((await link.count()) === 0) return;
 
     // First line only: the link also carries the date span.
-    const displayed = (await link.first().innerText()).split("\n")[0].trim();
+    const displayed =
+      (await link.first().innerText()).split("\n")[0]?.trim() ?? "";
     await link.first().click();
     await page.waitForURL(/\/dashboard\/envelope\//);
 

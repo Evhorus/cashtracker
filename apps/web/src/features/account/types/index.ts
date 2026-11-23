@@ -45,8 +45,7 @@ export interface ConnectedAccount {
 }
 
 /** Mirrors Clerk's SessionVerificationLevel by value so components stay SDK-agnostic. */
-export type ReverificationLevel =
-  "first_factor" | "second_factor" | "multi_factor";
+type ReverificationLevel = "first_factor" | "second_factor" | "multi_factor";
 
 /** Provider-agnostic callbacks and level handed to ReverificationDialog for one attempt. */
 export interface ReverificationRequest {

@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 // Matches ExpenseCard's single-row height to avoid CLS on mount.
-export const ExpenseCardSkeleton = () => {
+const ExpenseCardSkeleton = () => {
   return (
     <Card size="sm" className="overflow-hidden">
       <CardContent className="flex items-center gap-3">

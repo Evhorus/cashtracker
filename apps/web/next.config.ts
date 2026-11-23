@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  poweredByHeader: false,
 };
 
 // request.ts lives under src/shared/config/i18n/ rather than the

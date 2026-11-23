@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { ValidationTranslator } from "@/shared/lib/validation";
 import { PAYMENT_METHOD_TYPES } from "../types";
 
-export const PaymentMethodAPIResponseSchema = z.object({
+const PaymentMethodAPIResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   type: z.enum(PAYMENT_METHOD_TYPES),

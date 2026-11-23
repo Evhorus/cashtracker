@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 
-export type SubmitButtonProps = ComponentProps<typeof Button> & {
+type SubmitButtonProps = ComponentProps<typeof Button> & {
   isLoading?: boolean;
 };
 

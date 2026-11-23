@@ -8,7 +8,7 @@ import { CategoryFormValues } from "@/features/categories/schemas/category.schem
 import type { Category } from "@/features/categories/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 import { CategoryForm } from "./category-form";
 
 interface UpdateCategoryDialogProps {

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 import { createPaymentMethodAction } from "../actions/create-payment-method.action";
 import { updatePaymentMethodAction } from "../actions/update-payment-method.action";
 import type { PaymentMethodFormValues } from "../schemas/payment-method.schema";

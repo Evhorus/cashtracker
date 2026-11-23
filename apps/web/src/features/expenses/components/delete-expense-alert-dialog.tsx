@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { deleteExpenseAction } from "@/features/expenses/actions/delete-expense.action";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { ConfirmDeleteDialog } from "@/shared/components/common/confirm-delete-dialog";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 
 interface DeleteExpenseAlertDialogProps {
   envelopeId: string;

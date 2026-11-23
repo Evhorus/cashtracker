@@ -68,7 +68,7 @@ const EnvelopesSearch = ({ className }: { className?: string }) => {
   );
 };
 
-export const EnvelopesStatusFilter = () => {
+const EnvelopesStatusFilter = () => {
   const t = useTranslations("envelopes");
   const tCommon = useTranslations("common");
   const { rawValue, update } = useUrlFilterParam("status", "all");
@@ -99,7 +99,7 @@ const pageSizeLabel = (
   size: number,
 ) => (size === ENVELOPES_MAX_PAGE_SIZE ? t("pageSizeAll") : String(size));
 
-export const EnvelopesPageSizeFilter = () => {
+const EnvelopesPageSizeFilter = () => {
   const t = useTranslations("envelopes");
   const { rawValue, update } = useUrlFilterParam(
     "limit",
@@ -127,7 +127,7 @@ export const EnvelopesPageSizeFilter = () => {
   );
 };
 
-export const EnvelopesSortFilter = () => {
+const EnvelopesSortFilter = () => {
   const t = useTranslations("envelopes");
   const { rawValue, update } = useUrlFilterParam("sort", "recent");
   const sort = parseEnvelopeSort(rawValue);

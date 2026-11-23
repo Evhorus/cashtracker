@@ -66,7 +66,8 @@ export async function deleteEnvelope(page: Page, name: string): Promise<void> {
 
   // First line only: the link also carries the envelope's date span
   // under its name.
-  const displayed = (await link.first().innerText()).split("\n")[0].trim();
+  const displayed =
+    (await link.first().innerText()).split("\n")[0]?.trim() ?? "";
   await link.first().click();
   await page.waitForURL(/\/dashboard\/envelope\//);
 

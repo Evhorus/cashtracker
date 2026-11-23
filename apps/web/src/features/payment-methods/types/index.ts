@@ -5,7 +5,7 @@ export const PAYMENT_METHOD_TYPES = [
   "transfer",
 ] as const;
 
-export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
+type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
 
 export interface PaymentMethod {
   id: string;

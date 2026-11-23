@@ -3,7 +3,7 @@
 import { startTransition, useActionState } from "react";
 import { useRouter } from "next/navigation";
 
-import { useActionWithToast } from "@/shared/hooks/useActionWithToast";
+import { useActionWithToast } from "@/shared/hooks/use-action-with-toast";
 import type { ActionState } from "@/shared/lib/safe-action";
 
 interface UseActionDialogOptions<State extends ActionState> {

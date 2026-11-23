@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": ["src/shared/components/ui/**"],
+  "playwright": {
+    "config": [],
+    "entry": [
+      "playwright.config.ts",
+      "e2e/**/*.spec.ts",
+      "e2e/support/global.setup.ts"
+    ]
+  }
+}

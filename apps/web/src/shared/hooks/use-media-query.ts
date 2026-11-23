@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export function useMediaQuery(query: string) {
+function useMediaQuery(query: string) {
   // Keep useCallback despite React Compiler: useSyncExternalStore resubscribes if subscribe identity changes.
   const subscribe = React.useCallback(
     (callback: () => void) => {
@@ -26,7 +26,7 @@ export function useMediaQuery(query: string) {
 }
 
 /** Shared breakpoint where ResponsiveFormSheet switches from drawer to dialog. */
-export const DESKTOP_MEDIA_QUERY = "(min-width: 768px)";
+const DESKTOP_MEDIA_QUERY = "(min-width: 768px)";
 
 export function useIsDesktop() {
   return useMediaQuery(DESKTOP_MEDIA_QUERY);

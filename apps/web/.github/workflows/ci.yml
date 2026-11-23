@@ -37,10 +37,7 @@ jobs:
       # package.json rather than quietly resolving something else.
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm typecheck
-      - run: pnpm lint
-      - run: pnpm format:check
-      - run: pnpm test
+      - run: pnpm check
 
       # Placeholders, not secrets. src/shared/config/env.server.ts
       # validates these at boot, and `next build` boots the app to

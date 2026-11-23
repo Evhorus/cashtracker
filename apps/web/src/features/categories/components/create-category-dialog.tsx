@@ -7,7 +7,7 @@ import { createCategoryAction } from "@/features/categories/actions/create-categ
 import { CategoryFormValues } from "@/features/categories/schemas/category.schema";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { Button } from "@/shared/components/ui/button";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 import { CategoryForm } from "./category-form";
 
 interface CreateCategoryDialogProps {

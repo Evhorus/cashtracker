@@ -10,7 +10,7 @@ import { CardActionButton } from "@/shared/components/common/card-action-button"
 import { ConfirmDeleteDialog } from "@/shared/components/common/confirm-delete-dialog";
 import { Text } from "@/shared/components/common/typography";
 import { Input } from "@/shared/components/ui/input";
-import { useActionDialog } from "@/shared/hooks/useActionDialog";
+import { useActionDialog } from "@/shared/hooks/use-action-dialog";
 
 interface DeleteEnvelopeAlertDialogProps {
   id: string;

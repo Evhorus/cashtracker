@@ -13,7 +13,4 @@
 # lint-staged has added its tasks' modifications to the commit by itself
 # since v10, and warns if you add a manual `git add`. If lint-staged ever
 # earns its place here, --write is the right call there.
-pnpm typecheck
-pnpm lint
-pnpm format:check
-pnpm test
+pnpm check

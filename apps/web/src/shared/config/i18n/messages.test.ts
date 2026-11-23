@@ -28,7 +28,7 @@ function paths(obj: Messages, prefix = ""): string[] {
 
 /** ICU placeholders like {name} and {count, plural, ...}. */
 function placeholders(message: string): string[] {
-  return [...message.matchAll(/\{(\w+)/g)].map((m) => m[1]).sort();
+  return [...message.matchAll(/\{(\w+)/g)].map((m) => m[1] ?? "").sort();
 }
 
 function leaves(obj: Messages, prefix = ""): Record<string, string> {
@@ -44,7 +44,8 @@ function leaves(obj: Messages, prefix = ""): Record<string, string> {
   );
 }
 
-const catalogues: Record<string, Messages> = MESSAGES;
+const catalogues: Record<(typeof SUPPORTED_LOCALES)[number], Messages> =
+  MESSAGES;
 const es = MESSAGES.es;
 const en = MESSAGES.en;
 
