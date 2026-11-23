@@ -4,7 +4,7 @@ import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Currency } from 'src/common/enums/currency.enum';
 
 export class DashboardQueryDto {
-  /** Calendar year filter on envelope creation date (omitted = all-time). */
+  /** Calendar year filter on expense date (omitted = all-time). */
   @IsOptional()
   @Type(() => Number)
   @IsInt()

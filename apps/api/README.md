@@ -98,12 +98,9 @@ nueva):
 
 ```
 src/<dominio>/
-├── decorators/       # p. ej. @EnvelopeExists / @ExpenseExists
 ├── dto/              # DTOs de entrada (class-validator) y de respuesta
 │                     # (factories estáticas fromEntity/fromEntities)
 ├── entities/         # Entidad TypeORM
-├── guard(s)/         # <Dominio>ExistsGuard (el nombre de la carpeta,
-│                     # singular o plural, varía según el módulo)
 ├── repositories/     # Repositorio (Data Mapper) sobre el repo de TypeORM
 ├── <dominio>.controller.ts
 ├── <dominio>.service.ts
@@ -112,21 +109,26 @@ src/<dominio>/
 
 Dominios actuales bajo `src/`:
 
-- **`auth/`** — Autenticación con Clerk y Passport (`ClerkAuthGuard`,
-  `ClerkStrategy`, decoradores `@CurrentUser` y `@Public`). El guard es
-  global: toda ruta requiere autenticación salvo que esté marcada `@Public()`.
+- **`auth/`** — Autenticación directa con `@clerk/backend` (`ClerkAuthGuard`,
+  decoradores `@CurrentUser` y `@Public`). El guard es global: toda ruta
+  requiere autenticación salvo que esté marcada `@Public()`.
+- **`categories/`** — Categorías por usuario con seeding automático desde
+  plantillas globales (sigue el patrón de arriba).
 - **`envelopes/`** — Gestión de presupuestos (sigue el patrón de arriba).
 - **`expenses/`** — Gestión de gastos, anidado bajo cada envelope (sigue el
   patrón de arriba).
+- **`payment-methods/`** — Métodos de pago por usuario (tarjeta, efectivo,
+  transferencia) (sigue el patrón de arriba).
 - **`dashboard/`** — Resumen agregado de sobres/gastos, de solo lectura (sin
-  entidad ni guard propios).
+  entidad propia).
 - **`common/`** — DTOs compartidos (paginación), constantes de error
-  centralizadas, pipes y utilidades.
+  centralizadas, `UserThrottlerGuard`, validadores y utilidades.
 - **`config/`** — Validación de variables de entorno con Zod.
 - **`database/`** — Configuración de TypeORM y migraciones (`migrations/`,
   `data-source.ts`, `database.module.ts`).
-- **`health-check/`** — Expone `/api/health-check` y corre un ping
-  periódico (`@Cron`) para evitar que Render hiberne la instancia gratuita.
+- **`health-check/`** — Expone `/api/health-check` (`@Public()`,
+  `@SkipThrottle()`) y corre un ping periódico (`@Cron`) solo en producción
+  para evitar que Render hiberne la instancia gratuita.
 
 Fuera de `src/`, lo relevante: `scripts/` (gestor de migraciones), `test/`
 (E2E) y `.env.template` (plantilla de variables de entorno).
@@ -218,34 +220,57 @@ y pide una confirmación extra (`SI`) si el destino es el host de producción de
 - `PATCH /api/envelopes/:envelopeId/expenses/:expenseId` - Actualizar un gasto
 - `DELETE /api/envelopes/:envelopeId/expenses/:expenseId` - Eliminar un gasto
 
+### Categories (Categorías)
+
+- `POST /api/categories` - Crear una categoría personal (retorna `{ id, message }`)
+- `GET /api/categories` - Listar las categorías del usuario (seedea las 9 predeterminadas en la primera consulta)
+- `PATCH /api/categories/:categoryId` - Actualizar una categoría
+- `DELETE /api/categories/:categoryId` - Eliminar una categoría
+
+### Payment Methods (Métodos de Pago)
+
+- `POST /api/payment-methods` - Crear un método de pago (retorna `{ id, message }`)
+- `GET /api/payment-methods` - Listar los métodos de pago del usuario
+- `PATCH /api/payment-methods/:paymentMethodId` - Actualizar un método de pago
+- `DELETE /api/payment-methods/:paymentMethodId` - Eliminar un método de pago
+
 ### Dashboard
 
 - `GET /api/dashboard/summary` - Resumen agregado de presupuestos y gastos
-  del usuario (opcionalmente filtrable por año con `year`)
+  del usuario (`year`, `currency`)
+- `GET /api/dashboard/category-breakdown` - Gasto agrupado por categoría
+  (`currency`, `year`, `startDate`, `endDate`)
+- `GET /api/dashboard/envelope-breakdown` - Gasto agrupado por presupuesto
+  (`currency`, `year`, `startDate`, `endDate`)
+- `GET /api/dashboard/name-breakdown` - Gasto agrupado por nombre de gasto
+  (`currency`, `year`, `startDate`, `endDate`)
+- `GET /api/dashboard/breakdown-total` - Total de gastos en el período y moneda
+  filtrados (`currency`, `year`, `startDate`, `endDate`)
+- `GET /api/dashboard/recent-expenses` - Últimos gastos registrados (`limit`)
 
 ## Tecnologías
 
 - **Framework:** NestJS 11
 - **Node.js:** Runtime JavaScript
 - **TypeScript:** Lenguaje de programación
-- **Autenticación:** Clerk (@clerk/backend), guard global con opt-out vía `@Public()`
+- **Autenticación:** Clerk (`@clerk/backend`), guard global con opt-out vía `@Public()`
 - **Base de Datos:** PostgreSQL con TypeORM
 - **Migraciones:** Gestión de esquema mediante TypeORM CLI
 - **Validación:** class-validator, class-transformer, Zod
 - **Testing:** Jest, Supertest
-- **Seguridad y confiabilidad:** Helmet (cabeceras HTTP) y `@nestjs/schedule` +
-  `fetch` nativo de Node (ping periódico de keep-alive para evitar la
-  hibernación en free tiers). Sin rate limiting propio por ahora: ver
-  "Rate Limiting" en `AGENTS.md`.
+- **Seguridad y confiabilidad:** Helmet (cabeceras HTTP), `@nestjs/throttler`
+  con límite por usuario (`UserThrottlerGuard`, 20 req/s burst y 120 req/min
+  sostenido por endpoint) y `@nestjs/schedule` + `fetch` nativo de Node (ping
+  periódico de keep-alive solo en producción para evitar la hibernación en free tiers).
 
 ## Características
 
 - ✅ Autenticación con Clerk
-- ✅ CRUD completo de presupuestos
-- ✅ CRUD completo de gastos (Módulo independiente)
-- ✅ Dashboard con resumen agregado por año
+- ✅ CRUD completo de presupuestos, gastos, categorías y métodos de pago
+- ✅ Dashboard con resumen agregado por año y moneda
 - ✅ Validación de datos con DTOs y Zod
-- ✅ Guards personalizados para validación de recursos
+- ✅ Validación de propiedad y existencia en una sola consulta en servicios
+- ✅ Rate limiting por usuario con `@nestjs/throttler`
 - ✅ Gestión de base de datos mediante migraciones
 - ✅ Health check y monitoreo
 - ✅ Arquitectura modular limpia
