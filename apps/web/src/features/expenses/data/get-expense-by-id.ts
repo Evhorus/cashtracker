@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { ApiError } from "@/shared/lib/api-client";
+import { isValidUuid } from "@/shared/utils/url-params";
 import { ExpensesService } from "@/features/expenses/services/expenses.service";
 
 /**
@@ -24,6 +25,12 @@ import { ExpensesService } from "@/features/expenses/services/expenses.service";
  */
 export const getExpenseById = cache(
   async (envelopeId: string, expenseId: string) => {
+    if (!isValidUuid(envelopeId)) {
+      redirect("/dashboard/envelopes");
+    }
+    if (!isValidUuid(expenseId)) {
+      redirect(`/dashboard/envelope/${envelopeId}`);
+    }
     try {
       return await ExpensesService.getById(envelopeId, expenseId);
     } catch (error) {

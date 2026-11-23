@@ -1,6 +1,6 @@
 "use client";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
@@ -12,10 +12,10 @@ import { createCategoryAction } from "@/features/categories/actions/create-categ
 interface CreateCategoryDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Fires once the category is actually saved, with the label just
-   * created - e.g. so CategoryPicker can auto-select it. Separate from
+  /** Fires once the category is actually saved, with the newly created
+   * category id - e.g. so CategoryPicker can auto-select it. Separate from
    * onOpenChange, which just tracks the dialog's open state. */
-  onCreated?: (label: string) => void;
+  onCreated?: (categoryId: string) => void;
   /** Omit when the dialog is fully controlled from outside, e.g. opened
    * from CategoryPicker's own footer button. */
   trigger?: React.ReactElement;
@@ -33,22 +33,18 @@ export const CreateCategoryDialog = ({
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? setControlledOpen! : setInternalOpen;
 
-  // useActionWithToast's onSuccess only gets the action's own state (just
-  // {message}), not the payload that produced it - stash the label the
-  // user submitted here so onCreated can hand it back.
-  const lastLabelRef = useRef("");
-
   const { dispatch, isPending } = useActionDialog(
     createCategoryAction,
     { errors: [], success: "" },
     {
       setOpen,
-      onSuccess: () => onCreated?.(lastLabelRef.current),
+      onSuccess: (state) => {
+        if (state.data?.id) onCreated?.(state.data.id);
+      },
     },
   );
 
   const handleCreate = async (categoryFormValues: CategoryFormValues) => {
-    lastLabelRef.current = categoryFormValues.label;
     dispatch(categoryFormValues);
   };
 

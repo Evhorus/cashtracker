@@ -15,8 +15,13 @@ import {
 import {
   methodOptionsFor,
   parseMethodFilter,
+  UNASSIGNED_METHOD,
   type MethodOption,
 } from "@/features/payment-methods/lib/method-filter";
+import {
+  parseIsoDateParam,
+  sanitizeUuidListParam,
+} from "@/shared/utils/url-params";
 import { FilteredExpensesBanner } from "@/features/expenses/components/filtered-expenses-banner";
 import { ExpensesList } from "@/features/expenses/components/expenses-list";
 import { ExpensesListSkeleton } from "@/features/expenses/components/expenses-list-skeleton";
@@ -107,15 +112,18 @@ export default async function EnvelopePage({
   const tEnvelope = await getTranslations("envelopes");
   const { envelopeId } = await params;
   const {
-    startDate,
-    endDate,
+    startDate: rawStartDate,
+    endDate: rawEndDate,
     search,
     sort,
     sortBy,
-    methods,
+    methods: rawMethods,
     page: pageParam,
     limit: limitParam,
   } = await searchParams;
+  const startDate = parseIsoDateParam(rawStartDate);
+  const endDate = parseIsoDateParam(rawEndDate);
+  const methods = sanitizeUuidListParam(rawMethods, [UNASSIGNED_METHOD]);
   const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
   const order = expenseOrderParams(parseExpenseOrder(sort, sortBy));
   // 10 / 20 / all (100, the backend's own hard cap) - see

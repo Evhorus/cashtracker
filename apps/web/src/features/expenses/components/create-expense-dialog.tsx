@@ -12,6 +12,7 @@ import { resolveIcon } from "@/features/categories/lib/icon-registry";
 import type { EnvelopeCategory } from "@/features/envelopes/types";
 import { withAlpha } from "@/features/categories/lib/with-alpha";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { formatCalendarDateForApi } from "@/shared/utils/date-helpers";
 
 interface CreateExpenseDialogProps {
   envelopeId: string;
@@ -84,7 +85,13 @@ export const CreateExpenseDialog = ({
   );
 
   const handleCreate = async (expenseFormValues: ExpenseFormValues) => {
-    dispatch({ ...expenseFormValues, envelopeId });
+    dispatch({
+      ...expenseFormValues,
+      // Format on the client using the visitor's local calendar components so
+      // UTC+ timezones never lose a day when the Date crosses to a UTC server.
+      date: formatCalendarDateForApi(expenseFormValues.date),
+      envelopeId,
+    });
   };
 
   return (

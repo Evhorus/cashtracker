@@ -46,7 +46,25 @@ export function useDebouncedSearchParam({
   const [, startTransition] = useTransition();
 
   const timeoutRef = useRef<number | null>(null);
-  const [value, setValue] = useState(() => searchParams.get(param) ?? "");
+  const urlValue = searchParams.get(param) ?? "";
+  const [value, setValue] = useState(urlValue);
+  // Tracks the last URL param observed on render and the last value this
+  // hook itself pushed. When the URL changes externally (e.g. clicking
+  // "Clear filters", removing a chip, or browser Back/Forward), sync the
+  // input value and cancel any pending debounce - while ignoring our own
+  // router.replace settling so in-flight typing is never clobbered.
+  const [syncedUrlValue, setSyncedUrlValue] = useState(urlValue);
+  const [committedValue, setCommittedValue] = useState(urlValue);
+  const [externalSyncToken, setExternalSyncToken] = useState(0);
+
+  if (urlValue !== syncedUrlValue) {
+    setSyncedUrlValue(urlValue);
+    if (urlValue !== committedValue) {
+      setCommittedValue(urlValue);
+      setValue(urlValue);
+      setExternalSyncToken((token) => token + 1);
+    }
+  }
 
   // Always the current URL, never the one captured when the pending
   // timeout was scheduled - see the doc comment above. Synced in an
@@ -64,6 +82,13 @@ export function useDebouncedSearchParam({
       timeoutRef.current = null;
     }
   };
+
+  // Drop a pending navigation if the URL was changed externally.
+  useEffect(() => {
+    if (externalSyncToken > 0) {
+      cancelPending();
+    }
+  }, [externalSyncToken]);
 
   // Drop a pending navigation if the input unmounts mid-typing (e.g. the
   // responsive shell swaps which copy of the search box is mounted).
@@ -90,6 +115,7 @@ export function useDebouncedSearchParam({
 
     timeoutRef.current = window.setTimeout(() => {
       timeoutRef.current = null;
+      setCommittedValue(next);
       const params = new URLSearchParams(searchParamsRef.current);
       writeParam(params, next);
 
@@ -102,6 +128,7 @@ export function useDebouncedSearchParam({
 
   const applyTo = (params: URLSearchParams) => {
     cancelPending();
+    setCommittedValue(value);
     writeParam(params, value);
   };
 

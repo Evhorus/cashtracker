@@ -55,7 +55,7 @@ export const EnvelopesService = {
 
   getById: async (id: string): Promise<Envelope> => {
     const envelope = await fetchApi<EnvelopeApi>(
-      `/envelopes/${id}`,
+      `/envelopes/${encodeURIComponent(id)}`,
       undefined,
       EnvelopeAPIResponseSchema,
     );
@@ -71,20 +71,21 @@ export const EnvelopesService = {
   },
 
   update: (id: string, data: EnvelopeFormValues) => {
-    return fetchApi<{ message: string }>(`/envelopes/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(EnvelopeMapper.toApiRequest(data)),
-    });
+    return fetchApi<{ message: string }>(
+      `/envelopes/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(EnvelopeMapper.toApiRequest(data)),
+      },
+    );
   },
 
-  // Returns the removed entity, not a `{ message }` envelope like
-  // create/update do (envelopes.service.ts's `remove()` in
-  // cashtracker-backend returns `envelopesRepository.remove(envelope)`).
-  // Typed `unknown` so no caller can read a `.message` off it that isn't
-  // there - the delete action supplies its own success wording.
   delete: (id: string) => {
-    return fetchApi<unknown>(`/envelopes/${id}`, {
-      method: "DELETE",
-    });
+    return fetchApi<{ message: string }>(
+      `/envelopes/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+      },
+    );
   },
 };

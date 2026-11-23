@@ -24,6 +24,8 @@ export interface PasswordFieldErrors {
 
 export interface AccountActionResult {
   error: string | null;
+  /** True when the user dismissed a reverification prompt before the action ran. */
+  cancelled?: boolean;
 }
 
 export interface AccountSession {

@@ -11,19 +11,32 @@ import { z } from "zod";
 
 type ApiExpense = z.infer<typeof ExpenseAPIResponseSchema>;
 
+/**
+ * Payload crossing the client -> Server Action boundary. `date` is already
+ * formatted client-side as a plain "yyyy-MM-dd" string so the visitor's
+ * chosen calendar day never passes through a UTC server's local-time
+ * formatting (which would shift UTC+ timezones back by one day).
+ */
+export type ExpenseActionPayload = Omit<ExpenseFormValues, "date"> & {
+  date: string;
+};
+
 export const ExpenseMapper = {
   /**
    * UI -> API (Outbound)
    * Handles Colombian currency formatting (removing dots) before converting to number.
-   * `date` is a pure calendar date (no time-of-day) - sent as a plain
-   * "yyyy-MM-dd" string built from local components so the selected day
-   * survives the trip regardless of the device's timezone.
+   * `date` is a pure calendar date (no time-of-day) - either already formatted
+   * on the client as "yyyy-MM-dd", or formatted from local components when
+   * called directly with form values.
    */
-  toApiRequest: (data: ExpenseFormValues) => ({
+  toApiRequest: (data: ExpenseActionPayload | ExpenseFormValues) => ({
     name: data.name,
     amount: Number(data.amount),
     currency: data.currency,
-    date: formatCalendarDateForApi(data.date),
+    date:
+      typeof data.date === "string"
+        ? data.date
+        : formatCalendarDateForApi(data.date),
     description: data.description,
     // null clears it on an edit; the backend checks ownership.
     paymentMethodId: data.paymentMethodId || null,

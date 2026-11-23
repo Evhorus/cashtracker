@@ -11,9 +11,9 @@ import type { PaymentMethodFormValues } from "../schemas/payment-method.schema";
 export const createPaymentMethodAction = createSafeAction(
   async (values: PaymentMethodFormValues) => {
     await auth.protect();
-    await PaymentMethodsService.create(values);
+    const created = await PaymentMethodsService.create(values);
     refreshDashboard();
     const t = await getTranslations("paymentMethods.toast");
-    return { successMessage: t("created") };
+    return { data: { id: created.id }, successMessage: t("created") };
   },
 );

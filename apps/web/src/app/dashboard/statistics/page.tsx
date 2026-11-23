@@ -3,6 +3,11 @@ import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { formatMonthKey, hasMultipleYears } from "@/shared/utils/date-helpers";
+import {
+  parseCurrencyParam,
+  parseIsoDateParam,
+  parseYearParam,
+} from "@/shared/utils/url-params";
 import { getDashboardSummary } from "@/features/dashboard/data/get-dashboard-summary";
 import { getCategoryBreakdown } from "@/features/dashboard/data/get-category-breakdown";
 import { getEnvelopeBreakdown } from "@/features/dashboard/data/get-envelope-breakdown";
@@ -74,15 +79,20 @@ export default async function StatisticsPage({
   const t = await getTranslations("statistics");
   const {
     year: yearParam,
-    currency: currencyParam,
-    startDate,
-    endDate,
+    currency: rawCurrency,
+    startDate: rawStartDate,
+    endDate: rawEndDate,
     period,
     periodValue,
-    markedStart,
-    markedEnd,
+    markedStart: rawMarkedStart,
+    markedEnd: rawMarkedEnd,
   } = await searchParams;
-  const year = yearParam ? parseInt(yearParam, 10) || undefined : undefined;
+  const year = parseYearParam(yearParam);
+  const currencyParam = parseCurrencyParam(rawCurrency);
+  const startDate = parseIsoDateParam(rawStartDate);
+  const endDate = parseIsoDateParam(rawEndDate);
+  const markedStart = parseIsoDateParam(rawMarkedStart);
+  const markedEnd = parseIsoDateParam(rawMarkedEnd);
   // An exact range wins over the year shortcut when the URL somehow
   // carries both (hand-edited, stale) - same precedence the backend
   // applies (see BreakdownQueryDto), so the chart above and the

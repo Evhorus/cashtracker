@@ -17,7 +17,7 @@ import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 export const createCategoryAction = createSafeAction(
   async (formData: CategoryFormValues) => {
     await auth.protect();
-    await CategoriesService.create(formData);
+    const created = await CategoriesService.create(formData);
 
     // The category is also embedded in envelopes and the dashboard
     // breakdown, so refresh the whole dashboard, not just this list.
@@ -25,6 +25,6 @@ export const createCategoryAction = createSafeAction(
 
     const t = await getTranslations("categories.toast");
 
-    return { successMessage: t("created") };
+    return { data: { id: created.id }, successMessage: t("created") };
   },
 );

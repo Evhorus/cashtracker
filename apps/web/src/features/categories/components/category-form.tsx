@@ -58,8 +58,16 @@ export const CategoryForm = ({
 
   const color = useWatch({ control, name: "color" });
 
+  // Opened inside EnvelopeForm via CategoryPicker: stopPropagation keeps
+  // the nested React synthetic submit event from also submitting the
+  // parent envelope form through the dialog portal.
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.stopPropagation();
+    void handleSubmit(onSubmit)(event);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleFormSubmit}>
       <FieldGroup>
         <FieldSet>
           <div className="flex flex-col gap-6">

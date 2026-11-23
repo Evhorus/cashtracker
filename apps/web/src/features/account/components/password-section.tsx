@@ -37,8 +37,8 @@ export function PasswordSection() {
   });
 
   async function onSubmit(values: PasswordFormValues) {
-    const { error } = await updatePassword(values);
-    if (!error) {
+    const { error, cancelled } = await updatePassword(values);
+    if (!error && !cancelled) {
       form.reset();
       toast.success(t("savedToast"));
     }

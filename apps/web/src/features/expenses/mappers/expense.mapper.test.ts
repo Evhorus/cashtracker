@@ -133,6 +133,19 @@ describe("toApiRequest", () => {
 
     expect(backToApi.date).toBe("2026-09-22");
   });
+
+  it("preserves a client-formatted yyyy-MM-dd date string untouched on the server", () => {
+    const request = ExpenseMapper.toApiRequest({
+      name: "Mercado",
+      amount: "192500",
+      currency: "COP",
+      date: "2026-09-22",
+      description: "",
+      paymentMethodId: "",
+    });
+
+    expect(request.date).toBe("2026-09-22");
+  });
 });
 
 describe("toFormValues", () => {

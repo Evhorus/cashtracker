@@ -105,7 +105,11 @@ export function PaymentMethodPicker({
           </button>
         </div>
       )}
-      <PaymentMethodDialog open={isCreating} onOpenChange={setIsCreating} />
+      <PaymentMethodDialog
+        open={isCreating}
+        onOpenChange={setIsCreating}
+        onCreated={onChange}
+      />
     </>
   );
 }

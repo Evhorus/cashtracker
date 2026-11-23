@@ -187,7 +187,7 @@ export function CategoryPicker({
       <CreateCategoryDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={(label) => pick(label)}
+        onCreated={(categoryId) => pick(categoryId)}
       />
     </Popover>
   );

@@ -1,10 +1,11 @@
+import { unstable_rethrow } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { ApiError } from "./api-client";
 
 export type ActionState<T = unknown> = {
   data?: T;
-  errors?: string[]; // Mantener el array por retrocompatibilidad con useActionWithToast
+  errors?: string[]; // Kept as an array for compatibility with useActionWithToast
   success?: string;
 };
 
@@ -28,6 +29,10 @@ export function createSafeAction<TPayload, TResult>(
         errors: [],
       };
     } catch (error) {
+      // Let Next.js control-flow errors (e.g. redirect() / notFound() from
+      // auth.protect()) propagate instead of turning them into a generic toast.
+      unstable_rethrow(error);
+
       console.error("Action error:", error);
 
       if (error instanceof ApiError) {

@@ -50,24 +50,28 @@ export const CategoriesService = {
   },
 
   create: (data: CategoryFormValues) => {
-    return fetchApi<{ message: string }>("/categories", {
+    return fetchApi<{ id: string; message: string }>("/categories", {
       method: "POST",
       body: JSON.stringify(CategoryMapper.toApiRequest(data)),
     });
   },
 
   update: (id: string, data: CategoryFormValues) => {
-    return fetchApi<{ message: string }>(`/categories/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(CategoryMapper.toApiRequest(data)),
-    });
+    return fetchApi<{ message: string }>(
+      `/categories/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(CategoryMapper.toApiRequest(data)),
+      },
+    );
   },
 
-  // Returns the removed entity, not a `{ message }` envelope - same as
-  // the envelope delete, see EnvelopesService.delete for the details.
   delete: (id: string) => {
-    return fetchApi<unknown>(`/categories/${id}`, {
-      method: "DELETE",
-    });
+    return fetchApi<{ message: string }>(
+      `/categories/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+      },
+    );
   },
 };

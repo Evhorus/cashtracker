@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { ExpenseFormValues } from "../schemas/expense.schema";
+import type { ExpenseActionPayload } from "../mappers/expense.mapper";
 import { ExpensesService } from "../services/expenses.service";
 import { getTranslations } from "next-intl/server";
 
@@ -16,15 +16,11 @@ import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 // eslint-disable-next-line @clerk/next/require-auth-protection -- Protected inside createSafeAction wrapper by calling auth.protect() in the handler.
 export const updateExpenseAction = createSafeAction(
   async (
-    formData: ExpenseFormValues & { envelopeId: string; expenseId: string },
+    formData: ExpenseActionPayload & { envelopeId: string; expenseId: string },
   ) => {
     await auth.protect();
     const { envelopeId, expenseId, ...data } = formData;
-    await ExpensesService.update(
-      envelopeId,
-      expenseId,
-      data as ExpenseFormValues,
-    );
+    await ExpensesService.update(envelopeId, expenseId, data);
 
     refreshDashboard();
 

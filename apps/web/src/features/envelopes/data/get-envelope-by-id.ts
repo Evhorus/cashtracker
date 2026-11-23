@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { ApiError } from "@/shared/lib/api-client";
+import { isValidUuid } from "@/shared/utils/url-params";
 import { EnvelopesService } from "@/features/envelopes/services/envelopes.service";
 
 /**
@@ -31,6 +32,9 @@ import { EnvelopesService } from "@/features/envelopes/services/envelopes.servic
  * didn't work.
  */
 export const getEnvelopeById = cache(async (id: string) => {
+  if (!isValidUuid(id)) {
+    redirect("/dashboard/envelopes");
+  }
   try {
     return await EnvelopesService.getById(id);
   } catch (error) {

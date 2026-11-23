@@ -47,9 +47,9 @@ export function useUpdatePassword() {
       return { error: null };
     } catch (err) {
       if (isReverificationCancelledError(err)) {
-        // User closed Clerk's reverification modal - not a form error,
-        // there's nothing to show inline.
-        return { error: null };
+        // User closed the reverification modal - not a form error, and
+        // NOT a success either (PasswordSection must not reset or toast).
+        return { error: null, cancelled: true };
       }
 
       const { fieldErrors: fields, globalErrors: globals } = mapClerkError(

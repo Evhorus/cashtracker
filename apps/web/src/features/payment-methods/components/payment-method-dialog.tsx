@@ -14,6 +14,9 @@ interface PaymentMethodDialogProps {
   onOpenChange: (open: boolean) => void;
   /** Present to edit, absent to create. */
   paymentMethod?: PaymentMethod;
+  /** Fires once a new payment method is created, with its id - e.g. so
+   * PaymentMethodPicker can auto-select it. */
+  onCreated?: (paymentMethodId: string) => void;
 }
 
 /** Create or edit a payment method; opened from the account section or
@@ -22,13 +25,19 @@ export function PaymentMethodDialog({
   open,
   onOpenChange,
   paymentMethod,
+  onCreated,
 }: PaymentMethodDialogProps) {
   const t = useTranslations("paymentMethods");
   const isEdit = Boolean(paymentMethod);
   const create = useActionDialog(
     createPaymentMethodAction,
     { errors: [], success: "" },
-    { setOpen: onOpenChange },
+    {
+      setOpen: onOpenChange,
+      onSuccess: (state) => {
+        if (state.data?.id) onCreated?.(state.data.id);
+      },
+    },
   );
   const update = useActionDialog(
     updatePaymentMethodAction,

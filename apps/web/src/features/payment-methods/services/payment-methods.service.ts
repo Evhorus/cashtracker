@@ -15,19 +15,25 @@ export const PaymentMethodsService = {
     ),
 
   create: (values: PaymentMethodFormValues) =>
-    fetchApi<{ message: string }>("/payment-methods", {
+    fetchApi<{ id: string; message: string }>("/payment-methods", {
       method: "POST",
       body: JSON.stringify(toPaymentMethodRequest(values)),
     }),
 
   update: (id: string, values: PaymentMethodFormValues) =>
-    fetchApi<{ message: string }>(`/payment-methods/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(toPaymentMethodRequest(values)),
-    }),
+    fetchApi<{ message: string }>(
+      `/payment-methods/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(toPaymentMethodRequest(values)),
+      },
+    ),
 
   delete: (id: string) =>
-    fetchApi<{ message: string }>(`/payment-methods/${id}`, {
-      method: "DELETE",
-    }),
+    fetchApi<{ message: string }>(
+      `/payment-methods/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+      },
+    ),
 };

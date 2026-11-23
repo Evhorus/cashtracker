@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { ExpenseFormValues } from "../schemas/expense.schema";
+import type { ExpenseActionPayload } from "../mappers/expense.mapper";
 import { ExpensesService } from "../services/expenses.service";
 import { getTranslations } from "next-intl/server";
 
@@ -15,10 +15,10 @@ import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 // wire; getTranslations resolves it against the caller's own locale.
 // eslint-disable-next-line @clerk/next/require-auth-protection -- Protected inside createSafeAction wrapper by calling auth.protect() in the handler.
 export const createExpenseAction = createSafeAction(
-  async (formData: ExpenseFormValues & { envelopeId: string }) => {
+  async (formData: ExpenseActionPayload & { envelopeId: string }) => {
     await auth.protect();
     const { envelopeId, ...data } = formData;
-    await ExpensesService.create(envelopeId, data as ExpenseFormValues);
+    await ExpensesService.create(envelopeId, data);
 
     refreshDashboard();
 

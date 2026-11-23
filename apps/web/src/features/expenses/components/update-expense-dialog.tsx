@@ -11,6 +11,7 @@ import { updateExpenseAction } from "@/features/expenses/actions/update-expense.
 import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
 import { ExpenseMapper } from "@/features/expenses/mappers/expense.mapper";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
+import { formatCalendarDateForApi } from "@/shared/utils/date-helpers";
 
 interface UpdateExpenseDialogProps {
   envelopeId: string;
@@ -54,8 +55,15 @@ export const UpdateExpenseDialog = ({
     },
   );
 
-  const handleCreate = async (expenseFormValues: ExpenseFormValues) => {
-    dispatch({ ...expenseFormValues, envelopeId, expenseId: expense.id });
+  const handleUpdate = async (expenseFormValues: ExpenseFormValues) => {
+    dispatch({
+      ...expenseFormValues,
+      // Format on the client using the visitor's local calendar components so
+      // UTC+ timezones never lose a day when the Date crosses to a UTC server.
+      date: formatCalendarDateForApi(expenseFormValues.date),
+      envelopeId,
+      expenseId: expense.id,
+    });
   };
 
   return (
@@ -78,7 +86,7 @@ export const UpdateExpenseDialog = ({
       <ExpenseForm
         currency={currency}
         defaultValues={ExpenseMapper.toFormValues(expense)}
-        onSubmit={handleCreate}
+        onSubmit={handleUpdate}
         isLoading={isPending}
         onCloseDialog={() => setOpen(false)}
       />
