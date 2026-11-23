@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { iconLabel, resolveIcon, searchIcons } from "./icon-registry";
+import { iconLabel, searchIcons } from "./icon-keywords";
+import { resolveIcon } from "./icon-registry";
 
 const KEYS = ["house", "bath", "shopping-bag", "utensils", "tag"];
 

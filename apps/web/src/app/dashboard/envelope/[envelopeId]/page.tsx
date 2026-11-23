@@ -55,6 +55,7 @@ import {
 import nextDynamic from "next/dynamic";
 import { EnvelopeChartSkeleton } from "@/features/envelopes/components/envelope-chart-skeleton";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
+import type { EditableEnvelope } from "@/features/envelopes/types";
 import {
   EXPENSES_DEFAULT_PAGE_SIZE,
   EXPENSES_PAGE_SIZE_OPTIONS,
@@ -150,6 +151,14 @@ export default async function EnvelopePage({
   const spentColorClass = EnvelopeHelpers.getStatusTextColorClass(status);
   const hasActiveFilter = Boolean(search || startDate || endDate || methods);
   const methodOptions = methodOptionsFor(envelope.expenses);
+  const editableEnvelope: EditableEnvelope = {
+    id: envelope.id,
+    name: envelope.name,
+    amount: envelope.amount,
+    currency: envelope.currency,
+    spent: envelope.spent,
+    category: envelope.category,
+  };
   // Shared by both Suspense boundaries below so they remount and
   // re-stream together on every filter change.
   const filterKey = `${page}-${limit}-${search ?? ""}-${order.sortBy}-${order.sort}-${startDate ?? ""}-${endDate ?? ""}-${methods ?? ""}`;
@@ -186,7 +195,7 @@ export default async function EnvelopePage({
         actions={
           <>
             <UpdateEnvelopeDialog
-              envelope={envelope}
+              envelope={editableEnvelope}
               label={t("edit")}
               showLabelOnDesktop
             />
@@ -198,7 +207,7 @@ export default async function EnvelopePage({
             />
           </>
         }
-        mobileActions={<EnvelopeActionsMenu envelope={envelope} />}
+        mobileActions={<EnvelopeActionsMenu envelope={editableEnvelope} />}
       />
 
       {/* Expense history (main, left on desktop) + summary (sidebar,

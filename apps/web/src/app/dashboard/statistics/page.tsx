@@ -30,7 +30,10 @@ import { BreakdownTabs } from "@/features/dashboard/components/breakdown-tabs";
 import { CurrencyBreakdown } from "@/features/dashboard/components/currency-breakdown";
 import { cn } from "@/shared/lib/utils";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
-import type { DashboardSummary } from "@/features/dashboard/schemas/dashboard.schema";
+import type {
+  DashboardBreakdownFilters,
+  DashboardSummary,
+} from "@/features/dashboard/schemas/dashboard.schema";
 
 // recharts is a heavy dependency - code-split it into its own chunk, same
 // reasoning as it had on dashboard/page.tsx before this moved here (see
@@ -98,14 +101,21 @@ export default async function StatisticsPage({
   // applies (see BreakdownQueryDto), so the chart above and the
   // breakdown tabs below can never disagree about which one is active.
   const hasDateRange = Boolean(startDate && endDate);
+  const periodFilters = {
+    year: hasDateRange ? undefined : year,
+    startDate: hasDateRange ? startDate : undefined,
+    endDate: hasDateRange ? endDate : undefined,
+  };
 
-  // Only the summary is on the critical path. It's a precomputed
-  // backend aggregate and it's what the header's filters and the chart
-  // are built from, so the page can render everything above the fold
-  // without waiting on the much heavier full-envelope fetch that only
-  // the breakdowns below need - that one streams in behind its own
-  // Suspense boundary.
-  const summary = await getDashboardSummary(year, currencyParam);
+  // Start summary and (when currency is already in the URL) the four breakdown
+  // requests concurrently so BreakdownSection does not wait for the summary
+  // round-trip before hitting the API.
+  const summaryPromise = getDashboardSummary(year, currencyParam);
+  const prefetchedBreakdowns = currencyParam
+    ? fetchBreakdowns({ currency: currencyParam, ...periodFilters })
+    : null;
+
+  const summary = await summaryPromise;
 
   // The year is only worth showing when the range actually spans more
   // than one - within a single year "Aug" alone reads fine, and the
@@ -126,6 +136,15 @@ export default async function StatisticsPage({
   }));
   const hasMultipleCurrencies = totals.length > 1;
   const chartCurrency = (summary.chartCurrency ?? "COP") as CurrencyCode;
+  const matchingBreakdownsPromise =
+    prefetchedBreakdowns && currencyParam === chartCurrency
+      ? prefetchedBreakdowns
+      : null;
+
+  if (prefetchedBreakdowns && !matchingBreakdownsPromise) {
+    // Discard unused prefetch safely if the URL currency was overridden by the summary.
+    void prefetchedBreakdowns.catch(() => undefined);
+  }
   // PeriodFilterSelect only makes sense once there's a boundary to
   // narrow - showing "Semestre"/"Trimestre"/etc. before the user has
   // drawn any range invites picking one with nothing marked to anchor
@@ -197,14 +216,25 @@ export default async function StatisticsPage({
           totals={totals}
           chartCurrency={chartCurrency}
           hasMultipleCurrencies={hasMultipleCurrencies}
-          year={hasDateRange ? undefined : year}
-          startDate={hasDateRange ? startDate : undefined}
-          endDate={hasDateRange ? endDate : undefined}
+          year={periodFilters.year}
+          startDate={periodFilters.startDate}
+          endDate={periodFilters.endDate}
+          breakdownsPromise={matchingBreakdownsPromise}
         />
       </Suspense>
     </div>
   );
 }
+
+const fetchBreakdowns = (filters: DashboardBreakdownFilters) =>
+  Promise.all([
+    getCategoryBreakdown(filters),
+    getEnvelopeBreakdown(filters),
+    getNameBreakdown(filters),
+    getBreakdownTotal(filters),
+  ]);
+
+type BreakdownResults = Awaited<ReturnType<typeof fetchBreakdowns>>;
 
 interface BreakdownSectionProps {
   totals: (DashboardSummary["totals"][number] & { currency: CurrencyCode })[];
@@ -216,6 +246,7 @@ interface BreakdownSectionProps {
   year?: number;
   startDate?: string;
   endDate?: string;
+  breakdownsPromise?: Promise<BreakdownResults> | null;
 }
 
 /**
@@ -230,21 +261,12 @@ async function BreakdownSection({
   year,
   startDate,
   endDate,
+  breakdownsPromise,
 }: BreakdownSectionProps) {
   const t = await getTranslations("statistics");
   const filters = { currency: chartCurrency, year, startDate, endDate };
-  // All four aggregated by the backend, scoped to the same
-  // currency/period so every tab and the currency card beside it tell
-  // one consistent story. Category breakdown used to fetch every
-  // envelope (capped at 100) and reduce over it, which silently dropped
-  // categories once an account passed that cap - the last place in the
-  // app that did so.
-  const [categoryRows, envelopeRows, nameRows, total] = await Promise.all([
-    getCategoryBreakdown(filters),
-    getEnvelopeBreakdown(filters),
-    getNameBreakdown(filters),
-    getBreakdownTotal(filters),
-  ]);
+  const [categoryRows, envelopeRows, nameRows, total] =
+    await (breakdownsPromise ?? fetchBreakdowns(filters));
 
   return (
     <div

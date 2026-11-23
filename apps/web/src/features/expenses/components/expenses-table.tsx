@@ -1,5 +1,6 @@
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { Edit, Trash2 } from "lucide-react";
 import { Expense } from "@/features/expenses/types";
 import { formatCalendarDateShort } from "@/shared/utils/date-helpers";
 import { PaymentMethodBadge } from "@/features/payment-methods/components/payment-method-badge";
@@ -14,13 +15,14 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
-import { UpdateExpenseDialog } from "./update-expense-dialog";
-import { DeleteExpenseAlertDialog } from "./delete-expense-alert-dialog";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
 
 interface ExpensesTableProps {
   expenses: Expense[];
   envelopeId: string;
   currency: CurrencyCode;
+  onEdit: (expense: Expense) => void;
+  onDelete: (expense: Expense) => void;
 }
 
 // Desktop-only (see expenses-list.tsx - the card list still covers
@@ -34,8 +36,11 @@ export function ExpensesTable({
   expenses,
   envelopeId,
   currency,
+  onEdit,
+  onDelete,
 }: ExpensesTableProps) {
   const t = useTranslations("expenses.table");
+  const tExpenses = useTranslations("expenses");
   const locale = useLocale();
   const currencyConfig = CURRENCY_MAP[currency];
 
@@ -98,14 +103,16 @@ export function ExpensesTable({
               </TableCell>
               <TableCell className="px-5 py-3.5">
                 <CardHoverActions className="justify-end" alwaysVisible>
-                  <UpdateExpenseDialog
-                    envelopeId={envelopeId}
-                    currency={currency}
-                    expense={expense}
+                  <CardActionButton
+                    icon={Edit}
+                    label={tExpenses("editAria")}
+                    onClick={() => onEdit(expense)}
                   />
-                  <DeleteExpenseAlertDialog
-                    envelopeId={envelopeId}
-                    expenseId={expense.id}
+                  <CardActionButton
+                    icon={Trash2}
+                    label={tExpenses("deleteAria")}
+                    tone="destructive"
+                    onClick={() => onDelete(expense)}
                   />
                 </CardHoverActions>
               </TableCell>

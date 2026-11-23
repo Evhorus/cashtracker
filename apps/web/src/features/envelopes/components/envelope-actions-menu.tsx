@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Edit, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Envelope } from "@/features/envelopes/types";
+import { EditableEnvelope } from "@/features/envelopes/types";
 import { UpdateEnvelopeDialog } from "./update-envelope-dialog";
 import { DeleteEnvelopeAlertDialog } from "./delete-envelope-alert-dialog";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/shared/components/common/actions-drawer";
 
 interface EnvelopeActionsMenuProps {
-  envelope: Envelope;
+  envelope: EditableEnvelope;
 }
 
 export const EnvelopeActionsMenu = ({ envelope }: EnvelopeActionsMenuProps) => {

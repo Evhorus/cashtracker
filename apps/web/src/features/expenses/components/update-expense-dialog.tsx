@@ -84,6 +84,7 @@ export const UpdateExpenseDialog = ({
       }
     >
       <ExpenseForm
+        key={expense.id}
         currency={currency}
         defaultValues={ExpenseMapper.toFormValues(expense)}
         onSubmit={handleUpdate}

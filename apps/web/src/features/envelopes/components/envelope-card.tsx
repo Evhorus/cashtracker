@@ -7,7 +7,12 @@ import {
 } from "@/shared/components/ui/card";
 import { Progress } from "@/shared/components/ui/progress";
 import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import { ArrowRight, Infinity as InfinityIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Edit,
+  Infinity as InfinityIcon,
+  Trash2,
+} from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import {
   CategoryIcon,
@@ -17,28 +22,41 @@ import {
 import Link from "next/link";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import { Envelope } from "@/features/envelopes/types";
-import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
 import { Text } from "@/shared/components/common/typography";
-import { UpdateEnvelopeDialog } from "./update-envelope-dialog";
-import { DeleteEnvelopeAlertDialog } from "./delete-envelope-alert-dialog";
-import { EnvelopeActionsMenu } from "./envelope-actions-menu";
+import {
+  ActionsDrawer,
+  type ActionItem,
+} from "@/shared/components/common/actions-drawer";
 
 interface EnvelopeCardProps {
   envelope: Envelope;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-// No React.memo/useMemo here any more: this is a Server Component (it
-// has no "use client", and EnvelopesGrid renders it on the server), and
-// in the RSC renderer both are inert - memo() never gets a chance to
-// skip anything because there is no re-render, and the Flight
-// dispatcher's useMemo just calls the factory every time. They read as
-// client-side optimizations on a component that never runs on the
-// client.
-export const EnvelopeCard = ({ envelope }: EnvelopeCardProps) => {
+export const EnvelopeCard = ({
+  envelope,
+  onEdit,
+  onDelete,
+}: EnvelopeCardProps) => {
   const t = useTranslations("envelopes");
   const locale = useLocale();
   const envelopeId = envelope.id;
   const currencyConfig = CURRENCY_MAP[envelope.currency];
+
+  const actions: ActionItem[] = [
+    {
+      label: t("editAria"),
+      icon: Edit,
+      onClick: onEdit,
+    },
+    {
+      label: t("deleteAria"),
+      icon: Trash2,
+      onClick: onDelete,
+      variant: "destructive",
+    },
+  ];
 
   const status = envelope.status;
   const calculations = {
@@ -135,17 +153,9 @@ export const EnvelopeCard = ({ envelope }: EnvelopeCardProps) => {
           </span>
         )}
 
-        {/* Actions */}
-        <div className="flex shrink-0 items-center">
-          <CardHoverActions>
-            <UpdateEnvelopeDialog envelope={envelope} />
-            <DeleteEnvelopeAlertDialog id={envelope.id} name={envelope.name} />
-          </CardHoverActions>
-
-          {/* Mobile Actions */}
-          <div className="md:hidden" data-no-nav>
-            <EnvelopeActionsMenu envelope={envelope} />
-          </div>
+        {/* Mobile Actions - dialogs live once at EnvelopesGrid level. */}
+        <div className="flex shrink-0 items-center" data-no-nav>
+          <ActionsDrawer actions={actions} title={t("optionsMenu")} />
         </div>
       </CardHeader>
 

@@ -1,9 +1,13 @@
-import React from "react";
+"use client";
+
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Envelope } from "@/features/envelopes/types";
+import { EditableEnvelope, Envelope } from "@/features/envelopes/types";
 import { SearchX, Wallet } from "lucide-react";
 import { EmptyState } from "@/shared/components/common/empty-state";
 import { CreateEnvelopeDialog } from "./create-envelope-dialog";
+import { UpdateEnvelopeDialog } from "./update-envelope-dialog";
+import { DeleteEnvelopeAlertDialog } from "./delete-envelope-alert-dialog";
 import { statusFilterLabel } from "./envelopes-filter";
 import { EnvelopeCard } from "./envelope-card";
 import { EnvelopesTable } from "./envelopes-table";
@@ -29,6 +33,24 @@ export const EnvelopesGrid = ({
 }: EnvelopesGridProps) => {
   const t = useTranslations("envelopes");
   const hasActiveFilter = Boolean(searchQuery) || statusFilter !== "all";
+  const [editingEnvelope, setEditingEnvelope] =
+    useState<EditableEnvelope | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deletingEnvelope, setDeletingEnvelope] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const handleEdit = (envelope: Envelope) => {
+    setEditingEnvelope(envelope);
+    setEditOpen(true);
+  };
+
+  const handleDelete = (envelope: Envelope) => {
+    setDeletingEnvelope({ id: envelope.id, name: envelope.name });
+    setDeleteOpen(true);
+  };
 
   return (
     <>
@@ -73,12 +95,36 @@ export const EnvelopesGrid = ({
                 key={envelope.id}
                 style={{ animationDelay: `${0.5 + index * 0.1}s` }}
               >
-                <EnvelopeCard envelope={envelope} />
+                <EnvelopeCard
+                  envelope={envelope}
+                  onEdit={() => handleEdit(envelope)}
+                  onDelete={() => handleDelete(envelope)}
+                />
               </div>
             ))}
           </div>
-          <EnvelopesTable envelopes={envelopes} />
+          <EnvelopesTable
+            envelopes={envelopes}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </>
+      )}
+
+      {editingEnvelope && (
+        <UpdateEnvelopeDialog
+          envelope={editingEnvelope}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+        />
+      )}
+      {deletingEnvelope && (
+        <DeleteEnvelopeAlertDialog
+          id={deletingEnvelope.id}
+          name={deletingEnvelope.name}
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+        />
       )}
     </>
   );

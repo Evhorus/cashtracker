@@ -8,144 +8,100 @@ import { formatCalendarDateShort } from "@/shared/utils/date-helpers";
 import { PaymentMethodBadge } from "@/features/payment-methods/components/payment-method-badge";
 import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
-import { CardActionButton } from "@/shared/components/common/card-action-button";
-import { useState } from "react";
-import { UpdateExpenseDialog } from "./update-expense-dialog";
-import { DeleteExpenseAlertDialog } from "./delete-expense-alert-dialog";
-import { ExpenseActionsMenu } from "./expense-actions-menu";
+import {
+  ActionsDrawer,
+  type ActionItem,
+} from "@/shared/components/common/actions-drawer";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 
 interface ExpenseCardProps {
   expense: Expense;
   envelopeId: string;
   currency: CurrencyCode;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
 export const ExpenseCard = ({
   expense,
   envelopeId,
   currency,
+  onEdit,
+  onDelete,
 }: ExpenseCardProps) => {
   const t = useTranslations("expenses");
   const locale = useLocale();
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const actions: ActionItem[] = [
+    {
+      label: t("editAria"),
+      icon: Edit,
+      onClick: onEdit,
+    },
+    {
+      label: t("deleteAria"),
+      icon: Trash2,
+      onClick: onDelete,
+      variant: "destructive",
+    },
+  ];
 
   return (
-    <>
-      {/* No left-border accent bar - same reasoning as envelope-card.tsx.
-          border/60 replaces border-0 as the "this card is its own
-          thing" cue instead. size="sm" + a single row (was p-5 and a
-          grid-cols-1 md:grid-cols-2 that stacked name/date above
-          amount/actions on mobile, doubling the row's height there) -
-          a list of expenses is scanned many-at-once, so each row stays
-          this compact rather than paying full-card padding per line.
-
-          Not a whole-card click into this expense's own detail page
-          anymore (was a Card onClick with exclusions for buttons/menus) -
-          that made every bit of text on the row, including the amount,
-          unselectable-without-navigating. The chevron below is the one
-          real click/nav target instead, same as EnvelopeCard's own
-          the details link - name/date/amount stay plain, selectable
-          text. */}
-      <Card
-        size="sm"
-        className="relative overflow-hidden border-border/60 bg-card/50 shadow-sm transition-colors duration-200 hover:bg-card"
-      >
-        <CardContent className="flex flex-row items-center gap-3">
-          {/* First-letter avatar instead of a generic receipt icon
-              repeated identically on every row - lets a scanned list
-              of expense names actually be scannable by more than just
-              their text. */}
-          <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground sm:flex">
-            <span className="font-mono text-sm font-semibold">
-              {expense.name.trim().charAt(0).toUpperCase() || "?"}
-            </span>
-          </div>
-
-          <div className="min-w-0 flex-1">
-            {/* The name is the link to the detail page: a separate
-                chevron took width a phone row needs for the name and
-                its payment method. */}
-            <Link
-              href={`/dashboard/envelope/${envelopeId}/expenses/${expense.id}`}
-              className="block truncate text-sm font-semibold hover:text-primary"
-            >
-              {expense.name}
-            </Link>
-            {/* Date and payment method on one line: the full weekday
-                date used to fill it alone, and the card was only
-                visible after opening the edit form. */}
-            <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-              <span className="shrink-0 font-mono">
-                {formatCalendarDateShort(expense.date, locale, true)}
-              </span>
-              {expense.paymentMethod && (
-                <>
-                  <span aria-hidden>·</span>
-                  <PaymentMethodBadge method={expense.paymentMethod} />
-                </>
-              )}
-            </div>
-          </div>
-
-          <span className="shrink-0 font-mono text-sm font-bold text-primary">
-            {formatCurrency(+expense.amount, CURRENCY_MAP[currency])}
+    <Card
+      size="sm"
+      className="relative overflow-hidden border-border/60 bg-card/50 shadow-sm transition-colors duration-200 hover:bg-card"
+    >
+      <CardContent className="flex flex-row items-center gap-3">
+        {/* First-letter avatar instead of a generic receipt icon
+            repeated identically on every row - lets a scanned list
+            of expense names actually be scannable by more than just
+            their text. */}
+        <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground sm:flex">
+          <span className="font-mono text-sm font-semibold">
+            {expense.name.trim().charAt(0).toUpperCase() || "?"}
           </span>
+        </div>
 
-          {/* Desktop Actions */}
-          <CardHoverActions alwaysVisible>
-            <CardActionButton
-              icon={Edit}
-              label={t("editAria")}
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowEditDialog(true);
-              }}
-            />
-            <CardActionButton
-              icon={Trash2}
-              label={t("deleteAria")}
-              tone="destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteDialog(true);
-              }}
-            />
-          </CardHoverActions>
-
-          {/* Mobile Actions (Drawer) - same ExpenseActionsMenu the
-              expense detail page uses for its own mobile action
-              trigger (see PageHeader's mobileActions there), just
-              with a smaller/muted trigger to fit this tighter row.
-              Owns its own edit/delete dialogs independently of the
-              desktop ones above - harmless since only one of the
-              two triggers is ever visible at a time. */}
-          <div className="shrink-0 md:hidden">
-            <ExpenseActionsMenu
-              envelopeId={envelopeId}
-              currency={currency}
-              expense={expense}
-              triggerClassName="-mr-2 h-8 w-7 text-muted-foreground"
-            />
+        <div className="min-w-0 flex-1">
+          {/* The name is the link to the detail page: a separate
+              chevron took width a phone row needs for the name and
+              its payment method. */}
+          <Link
+            href={`/dashboard/envelope/${envelopeId}/expenses/${expense.id}`}
+            className="block truncate text-sm font-semibold hover:text-primary"
+          >
+            {expense.name}
+          </Link>
+          {/* Date and payment method on one line: the full weekday
+              date used to fill it alone, and the card was only
+              visible after opening the edit form. */}
+          <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="shrink-0 font-mono">
+              {formatCalendarDateShort(expense.date, locale, true)}
+            </span>
+            {expense.paymentMethod && (
+              <>
+                <span aria-hidden>·</span>
+                <PaymentMethodBadge method={expense.paymentMethod} />
+              </>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <UpdateExpenseDialog
-        envelopeId={envelopeId}
-        currency={currency}
-        expense={expense}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-      />
-      <DeleteExpenseAlertDialog
-        envelopeId={envelopeId}
-        expenseId={expense.id}
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-      />
-    </>
+        <span className="shrink-0 font-mono text-sm font-bold text-primary">
+          {formatCurrency(+expense.amount, CURRENCY_MAP[currency])}
+        </span>
+
+        {/* Mobile Actions (Drawer) - edit/delete dialogs live once at
+            ExpensesList level. */}
+        <div className="shrink-0">
+          <ActionsDrawer
+            actions={actions}
+            title={t("optionsMenu")}
+            triggerClassName="-mr-2 h-8 w-7 text-muted-foreground"
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 };

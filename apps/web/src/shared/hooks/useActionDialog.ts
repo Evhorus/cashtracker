@@ -45,8 +45,9 @@ export const useActionDialog = <State extends ActionState, Payload>(
       options?.setOpen?.(false);
       options?.onSuccess?.(state);
 
-      // Refresh the current route so the UI stays in sync.
-      if (options?.refreshOnSuccess !== false) {
+      // Every write Server Action already calls refreshDashboard(), so an
+      // extra router.refresh() is opt-in to avoid a duplicate RSC round-trip.
+      if (options?.refreshOnSuccess === true) {
         router.refresh();
       }
     },

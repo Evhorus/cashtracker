@@ -50,6 +50,20 @@ export const DeleteEnvelopeAlertDialog = ({
   const pathname = usePathname();
   const [internalOpen, setInternalOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setInputValue("");
+    }
+    if (isControlled) {
+      setControlledOpen?.(nextOpen);
+    } else {
+      setInternalOpen(nextOpen);
+    }
+  };
+
   const { dispatch, isPending } = useActionDialog(
     deleteEnvelopeAction,
     {
@@ -57,28 +71,14 @@ export const DeleteEnvelopeAlertDialog = ({
       success: "",
     },
     {
-      setOpen: (open) => {
-        if (controlledOpen === undefined) {
-          setInternalOpen(open);
-        } else {
-          setControlledOpen?.(open);
-        }
-      },
+      setOpen: handleOpenChange,
       onSuccess: () => {
-        setInputValue("");
-
         if (pathname.startsWith("/dashboard/envelope/")) {
           router.replace("/dashboard/envelopes");
-        } else {
-          router.refresh();
         }
       },
     },
   );
-
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? setControlledOpen : setInternalOpen;
 
   const handleDeleteEnvelope = async () => {
     dispatch(id);
@@ -102,7 +102,7 @@ export const DeleteEnvelopeAlertDialog = ({
   );
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       {!isControlled && (
         <AlertDialogTrigger
           render={

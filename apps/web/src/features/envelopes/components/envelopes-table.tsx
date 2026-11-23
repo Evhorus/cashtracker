@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Infinity as InfinityIcon } from "lucide-react";
+import { Edit, Infinity as InfinityIcon, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Envelope } from "@/features/envelopes/types";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
@@ -18,12 +18,13 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
-import { UpdateEnvelopeDialog } from "./update-envelope-dialog";
-import { DeleteEnvelopeAlertDialog } from "./delete-envelope-alert-dialog";
+import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { EnvelopeStatusBadge } from "./envelope-status-badge";
 
 interface EnvelopesTableProps {
   envelopes: Envelope[];
+  onEdit: (envelope: Envelope) => void;
+  onDelete: (envelope: Envelope) => void;
 }
 
 // Desktop-only (see envelopes-grid.tsx - the card grid still covers
@@ -35,8 +36,13 @@ interface EnvelopesTableProps {
 // app's own standard (rounded-2xl border card, uppercase header, px-5
 // py-3.5 cells) instead of shadcn's defaults - see categories-table.tsx
 // for the same treatment.
-export function EnvelopesTable({ envelopes }: EnvelopesTableProps) {
+export function EnvelopesTable({
+  envelopes,
+  onEdit,
+  onDelete,
+}: EnvelopesTableProps) {
   const t = useTranslations("envelopes.table");
+  const tEnvelopes = useTranslations("envelopes");
   const locale = useLocale();
 
   return (
@@ -160,10 +166,16 @@ export function EnvelopesTable({ envelopes }: EnvelopesTableProps) {
                 </TableCell>
                 <TableCell className="px-5 py-3.5">
                   <CardHoverActions className="justify-end" alwaysVisible>
-                    <UpdateEnvelopeDialog envelope={envelope} />
-                    <DeleteEnvelopeAlertDialog
-                      id={envelope.id}
-                      name={envelope.name}
+                    <CardActionButton
+                      icon={Edit}
+                      label={tEnvelopes("editAria")}
+                      onClick={() => onEdit(envelope)}
+                    />
+                    <CardActionButton
+                      icon={Trash2}
+                      label={tEnvelopes("deleteAria")}
+                      tone="destructive"
+                      onClick={() => onDelete(envelope)}
                     />
                   </CardHoverActions>
                 </TableCell>

@@ -1,0 +1,199 @@
+/**
+ * Lower-case, accent-free Spanish search keywords for every category icon key.
+ * Kept separate from icon-registry.ts so consumers that only render an icon via
+ * resolveIcon() never bundle this dictionary.
+ */
+const ICON_KEYWORDS: Record<string, string> = {
+  house: "casa hogar vivienda arriendo alquiler",
+  car: "carro auto coche vehiculo",
+  "piggy-bank": "ahorro ahorros alcancia",
+  briefcase: "trabajo maletin empleo oficina",
+  user: "persona personal perfil",
+  "paw-print": "mascota mascotas huella animal",
+  plane: "viaje avion vuelo vacaciones",
+  ticket: "entrada boleta evento cine",
+  heart: "salud corazon amor favorito",
+  "shopping-bag": "compras bolsa tienda ropa",
+  utensils: "comida restaurante comer cubiertos",
+  "graduation-cap": "educacion estudio universidad colegio",
+  gift: "regalo regalos cumpleanos detalle",
+  zap: "energia luz electricidad rayo",
+  tag: "etiqueta otro general",
+  "building-2": "edificio apartamento propiedad conjunto",
+  bed: "cama dormir habitacion",
+  sofa: "sofa muebles sala",
+  lamp: "lampara decoracion",
+  bath: "bano ducha aseo",
+  key: "llave arriendo acceso",
+  hammer: "reparaciones martillo construccion",
+  wrench: "mantenimiento reparacion herramienta taller",
+  "paint-roller": "pintura remodelacion obra",
+  plug: "enchufe electrico",
+  lightbulb: "bombillo idea luz",
+  droplets: "agua acueducto gotas",
+  flame: "gas calefaccion fuego",
+  wifi: "internet wifi red",
+  tv: "television streaming cable",
+  "washing-machine": "lavadora lavanderia ropa",
+  refrigerator: "nevera electrodomestico",
+  "trash-2": "basura aseo",
+  bus: "bus transporte publico",
+  "train-front": "tren metro transporte",
+  bike: "bicicleta moto ciclismo",
+  fuel: "gasolina combustible tanqueo",
+  "circle-parking": "parqueadero estacionamiento",
+  ship: "barco crucero",
+  truck: "camion envio domicilio mudanza",
+  "car-taxi-front": "taxi uber transporte",
+  coffee: "cafe desayuno",
+  pizza: "pizza comida rapida",
+  beer: "cerveza bar licor",
+  wine: "vino licor cena",
+  apple: "fruta manzana mercado saludable",
+  carrot: "verduras mercado vegetales",
+  cake: "pastel postre cumpleanos",
+  "ice-cream-cone": "helado postre",
+  sandwich: "sandwich almuerzo",
+  soup: "sopa almuerzo comida",
+  cookie: "galleta snack",
+  "shopping-cart": "supermercado mercado compras carrito",
+  "shopping-basket": "canasta mercado compras",
+  store: "tienda negocio local",
+  croissant: "panaderia pan desayuno",
+  beef: "carne asado",
+  fish: "pescado mariscos pecera",
+  egg: "huevo desayuno",
+  stethoscope: "medico doctor consulta salud",
+  pill: "medicina pastillas farmacia droga",
+  activity: "salud pulso actividad",
+  dumbbell: "gimnasio gym ejercicio pesas",
+  syringe: "vacuna inyeccion",
+  hospital: "hospital clinica urgencias",
+  baby: "bebe hijo ninos panales",
+  smile: "dentista sonrisa cuidado",
+  glasses: "gafas lentes optica",
+  brain: "terapia psicologia mente",
+  music: "musica spotify concierto",
+  film: "cine pelicula",
+  "gamepad-2": "juegos videojuegos consola",
+  clapperboard: "cine video produccion",
+  popcorn: "cine palomitas",
+  tent: "camping acampar",
+  camera: "foto camara fotografia",
+  palette: "arte pintura diseno",
+  "book-open": "libros lectura estudio",
+  book: "libro lectura",
+  headphones: "audifonos musica podcast",
+  "party-popper": "fiesta celebracion",
+  guitar: "guitarra musica instrumento",
+  drama: "teatro obra",
+  trophy: "deporte premio torneo",
+  "dice-5": "juegos azar dados casino",
+  mountain: "montana senderismo naturaleza",
+  umbrella: "playa sombrilla lluvia seguro",
+  sun: "sol verano playa",
+  "tree-palm": "playa vacaciones isla",
+  luggage: "maleta equipaje viaje",
+  map: "mapa viaje turismo",
+  "map-pin": "lugar ubicacion sitio",
+  compass: "brujula aventura explorar",
+  globe: "mundo internacional viajes",
+  wallet: "billetera dinero efectivo",
+  "credit-card": "tarjeta credito debito pagos",
+  banknote: "billete efectivo dinero",
+  coins: "monedas dinero cambio",
+  landmark: "banco impuestos gobierno",
+  receipt: "recibo factura cuenta",
+  "trending-up": "inversion ganancia crecimiento ingresos",
+  "trending-down": "perdida gastos baja",
+  "chart-line": "grafica inversion bolsa",
+  percent: "interes descuento porcentaje cuota",
+  calculator: "calculo contabilidad cuentas",
+  "hand-coins": "prestamo deuda pago",
+  "circle-dollar-sign": "dolar dinero moneda",
+  bitcoin: "cripto bitcoin inversion",
+  laptop: "computador portatil trabajo tecnologia",
+  monitor: "pantalla computador",
+  smartphone: "celular telefono plan datos",
+  printer: "impresora papeleria",
+  "file-text": "documento contrato papeles tramite",
+  mail: "correo email",
+  phone: "llamada telefono",
+  handshake: "negocio acuerdo cliente",
+  building: "empresa oficina edificio",
+  scale: "legal abogado justicia balanza",
+  shirt: "ropa camisa vestuario",
+  scissors: "peluqueria corte barberia",
+  sparkles: "belleza estetica cuidado brillo",
+  gem: "joyas lujo diamante",
+  watch: "reloj accesorios",
+  backpack: "mochila colegio escuela",
+  "heart-handshake": "donacion caridad ayuda",
+  church: "iglesia diezmo religion",
+  users: "familia amigos grupo",
+  "user-round": "persona cuenta perfil",
+  dog: "perro mascota",
+  cat: "gato mascota",
+  bird: "ave pajaro mascota",
+  bone: "hueso perro veterinario",
+  rabbit: "conejo mascota",
+  turtle: "tortuga mascota",
+  star: "favorito estrella",
+  flag: "meta objetivo bandera",
+  bell: "recordatorio alerta notificacion",
+  calendar: "fecha mensual cita calendario",
+  clock: "tiempo hora",
+  hourglass: "plazo espera tiempo",
+  shield: "seguro proteccion",
+  "shield-check": "seguro poliza proteccion",
+  lock: "seguridad candado",
+  repeat: "suscripcion recurrente mensual",
+  siren: "emergencia imprevistos urgencia",
+  recycle: "reciclaje ambiente",
+  leaf: "naturaleza jardin ecologia",
+  "flower-2": "flores jardin",
+  "tree-pine": "arbol naturaleza navidad",
+  sprout: "planta cultivo crecimiento",
+  cloud: "nube almacenamiento hosting",
+  rocket: "emprendimiento proyecto inicio",
+  package: "paquete envio compras",
+  cigarette: "cigarrillo vicio",
+};
+
+/** Lower-cases and strips accents, so "baño" finds "bano" and vice versa. */
+const normalize = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+/**
+ * Icon keys matching what the user typed, in their original order. Matches the
+ * key itself ("shopping-bag") and the Spanish keywords ("compras"); every typed
+ * word must match somewhere so "casa arriendo" narrows instead of widening.
+ */
+export function searchIcons(keys: readonly string[], query: string): string[] {
+  const words = normalize(query.replace(/-/g, " "))
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return [...keys];
+
+  return keys.filter((key) => {
+    const haystack = `${key.replace(/-/g, " ")} ${ICON_KEYWORDS[key] ?? ""}`;
+    return words.every((word) => haystack.includes(word));
+  });
+}
+
+/**
+ * Readable label for an icon, used in tooltips and screen readers. In Spanish
+ * it takes the first keyword (the icon's Spanish name by construction);
+ * elsewhere it replaces hyphens with spaces.
+ */
+export function iconLabel(key: string, locale: string): string {
+  const spanish = locale.startsWith("es")
+    ? ICON_KEYWORDS[key]?.split(" ")[0]
+    : undefined;
+  const text = spanish ?? key.replace(/-/g, " ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

@@ -50,3 +50,10 @@ export interface Envelope {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/** Narrow projection passed to client edit dialogs and action menus so detail
+ * pages do not serialize the full `expenses[]` array to the client. */
+export type EditableEnvelope = Pick<
+  Envelope,
+  "id" | "name" | "amount" | "currency" | "spent" | "category"
+>;

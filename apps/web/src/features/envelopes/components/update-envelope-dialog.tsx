@@ -7,11 +7,11 @@ import { useState } from "react";
 import { EnvelopeForm } from "./envelope-form";
 import { useActionDialog } from "@/shared/hooks/useActionDialog";
 import { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
-import { Envelope } from "@/features/envelopes/types";
+import { EditableEnvelope } from "@/features/envelopes/types";
 import { updateEnvelopeAction } from "@/features/envelopes/actions/update-envelope.action";
 
 interface UpdateEnvelopeDialogProps {
-  envelope: Envelope;
+  envelope: EditableEnvelope;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Override the default trigger's a11y label (envelopes.editAria) -
@@ -70,6 +70,7 @@ export const UpdateEnvelopeDialog = ({
       }
     >
       <EnvelopeForm
+        key={envelope.id}
         defaultValues={{
           name: envelope.name,
           hasLimit: envelope.amount !== null,
