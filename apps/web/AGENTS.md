@@ -66,9 +66,8 @@ Two projects, because they cost different things to run:
 Scoped to what only a browser can answer — that `auth.protect()` really redirects a
 signed-out visitor, that the `NEXT_LOCALE` cookie survives a reload and a navigation, and
 that an expense actually moves its envelope's spent amount. That last one is the only
-thing that verifies the cache tags: `updateTag` on a name nothing is cached under is not
-an error, so a wrong tag is invisible to typecheck, lint and Vitest alike and shows up
-only as a number that failed to move.
+thing that verifies the whole write-then-read path: a stale read is invisible to typecheck,
+lint and Vitest alike and shows up only as a number that failed to move.
 Everything decidable without a browser stays in Vitest, which runs in two seconds.
 `playwright.config.ts` reads `NEXT_PUBLIC_URL` from `.env` rather than hardcoding the
 port, and `webServer.reuseExistingServer` means it uses a `pnpm dev` you already have up.
@@ -80,7 +79,6 @@ port, and `webServer.reuseExistingServer` means it uses a `pnpm dev` you already
 | Cookie read removed in `i18n/request.ts`                 | yes, immediately                                                                                                                                                   |
 | `revalidatePath` removed from `create-expense.action.ts` | yes — the money path fails on the derived percentage                                                                                                               |
 | `auth.protect()` commented out in `dashboard/layout.tsx` | **no** — the app guards in three layers (that layout, each page's own call, and `authenticatedFetch`), so that suite catches a total regression, not a partial one |
-| A cache tag renamed consistently inside its registry     | **no, and correctly** — producer and consumer both read the registry, so a consistent rename is harmless by construction. That is what the registry is for         |
 
 Assert on **derived** values where you can (`25.0% del límite`) rather than raw amounts: a
 derived figure can only be right if the value was both re-read and recalculated, and raw
@@ -357,18 +355,20 @@ This is a Next.js 16 project using the App Router and TypeScript.
 
 - **Safe Actions**: Wrap all actions with `createSafeAction` (`src/shared/lib/safe-action.ts`) for standardized error handling.
 - **Service Layer**: Actions must delegate business logic to a Service class (e.g., `EnvelopesService`) rather than implementing it directly. (Exception: `auth`, see Domain Organization below.)
-- **Cache Invalidation**: `revalidatePath` for a route, `updateTag` for a tagged read.
-  `updateTag`, not `revalidateTag`: these are all Server Actions, and the user has to see
-  their own write on the very next render — see `categories/actions/delete-category.action.ts`.
-- **Tag names are never written twice.** Every tag lives in its feature's
-  `lib/cache-tags.ts` (`ENVELOPE_TAGS`, `EXPENSE_TAGS`, `CATEGORY_TAGS`, `DASHBOARD_TAGS`),
-  and other features import from there. A tag name that doesn't match its producer is not
-  an error — `updateTag` on a name nothing is cached under silently invalidates nothing,
-  and shows up much later as a stale number nobody can trace to a typo. Detail endpoints
-  are tagged **per id** (`ENVELOPE_TAGS.detail(id)`), never with one global tag for the
-  whole collection. Where several tags are always invalidated together, the bundle is
-  exported too (`DASHBOARD_ENVELOPE_WRITE_TAGS` / `DASHBOARD_EXPENSE_WRITE_TAGS`) rather
-  than re-listed in each action.
+- **Data freshness: nothing is cached.** This is a finance app used from several devices, so
+  what one device writes must show on the next load of any other. Reads therefore never use
+  Next's Data Cache: `authenticatedFetch` sends `cache: "no-store"` by default, services pass
+  no `next: { revalidate, tags }`, and there is no `unstable_cache` or `"use cache"`. Per-render
+  de-duplication stays (React `cache()` in `data/get-*.ts`). Caching by tag was tried and
+  needed every write to name every read that shows its data - a renamed category kept its old
+  name on envelopes and the dashboard - so it could not be made safe by construction. Do not
+  reintroduce it for account data without a way to prove no write can miss a read. The key of a
+  cached fetch also includes the `Authorization` header, which rotates every minute.
+  `src/shared/lib/data-freshness.test.ts` fails if a cache option appears.
+- **Cache Invalidation**: every write Server Action ends with `refreshDashboard()`
+  (`src/features/dashboard/lib/refresh-dashboard.ts`), which revalidates the whole `/dashboard` layout -
+  the server render and the client router cache - so no page can be missed. The same test
+  fails if a `*.action.ts` (other than locale) does not call it.
 - **UI Feedback**: Use `useActionWithToast` (`src/shared/hooks/useActionWithToast.tsx`) to handle success/error notifications and trigger `router.refresh()`.
 
 #### Domain Organization

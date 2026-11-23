@@ -30,17 +30,20 @@ export default async function DashboardLayout({
 }>) {
   await auth.protect();
 
-  // Fetched once here (also seeds the per-request cache Server
-  // Components reuse via getCategories()/getCategoryOptions(), both
-  // wrapped in React's cache()) and handed to client components through
-  // context - see providers/categories-provider.tsx.
-  const [categories, options, paymentMethods, clerkLocalization] =
-    await Promise.all([
-      getCategories(),
-      getCategoryOptions(),
-      getPaymentMethods(),
-      getClerkLocalization(),
-    ]);
+  // Started here but deliberately NOT awaited. Awaiting them blocked the
+  // whole layout, and with the backend/database asleep (Render + Neon
+  // cold start, several seconds) the user saw an empty dark screen:
+  // loading.tsx sits *inside* this layout, so it cannot show until the
+  // layout itself has rendered. As promises, the shell paints at once and
+  // each page's skeleton streams in; only the client components that read
+  // them (via use(), see providers/) wait. They also seed the per-request
+  // cache Server Components reuse through getCategories() etc. (React's
+  // cache()). A rejection surfaces at the reading component, where
+  // error.tsx catches it.
+  const categories = getCategories();
+  const options = getCategoryOptions();
+  const paymentMethods = getPaymentMethods();
+  const clerkLocalization = await getClerkLocalization();
 
   return (
     <ClerkProvider localization={clerkLocalization}>

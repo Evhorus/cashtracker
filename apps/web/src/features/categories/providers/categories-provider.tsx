@@ -1,11 +1,15 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import type { Category, CategoryOptions } from "@/features/categories/types";
 
+// Promises, not resolved values: the layout starts the fetches without
+// awaiting them (see dashboard/layout.tsx), so the shell and each page's
+// loading skeleton can paint while a cold backend/database wakes up. Only
+// the components that actually read the data suspend, in `use()` below.
 interface CategoriesContextValue {
-  categories: Category[];
-  options: CategoryOptions;
+  categories: Promise<Category[]>;
+  options: Promise<CategoryOptions>;
 }
 
 const CategoriesContext = createContext<CategoriesContextValue | null>(null);
@@ -45,7 +49,7 @@ export function CategoriesProvider({
 }
 
 function useCategoriesContext(): CategoriesContextValue {
-  const value = useContext(CategoriesContext);
+  const value = use(CategoriesContext);
   if (value === null) {
     throw new Error("useCategories must be used within a CategoriesProvider");
   }
@@ -53,9 +57,9 @@ function useCategoriesContext(): CategoriesContextValue {
 }
 
 export function useCategories(): Category[] {
-  return useCategoriesContext().categories;
+  return use(useCategoriesContext().categories);
 }
 
 export function useCategoryOptions(): CategoryOptions {
-  return useCategoriesContext().options;
+  return use(useCategoriesContext().options);
 }

@@ -20,8 +20,7 @@ interface CategoryCardProps {
 // EnvelopeCard - elevated hover (-translate-y-1, shadow-lg), the
 // gradient overlay, the bigger icon that scales on hover, bold tracked
 // title - just without a progress bar/amount, since a category has
-// neither. The default/custom chip mirrors
-// EnvelopeCard's always-shown currency chip.
+// neither.
 export function CategoryCard({
   category,
   count,
@@ -46,13 +45,8 @@ export function CategoryCard({
             <CardTitle className="text-lg leading-none font-bold tracking-tight transition-colors duration-200 group-hover:text-primary">
               <span className="block truncate">{category.label}</span>
             </CardTitle>
-            <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-              <span>{t("envelopeCount", { count })}</span>
-              <span className="rounded-sm bg-secondary px-1 py-0.5 text-secondary-foreground">
-                {category.isDefault
-                  ? t("table.isDefault")
-                  : t("table.isCustom")}
-              </span>
+            <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              {t("envelopeCount", { count })}
             </p>
           </div>
         </div>
@@ -60,19 +54,13 @@ export function CategoryCard({
         {/* No hover concept on mobile (this card is md:hidden - the
             desktop rows use CardHoverActions instead) - shown plainly,
             same as EnvelopeActionsMenu's role for EnvelopeCard, just
-            without a dropdown since there are only ever two actions.
-            Hidden for global (isDefault) categories - see
-            categories-table.tsx. */}
-        {!category.isDefault && (
-          <div className="flex shrink-0 items-center">
-            <UpdateCategoryDialog category={category} />
-            <DeleteCategoryButton
-              onClick={() =>
-                onDelete({ id: category.id, label: category.label })
-              }
-            />
-          </div>
-        )}
+            without a dropdown since there are only ever two actions. */}
+        <div className="flex shrink-0 items-center">
+          <UpdateCategoryDialog category={category} />
+          <DeleteCategoryButton
+            onClick={() => onDelete({ id: category.id, label: category.label })}
+          />
+        </div>
       </CardHeader>
     </Card>
   );

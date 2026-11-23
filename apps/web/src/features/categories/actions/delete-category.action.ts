@@ -1,12 +1,11 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { updateTag } from "next/cache";
 import { CategoriesService } from "../services/categories.service";
 import { getTranslations } from "next-intl/server";
 
 import { createSafeAction } from "@/shared/lib/safe-action";
-import { CATEGORY_TAGS } from "../lib/cache-tags";
+import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 
 // The success toast is written here, not read off the API response.
 // The backend's `{ message }` is Spanish and has no idea who's reading
@@ -18,17 +17,10 @@ export const deleteCategoryAction = createSafeAction(async (id: string) => {
   await auth.protect();
   await CategoriesService.delete(id);
 
-  // updateTag, not revalidateTag(tag, "max"): every one of these
-  // mutations is a read-your-own-writes case - the user changes something
-  // and the very next render has to show it. revalidateTag's "max" profile
-  // is stale-while-revalidate, so it served the *old* data on that next
-  // render and only refreshed in the background (observed: deleting a
-  // category left the deleted row on screen until a manual reload).
-  // updateTag expires the entry outright so the next request waits for
-  // fresh data. It's Server-Action-only, which every action here is.
-  updateTag(CATEGORY_TAGS.all);
-  // Deleting a category unclassifies its envelopes (ON DELETE SET NULL).
-  updateTag(CATEGORY_TAGS.usage);
+  // Envelopes using the category lose it, and the dashboard breakdown
+  // moves their spending to "no category" - refreshDashboard covers every
+  // page that shows either.
+  refreshDashboard();
 
   const t = await getTranslations("categories.toast");
 

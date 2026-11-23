@@ -6,9 +6,8 @@ export interface Category {
   /** Icon key - one of CategoryOptions.icons, resolved to a LucideIcon
    * component via resolveIcon (lib/icon-registry.ts) for rendering. */
   icon: string;
-  /** True for the 9 categories seeded automatically on first fetch (see
-   * CategoriesService.findAllForUser on the backend) - just informational,
-   * doesn't restrict editing/deleting. */
+  /** True for the ones every account starts with. Informational only:
+   * each user has their own copy, so they edit and delete like any other. */
   isDefault: boolean;
   createdAt: Date;
 }

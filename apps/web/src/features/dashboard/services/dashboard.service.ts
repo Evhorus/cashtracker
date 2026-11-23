@@ -16,7 +16,6 @@ import {
 } from "../schemas/dashboard.schema";
 import { DashboardMapper } from "../mappers/dashboard.mapper";
 import type { DashboardRecentExpense } from "../types";
-import { DASHBOARD_TAGS } from "../lib/cache-tags";
 
 /** Shared by the four breakdown fetchers below - turns the filters
  * object into the query string every one of them sends. */
@@ -52,7 +51,7 @@ export const DashboardService = {
 
     return fetchApi<DashboardSummary>(
       `/dashboard/summary${qs}`,
-      { next: { tags: [DASHBOARD_TAGS.summary], revalidate: 60 } },
+      undefined,
       DashboardSummaryAPIResponseSchema,
     );
   },
@@ -69,7 +68,7 @@ export const DashboardService = {
   ): Promise<DashboardCategoryBreakdownRow[]> =>
     fetchApi<DashboardCategoryBreakdownRow[]>(
       `/dashboard/category-breakdown?${breakdownQueryString(filters)}`,
-      { next: { tags: [DASHBOARD_TAGS.categoryBreakdown], revalidate: 60 } },
+      undefined,
       DashboardCategoryBreakdownAPIResponseSchema,
     ),
 
@@ -79,7 +78,7 @@ export const DashboardService = {
   ): Promise<DashboardEnvelopeBreakdownRow[]> => {
     const rows = await fetchApi<DashboardEnvelopeBreakdownRow[]>(
       `/dashboard/envelope-breakdown?${breakdownQueryString(filters)}`,
-      { next: { tags: [DASHBOARD_TAGS.envelopeBreakdown], revalidate: 60 } },
+      undefined,
       DashboardEnvelopeBreakdownAPIResponseSchema,
     );
     return rows.map(DashboardMapper.envelopeBreakdownRowFromApi);
@@ -92,7 +91,7 @@ export const DashboardService = {
   ): Promise<DashboardNameBreakdownRow[]> => {
     const rows = await fetchApi<DashboardNameBreakdownRow[]>(
       `/dashboard/name-breakdown?${breakdownQueryString(filters)}`,
-      { next: { tags: [DASHBOARD_TAGS.nameBreakdown], revalidate: 60 } },
+      undefined,
       DashboardNameBreakdownAPIResponseSchema,
     );
     return rows.map(DashboardMapper.nameBreakdownRowFromApi);
@@ -105,16 +104,14 @@ export const DashboardService = {
   ): Promise<DashboardBreakdownTotal> =>
     fetchApi<DashboardBreakdownTotal>(
       `/dashboard/breakdown-total?${breakdownQueryString(filters)}`,
-      { next: { tags: [DASHBOARD_TAGS.breakdownTotal], revalidate: 60 } },
+      undefined,
       DashboardBreakdownTotalAPIResponseSchema,
     ),
 
   /**
    * The most recent expenses across every envelope - the "Actividad
-   * reciente" widget on Resumen. Same 60s revalidate window as
-   * getSummary, and its own cache tag ("all-expenses" is already used
-   * per-envelope in expenses.service.ts, so this needs a distinct tag)
-   * invalidated by expense create/update/delete actions.
+   * reciente" widget on Resumen. Read fresh on every request, like every
+   * other read (see authenticated-fetch.ts).
    */
   getRecentExpenses: async (
     limit?: number,
@@ -122,7 +119,7 @@ export const DashboardService = {
     const qs = limit ? `?limit=${limit}` : "";
     const expenses = await fetchApi<DashboardRecentExpenseApi[]>(
       `/dashboard/recent-expenses${qs}`,
-      { next: { tags: [DASHBOARD_TAGS.recentExpenses], revalidate: 60 } },
+      undefined,
       DashboardRecentExpensesAPIResponseSchema,
     );
 

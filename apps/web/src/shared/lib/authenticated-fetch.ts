@@ -36,7 +36,18 @@ export async function authenticatedFetch(
     headers.Authorization = `Bearer ${token}`;
   }
 
+  // No persistent cache, by default and on purpose. This is a finance
+  // app used from several devices: what one device just wrote must show
+  // on the next load of any other, and a cached read can only promise
+  // that if every write remembers to invalidate every read that shows
+  // it - which this app got wrong in places (a renamed category kept its
+  // old name on envelopes and the dashboard). Reading the backend every
+  // time makes it true by construction. The key to a cached fetch also
+  // includes the Authorization header, which rotates every minute, so
+  // the cache could not have lived longer than that anyway.
+  // `options` comes after so a read can still opt in deliberately.
   return fetch(url, {
+    cache: "no-store",
     ...options,
     headers,
   });

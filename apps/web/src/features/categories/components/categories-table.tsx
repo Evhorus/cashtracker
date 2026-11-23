@@ -43,9 +43,6 @@ export function CategoriesTable({
             <TableHead className="h-auto px-5 py-3 text-left font-semibold text-inherit">
               {t("table.category")}
             </TableHead>
-            <TableHead className="h-auto px-5 py-3 text-left font-semibold text-inherit">
-              {t("table.type")}
-            </TableHead>
             <TableHead className="h-auto px-5 py-3 text-right font-semibold text-inherit">
               {t("table.envelopes")}
             </TableHead>
@@ -70,38 +67,18 @@ export function CategoriesTable({
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="px-5 py-3.5">
-                  {category.isDefault ? (
-                    <span className="inline-block rounded-full bg-muted px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-muted-foreground">
-                      {t("table.isDefault")}
-                    </span>
-                  ) : (
-                    <span className="inline-block rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-primary">
-                      {t("table.isCustom")}
-                    </span>
-                  )}
-                </TableCell>
                 <TableCell className="px-5 py-3.5 text-right font-mono text-muted-foreground">
                   {t("envelopeCount", { count })}
                 </TableCell>
                 <TableCell className="px-5 py-3.5">
-                  {/* Global (isDefault) categories aren't owned by anyone
-                      - editing/deleting one would just 404 (see
-                      categories-section.tsx's mobile card for the same
-                      reasoning), so no actions render for those rows. */}
-                  {!category.isDefault && (
-                    <CardHoverActions className="justify-end" alwaysVisible>
-                      <UpdateCategoryDialog category={category} />
-                      <DeleteCategoryButton
-                        onClick={() =>
-                          onDelete({
-                            id: category.id,
-                            label: category.label,
-                          })
-                        }
-                      />
-                    </CardHoverActions>
-                  )}
+                  <CardHoverActions className="justify-end" alwaysVisible>
+                    <UpdateCategoryDialog category={category} />
+                    <DeleteCategoryButton
+                      onClick={() =>
+                        onDelete({ id: category.id, label: category.label })
+                      }
+                    />
+                  </CardHoverActions>
                 </TableCell>
               </TableRow>
             );

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { SearchX } from "lucide-react";
 import { EmptyState } from "@/shared/components/common/empty-state";
-import { CategoriesTypeFilter } from "./categories-type-filter";
 import { ListFilterBar } from "@/shared/components/common/list-filter-bar";
 import { useCategories } from "@/features/categories/providers/categories-provider";
 import { resolveIcon } from "../lib/icon-registry";
@@ -27,9 +26,8 @@ interface CategoriesSectionProps {
   actions?: React.ReactNode;
 }
 
-// Same standard as EnvelopesGrid/EnvelopesFilter: a search box + status
-// tabs, a count line, then a mobile card list + desktop table. Search/
-// type filtering reads CategoriesFilterProvider's context (search state
+// Same standard as EnvelopesGrid/EnvelopesFilter: a search box, a count line, then a mobile card list + desktop table. Search
+// filtering reads CategoriesFilterProvider's context (search state
 // lives there, not here, so the search box itself can render inline in
 // the page header on desktop - see categories/page.tsx) rather than
 // EnvelopesFilter's debounced URL-param round-trip - the full category
@@ -44,17 +42,14 @@ export function CategoriesSection({
   // own success toast - see delete-category-alert-dialog.tsx.
   const [toDelete, setToDelete] = useState<CategoryToDelete | null>(null);
   const categories = useCategories();
-  const { search, type } = useCategoriesFilter();
+  const { search } = useCategoriesFilter();
 
   // No useMemo: the React Compiler (reactCompiler: true in
   // next.config.ts) memoizes this on the same three dependencies.
   const term = search.trim().toLowerCase();
-  const filtered = categories.filter((category) => {
-    if (term && !category.label.toLowerCase().includes(term)) return false;
-    if (type === "default" && !category.isDefault) return false;
-    if (type === "custom" && category.isDefault) return false;
-    return true;
-  });
+  const filtered = categories.filter(
+    (category) => !term || category.label.toLowerCase().includes(term),
+  );
 
   // Scoped to the current search/type filter - matches EnvelopesGrid's
   // meta.total, which is always "however many match what's on screen
@@ -74,7 +69,6 @@ export function CategoriesSection({
           ListFilterBar. */}
       <ListFilterBar
         actions={actions}
-        filters={<CategoriesTypeFilter />}
         renderSearch={(className) => <CategoriesSearch className={className} />}
       />
 
@@ -91,11 +85,9 @@ export function CategoriesSection({
           title={
             search
               ? t("empty.noResultsTitle", { query: search })
-              : t("empty.noneInFilterTitle", { filter: t(`types.${type}`) })
+              : t("empty.noneTitle")
           }
-          description={
-            search ? t("empty.noResultsBody") : t("empty.noneInFilterBody")
-          }
+          description={search ? t("empty.noResultsBody") : t("empty.noneBody")}
         />
       ) : (
         <>

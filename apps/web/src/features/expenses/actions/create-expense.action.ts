@@ -1,14 +1,12 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { revalidatePath, updateTag } from "next/cache";
 import { ExpenseFormValues } from "../schemas/expense.schema";
 import { ExpensesService } from "../services/expenses.service";
 import { getTranslations } from "next-intl/server";
 
 import { createSafeAction } from "@/shared/lib/safe-action";
-import { ENVELOPE_TAGS } from "@/features/envelopes/lib/cache-tags";
-import { DASHBOARD_EXPENSE_WRITE_TAGS } from "@/features/dashboard/lib/cache-tags";
+import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 
 // The success toast is written here, not read off the API response.
 // The backend's `{ message }` is Spanish and has no idea who's reading
@@ -22,12 +20,7 @@ export const createExpenseAction = createSafeAction(
     const { envelopeId, ...data } = formData;
     await ExpensesService.create(envelopeId, data as ExpenseFormValues);
 
-    revalidatePath("/dashboard");
-    revalidatePath(`/dashboard/envelope/${envelopeId}`);
-    // updateTag (not revalidateTag) - read-your-own-writes; see
-    // categories/actions/delete-category.action.ts for the why.
-    updateTag(ENVELOPE_TAGS.all);
-    DASHBOARD_EXPENSE_WRITE_TAGS.forEach((tag) => updateTag(tag));
+    refreshDashboard();
 
     const t = await getTranslations("expenses.toast");
 

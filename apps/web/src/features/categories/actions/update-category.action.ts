@@ -1,13 +1,12 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { updateTag } from "next/cache";
 import { CategoryFormValues } from "../schemas/category.schema";
 import { CategoriesService } from "../services/categories.service";
 import { getTranslations } from "next-intl/server";
 
 import { createSafeAction } from "@/shared/lib/safe-action";
-import { CATEGORY_TAGS } from "../lib/cache-tags";
+import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 
 // The success toast is written here, not read off the API response.
 // The backend's `{ message }` is Spanish and has no idea who's reading
@@ -21,9 +20,9 @@ export const updateCategoryAction = createSafeAction(
     const { id, ...data } = formData;
     await CategoriesService.update(id, data as CategoryFormValues);
 
-    // updateTag (not revalidateTag) - read-your-own-writes; see
-    // categories/actions/delete-category.action.ts for the why.
-    updateTag(CATEGORY_TAGS.all);
+    // The category is also embedded in envelopes and the dashboard
+    // breakdown, so refresh the whole dashboard, not just this list.
+    refreshDashboard();
 
     const t = await getTranslations("categories.toast");
 

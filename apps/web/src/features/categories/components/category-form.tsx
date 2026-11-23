@@ -2,7 +2,7 @@
 import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { Check } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -19,7 +19,7 @@ import {
   buildCategoryFormSchema,
   CategoryFormValues,
 } from "@/features/categories/schemas/category.schema";
-import { resolveIcon } from "@/features/categories/lib/icon-registry";
+import { CategoryIconPicker } from "./category-icon-picker";
 import { useCategoryOptions } from "@/features/categories/providers/categories-provider";
 import { cn } from "@/shared/lib/utils";
 
@@ -30,9 +30,9 @@ interface CategoryFormProps {
   onCloseDialog: () => void;
 }
 
-// Icon/color are curated grids (fetched from GET /categories/options -
+// Icon/color are curated choices (fetched from GET /categories/options -
 // see category.schema.ts for why that's not a hardcoded frontend
-// constant), not a free-form picker - keeps every category inside the
+// constant), not free-form input - keeps every category inside the
 // same visual system the original 9 predefined ones already followed.
 // Same Field/FormInput/Controller shape envelope-form.tsx uses.
 export const CategoryForm = ({
@@ -55,6 +55,8 @@ export const CategoryForm = ({
       ...defaultValues,
     },
   });
+
+  const color = useWatch({ control, name: "color" });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -79,35 +81,15 @@ export const CategoryForm = ({
               render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel htmlFor="icon">{t("icon")}</FieldLabel>
-                  <div
+                  <CategoryIconPicker
                     id="icon"
-                    role="radiogroup"
+                    value={field.value}
+                    onChange={field.onChange}
+                    icons={icons}
+                    color={color}
+                    disabled={isLoading}
                     aria-invalid={fieldState.invalid}
-                    className="grid grid-cols-5 gap-2"
-                  >
-                    {icons.map((key) => {
-                      const Icon = resolveIcon(key);
-                      const selected = field.value === key;
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          role="radio"
-                          aria-checked={selected}
-                          disabled={isLoading}
-                          onClick={() => field.onChange(key)}
-                          className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-md border transition-colors",
-                            selected
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-input text-muted-foreground hover:bg-muted",
-                          )}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </button>
-                      );
-                    })}
-                  </div>
+                  />
                   <FieldError errors={[fieldState.error]} />
                 </Field>
               )}

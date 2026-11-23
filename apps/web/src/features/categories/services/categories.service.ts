@@ -10,15 +10,12 @@ import {
 } from "../schemas/category.schema";
 import { Category, CategoryOptions } from "../types";
 import { CategoryMapper } from "../mappers/category.mapper";
-import { CATEGORY_TAGS } from "../lib/cache-tags";
 
 export const CategoriesService = {
   getAll: async (): Promise<Category[]> => {
     const response = await fetchApi<CategoriesResponseApi>(
       "/categories",
-      {
-        next: { tags: [CATEGORY_TAGS.all], revalidate: 60 },
-      },
+      undefined,
       CategoriesAPIResponseSchema,
     );
 
@@ -26,14 +23,11 @@ export const CategoriesService = {
   },
 
   getOptions: async (): Promise<CategoryOptions> => {
-    // Long revalidate - this whitelist only ever changes on a backend
-    // deploy (a code change to ICON_KEYS/PRESET_COLORS there), never per
-    // request/user, unlike the categories list above.
+    // This whitelist only ever changes on a backend deploy (a code
+    // change to ICON_KEYS/PRESET_COLORS there), never per request/user.
     return fetchApi<CategoryOptionsApi>(
       "/categories/options",
-      {
-        next: { tags: [CATEGORY_TAGS.options], revalidate: 3600 },
-      },
+      undefined,
       CategoryOptionsAPIResponseSchema,
     );
   },
@@ -46,7 +40,7 @@ export const CategoriesService = {
   getUsage: async (): Promise<Record<string, number>> => {
     const rows = await fetchApi<CategoryUsageApi>(
       "/categories/usage",
-      { next: { tags: [CATEGORY_TAGS.usage], revalidate: 60 } },
+      undefined,
       CategoryUsageAPIResponseSchema,
     );
 

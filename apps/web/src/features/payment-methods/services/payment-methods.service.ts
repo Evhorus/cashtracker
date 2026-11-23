@@ -5,13 +5,12 @@ import {
   type PaymentMethodFormValues,
 } from "../schemas/payment-method.schema";
 import type { PaymentMethod } from "../types";
-import { PAYMENT_METHOD_TAGS } from "../lib/cache-tags";
 
 export const PaymentMethodsService = {
   getAll: (): Promise<PaymentMethod[]> =>
     fetchApi<PaymentMethod[]>(
       "/payment-methods",
-      { next: { tags: [PAYMENT_METHOD_TAGS.all], revalidate: 60 } },
+      undefined,
       PaymentMethodsAPIResponseSchema,
     ),
 

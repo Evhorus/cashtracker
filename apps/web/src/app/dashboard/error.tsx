@@ -10,12 +10,17 @@ import { Text } from "@/shared/components/common/typography";
 // handle it itself - none of these routes had an error boundary before
 // (a thrown error surfaced Next.js's own generic page). Client Component
 // per the App Router's error.tsx contract.
+//
+// "Retry" calls retry(), not reset(): retry() re-fetches and re-renders the
+// boundary's children, so the layout starts its categories and payment
+// methods requests again. reset() only clears the error state, and the
+// providers would hand back the same rejected promise.
 export default function DashboardError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   const t = useTranslations("errors");
   const tCommon = useTranslations("common");
@@ -32,7 +37,7 @@ export default function DashboardError({
         <h2 className="text-xl font-semibold">{t("genericTitle")}</h2>
         <Text className="max-w-sm">{t("genericBody")}</Text>
       </div>
-      <Button onClick={() => reset()}>
+      <Button onClick={() => retry()}>
         <RotateCw className="h-4 w-4" />
         {tCommon("retry")}
       </Button>

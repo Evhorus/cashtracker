@@ -1,17 +1,19 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import type { PaymentMethod } from "../types";
 
-const PaymentMethodsContext = createContext<PaymentMethod[] | null>(null);
+const PaymentMethodsContext = createContext<Promise<PaymentMethod[]> | null>(
+  null,
+);
 
 /** The signed-in user's payment methods, fetched once in the dashboard
- * layout - same pattern as CategoriesProvider. */
+ * layout and passed as a promise - same pattern as CategoriesProvider. */
 export function PaymentMethodsProvider({
   paymentMethods,
   children,
 }: {
-  paymentMethods: PaymentMethod[];
+  paymentMethods: Promise<PaymentMethod[]>;
   children: React.ReactNode;
 }) {
   return (
@@ -22,11 +24,11 @@ export function PaymentMethodsProvider({
 }
 
 export function usePaymentMethods(): PaymentMethod[] {
-  const value = useContext(PaymentMethodsContext);
+  const value = use(PaymentMethodsContext);
   if (value === null) {
     throw new Error(
       "usePaymentMethods must be used within a PaymentMethodsProvider",
     );
   }
-  return value;
+  return use(value);
 }

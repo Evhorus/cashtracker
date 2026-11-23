@@ -5,11 +5,10 @@ import { expect, test, type Page } from "@playwright/test";
  * envelope shows up everywhere it should.
  *
  * This is the one end-to-end path worth having. It crosses every layer
- * at once - form, Server Action, service, backend, cache invalidation,
- * re-render - and it is the only thing that verifies the cache tags:
- * `updateTag` on a name nothing is cached under is not an error, so a
- * wrong tag is invisible to typecheck, lint and Vitest alike and shows
- * up only as a number that failed to move.
+ * at once - form, Server Action, service, backend, refresh,
+ * re-render - and it is what proves a write is visible on the next read,
+ * which typecheck, lint and Vitest cannot: a stale read shows up only as
+ * a number that failed to move.
  *
  * Self-cleaning: it creates what it needs and deletes it at the end, so
  * repeated runs neither collide nor leave rows behind. It still writes

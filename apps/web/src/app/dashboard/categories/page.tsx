@@ -30,11 +30,9 @@ export default async function CategoriesPage() {
   const categoryCounts = await getCategoryUsage();
 
   return (
-    // CategoriesFilterProvider holds the search/type state shared between
-    // the search box (rendered inside CategoriesSection) and the type
-    // filter (in the PageHeader on desktop) and the filtering logic - see that context file's
-    // comment for why a context instead of local state, now that the
-    // search box isn't a sibling of CategoriesSection anymore.
+    // CategoriesFilterProvider holds the search state shared between the
+    // search box and the filtered list in CategoriesSection - see that
+    // context file's comment for why a context instead of local state.
     <CategoriesFilterProvider>
       <div className="space-y-6">
         {/* Same convention as dashboard/envelopes/page.tsx: the create

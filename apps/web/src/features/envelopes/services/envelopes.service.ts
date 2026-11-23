@@ -16,7 +16,6 @@ import type {
   EnvelopeSort,
   EnvelopeStatusFilter,
 } from "../lib/envelope-helpers";
-import { ENVELOPE_TAGS } from "../lib/cache-tags";
 
 // Mirrors GetExpensesParams (expenses.service.ts): search, the derived
 // spending status, and the order (by the period each envelope covers).
@@ -44,9 +43,7 @@ export const EnvelopesService = {
 
     const response = await fetchApi<EnvelopesResponseApi>(
       `/envelopes${qs ? `?${qs}` : ""}`,
-      {
-        next: { tags: [ENVELOPE_TAGS.all], revalidate: 60 },
-      },
+      undefined,
       EnvelopesAPIResponseSchema,
     );
 
@@ -59,9 +56,7 @@ export const EnvelopesService = {
   getById: async (id: string): Promise<Envelope> => {
     const envelope = await fetchApi<EnvelopeApi>(
       `/envelopes/${id}`,
-      {
-        next: { tags: [ENVELOPE_TAGS.detail(id)], revalidate: 60 },
-      },
+      undefined,
       EnvelopeAPIResponseSchema,
     );
 

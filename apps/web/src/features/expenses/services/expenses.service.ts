@@ -13,7 +13,6 @@ import {
   type ExpensesPaginationMeta,
 } from "../schemas/expense.schema";
 import { ExpenseMapper } from "../mappers/expense.mapper";
-import { EXPENSE_TAGS } from "../lib/cache-tags";
 
 export interface GetExpensesParams extends PaginationParams {
   startDate?: string;
@@ -54,13 +53,7 @@ export const ExpensesService = {
 
     const response = await fetchApi<ExpensesResponseApi>(
       `/envelopes/${envelopeId}/expenses${qs ? `?${qs}` : ""}`,
-      {
-        // revalidate: 0 means this is never cached, which is why the tag
-        // below has no effect - and indeed no action invalidates it. The
-        // expense list is filtered/sorted/paginated per request, so not
-        // caching it is the right call; the tag is vestigial.
-        next: { tags: [EXPENSE_TAGS.list(envelopeId)], revalidate: 0 },
-      },
+      undefined,
       ExpensesAPIResponseSchema,
     );
 
@@ -73,9 +66,7 @@ export const ExpensesService = {
   getById: async (envelopeId: string, expenseId: string): Promise<Expense> => {
     const expense = await fetchApi<ExpenseApi>(
       `/envelopes/${envelopeId}/expenses/${expenseId}`,
-      {
-        next: { tags: [EXPENSE_TAGS.detail(expenseId)], revalidate: 60 },
-      },
+      undefined,
       ExpenseAPIResponseSchema,
     );
 

@@ -1,14 +1,11 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { revalidatePath, updateTag } from "next/cache";
 import { EnvelopesService } from "../services/envelopes.service";
 import { getTranslations } from "next-intl/server";
 
 import { createSafeAction } from "@/shared/lib/safe-action";
-import { ENVELOPE_TAGS } from "../lib/cache-tags";
-import { CATEGORY_TAGS } from "@/features/categories/lib/cache-tags";
-import { DASHBOARD_ENVELOPE_WRITE_TAGS } from "@/features/dashboard/lib/cache-tags";
+import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 
 // Goes through EnvelopesService + createSafeAction like every other
 // mutation, instead of the raw authenticatedFetch + hand-rolled
@@ -33,17 +30,7 @@ export const deleteEnvelopeAction = createSafeAction(
     await auth.protect();
     await EnvelopesService.delete(envelopeId);
 
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/envelopes");
-    // updateTag (not revalidateTag) - read-your-own-writes; see
-    // categories/actions/delete-category.action.ts for the why.
-    updateTag(ENVELOPE_TAGS.all);
-    // Per-category envelope counts change with any envelope write.
-    updateTag(CATEGORY_TAGS.usage);
-    // Also the detail-endpoint tag: without it a deleted envelope's own
-    // cached detail response stayed servable.
-    updateTag(ENVELOPE_TAGS.detail(envelopeId));
-    DASHBOARD_ENVELOPE_WRITE_TAGS.forEach((tag) => updateTag(tag));
+    refreshDashboard();
 
     const t = await getTranslations("envelopes.toast");
 

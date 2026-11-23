@@ -9,23 +9,17 @@
     "editAria": "Editar categoría",
     "deleteAria": "Eliminar categoría",
     "envelopeCount": "{count, plural, one {# sobre} other {# sobres}}",
-    "types": {
-      "all": "Todas",
-      "default": "Predeterminadas",
-      "custom": "Personalizadas"
-    },
     "table": {
       "category": "Categoría",
-      "type": "Tipo",
-      "envelopes": "Sobres",
-      "isDefault": "Predeterminada",
-      "isCustom": "Personalizada"
+      "envelopes": "Sobres"
     },
     "form": {
       "name": "Nombre",
       "namePlaceholder": "Ej: Suscripciones",
       "icon": "Ícono",
-      "color": "Color"
+      "color": "Color",
+      "changeIcon": "Cambiar icono",
+      "iconSearch": "Buscar icono..."
     },
     "createDialog": {
       "title": "Crear categoría",
@@ -37,7 +31,7 @@
     },
     "deleteDialog": {
       "title": "¿Eliminar categoría?",
-      "description": "Se eliminará <name>{name}</name>. Los sobres que ya la usan no se modifican, solo dejan de tenerla disponible para elegir."
+      "description": "Se eliminará <name>{name}</name>. Los sobres que la usan se quedarán sin categoría."
     },
     "picker": {
       "create": "Crear categoría"
@@ -45,8 +39,8 @@
     "empty": {
       "noResultsTitle": "Sin resultados para \"{query}\"",
       "noResultsBody": "Prueba con otro nombre.",
-      "noneInFilterTitle": "Sin categorías en \"{filter}\"",
-      "noneInFilterBody": "Prueba con otro filtro."
+      "noneTitle": "Aún no tienes categorías",
+      "noneBody": "Crea una con el botón de arriba."
     },
     "toast": {
       "created": "Categoría creada correctamente.",

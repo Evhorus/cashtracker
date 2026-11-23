@@ -9,23 +9,17 @@
     "editAria": "Edit category",
     "deleteAria": "Delete category",
     "envelopeCount": "{count, plural, one {# envelope} other {# envelopes}}",
-    "types": {
-      "all": "All",
-      "default": "Default",
-      "custom": "Custom"
-    },
     "table": {
       "category": "Category",
-      "type": "Type",
-      "envelopes": "Envelopes",
-      "isDefault": "Default",
-      "isCustom": "Custom"
+      "envelopes": "Envelopes"
     },
     "form": {
       "name": "Name",
       "namePlaceholder": "e.g. Subscriptions",
       "icon": "Icon",
-      "color": "Color"
+      "color": "Color",
+      "changeIcon": "Change icon",
+      "iconSearch": "Search icon..."
     },
     "createDialog": {
       "title": "Create category",
@@ -37,7 +31,7 @@
     },
     "deleteDialog": {
       "title": "Delete category?",
-      "description": "<name>{name}</name> will be deleted. Envelopes already using it aren't changed, they just stop having it available to pick."
+      "description": "<name>{name}</name> will be deleted. Envelopes using it will be left without a category."
     },
     "picker": {
       "create": "Create category"
@@ -45,8 +39,8 @@
     "empty": {
       "noResultsTitle": "No results for \"{query}\"",
       "noResultsBody": "Try another name.",
-      "noneInFilterTitle": "No categories in \"{filter}\"",
-      "noneInFilterBody": "Try another filter."
+      "noneTitle": "No categories yet",
+      "noneBody": "Create one with the button above."
     },
     "toast": {
       "created": "Category created.",
