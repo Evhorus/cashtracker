@@ -209,7 +209,7 @@ This is a Next.js 16 project using the App Router and TypeScript.
 
 ### Project Structure
 
-- `src/app/`: Next.js App Router. Contains route segments and layouts.
+- `src/app/`: Next.js App Router — kept thin as a routing layer (route segments, layouts, `generateMetadata`, route-level `auth.protect()` / redirects, unwrapping `params`/`searchParams`, and delegating rendering to `*View` components in `src/features/`).
   - `(auth)/`: Authentication routes (custom UI on top of Clerk, see `src/features/auth/`).
   - `(home)/`: Public landing page routes.
   - `dashboard/`: Protected routes for the main application.

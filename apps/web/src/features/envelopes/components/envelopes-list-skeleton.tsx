@@ -110,7 +110,7 @@ export const EnvelopesListSkeleton = () => {
   );
 };
 
-// Shared between envelopes/loading.tsx and the Suspense fallback in envelopes/page.tsx.
+// Shared between envelopes/loading.tsx and the Suspense fallback in EnvelopesView.
 export const EnvelopesResultsSkeleton = () => {
   return (
     <>
