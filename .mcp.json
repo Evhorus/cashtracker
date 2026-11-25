@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "Neon": {
+      "type": "http",
+      "url": "https://mcp.neon.tech/mcp"
+    },
     "shadcn": {
       "command": "pnpm",
       "args": ["dlx", "shadcn@latest", "mcp"]

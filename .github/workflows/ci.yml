@@ -1,0 +1,175 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Determines which e2e suites must run on PRs. On pushes to main, both run.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            echo "web=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}")
+          if echo "$CHANGED" | grep -Eq '^(apps/api/|packages/|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|\.github/workflows/ci\.yml)'; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "api=false" >> "$GITHUB_OUTPUT"
+          fi
+          if echo "$CHANGED" | grep -Eq '^(apps/web/|packages/|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|\.github/workflows/ci\.yml)'; then
+            echo "web=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "web=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run quality gates and build
+        env:
+          # Placeholders for @cashtracker/web next build (keeps verify runnable by forks).
+          API_URL: http://localhost:4000/api
+          NEXT_PUBLIC_URL: http://localhost:4001
+          CLERK_SECRET_KEY: sk_test_ci_placeholder
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_placeholder
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+          NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: /dashboard
+          NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: /dashboard
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pnpm turbo run typecheck lint format:check test knip build --affected
+          else
+            pnpm turbo run typecheck lint format:check test knip build
+          fi
+
+  e2e-api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: cashtracker_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Write apps/api/.env.test for throwaway database
+        run: |
+          cat > apps/api/.env.test <<'EOF'
+          NODE_ENV=test
+          CLIENT_URL=http://localhost:4001
+          API_URL=http://localhost:4000/api
+          DATABASE_URL=postgresql://postgres@localhost:5432/cashtracker_test
+          CLERK_SECRET_KEY=sk_test_ci_placeholder
+          EOF
+
+      - run: pnpm test:e2e:api
+
+  e2e-web:
+    needs: changes
+    if: >-
+      needs.changes.outputs.web == 'true' &&
+      (github.event_name == 'push' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cashtracker/web exec playwright install --with-deps chromium
+
+      - name: Check the Clerk secrets are set
+        env:
+          SECRET: ${{ secrets.CLERK_SECRET_KEY }}
+          PUBLISHABLE: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+        run: |
+          missing=""
+          [ -n "$SECRET" ] || missing="$missing CLERK_SECRET_KEY"
+          [ -n "$PUBLISHABLE" ] || missing="$missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Empty or unset repository secret(s):$missing"
+            exit 1
+          fi
+
+      - name: Write apps/web/.env for the suite
+        run: |
+          cat > apps/web/.env <<EOF
+          API_URL=http://localhost:4000/api
+          NEXT_PUBLIC_URL=http://localhost:4001
+          CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+          NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard
+          NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard
+          EOF
+
+      - run: pnpm test:e2e:web
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            apps/web/test-results/
+            apps/web/playwright-report/
+          retention-days: 7

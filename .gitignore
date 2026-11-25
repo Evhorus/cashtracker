@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Turborepo
+.turbo/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Tests & coverage
+coverage/
+.nyc_output/
+e2e/.auth/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.playwright-mcp/
+
+# Env files (never commit secrets)
+.env
+.env.local
+.env.test
+.env.*.local
+!.env.template
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Logs & OS
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.pem
+pids
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+.temp/
+.tmp/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Vercel
+.vercel/
+
+# Local DB backups & personal files (never commit real user data)
+backups/
+pdf/
+design-review/

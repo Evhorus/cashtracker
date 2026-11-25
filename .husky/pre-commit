@@ -1,0 +1,2 @@
+# Runs all fast quality gates across the monorepo (Turborepo caches untouched packages).
+pnpm check

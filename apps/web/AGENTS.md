@@ -1,14 +1,10 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository.
-
-`AGENTS.md` is the cross-tool convention, so one file serves every agent. Claude Code reads
-`CLAUDE.md` rather than this file, so `CLAUDE.md` is a one-line `@AGENTS.md` import - which is
-also the layout Next.js's own agent-file generator writes
-(`node_modules/next/dist/server/lib/generate-agent-files.js`). Put agent-specific instructions
-under a heading in that file; everything that applies to any agent belongs here.
+Guidance for AI coding agents working in `apps/web` (`@cashtracker/web`). See the monorepo root [AGENTS.md](../../AGENTS.md) for workspace-wide commands, root `.husky`/`.github` hooks and workflows, rulesets (`verify`, `e2e-api`, `e2e-web`), and deploy-ordering rules.
 
 ## Common Commands
+
+Run inside `apps/web` or from the repo root via `pnpm --filter @cashtracker/web <script>`.
 
 - Development: `pnpm run dev` (starts Next.js dev server with Turbopack)
 - Build: `pnpm run build` (builds the application for production)

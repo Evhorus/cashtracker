@@ -1,0 +1,47 @@
+# VCS / editor / CI / tooling
+.git
+.gitignore
+.github
+.husky
+.vscode
+.idea
+.agents
+.claude
+.turbo
+.vercel
+.mcp.json
+
+# Never ship secrets or local env into the build context
+**/.env
+**/.env.*
+!**/.env.template
+
+# Build artifacts & caches
+**/node_modules
+**/dist
+**/build
+**/.next
+**/out
+**/coverage
+**/.nyc_output
+**/*.tsbuildinfo
+
+# Local data & tests
+**/backups
+**/pdf
+**/test
+**/e2e
+**/test-results
+**/playwright-report
+**/design-review
+.playwright-mcp
+
+# Docs & Docker meta files
+**/*.md
+**/Dockerfile
+**/Dockerfile.*
+.dockerignore
+docker-compose*.yml
+*.log
+.DS_Store
+**/skills-lock.json

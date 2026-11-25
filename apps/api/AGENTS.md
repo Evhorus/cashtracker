@@ -1,24 +1,24 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository. Claude Code picks
-it up through the `@AGENTS.md` import in `CLAUDE.md`; other agent tools read
-this file directly.
+Guidance for AI coding agents working in `apps/api` (`@cashtracker/api`). See the monorepo root [AGENTS.md](../../AGENTS.md) for workspace-wide commands, CI, rulesets, and deploy-ordering rules.
 
 ## Development Commands
+
+Run inside `apps/api` or from the repo root via `pnpm --filter @cashtracker/api <script>`.
 
 ### General
 - Build project: `pnpm run build`
 - Format code: `pnpm run format` (write) / `pnpm run format:check` (verify)
-- Lint code: `pnpm run lint` (with `--fix`) / `pnpm run lint:check` (verify)
+- Lint code: `pnpm run lint` (verify, check-only) / `pnpm run lint:fix` (with `--fix`)
 - Typecheck: `pnpm run typecheck`
-- Start in dev mode: `pnpm run start:dev`
+- Start in dev mode: `pnpm run dev` (or `pnpm run start:dev`)
 - Start in debug mode: `pnpm run start:debug`
 - Start in production mode: `pnpm run start:prod`
 
 ### CI and branch protection
-- `.github/workflows/ci.yml` runs on every PR and push to `main`: `verify` (typecheck, lint:check, format:check, unit tests, build) and `e2e` (the e2e suites against a throwaway Postgres service container, no secrets).
-- `main` is protected by the "protect main" ruleset: changes land through a PR, squash merge only, and both `verify` and `e2e` must pass. A merge to `main` deploys to Render, so this is the gate in front of production.
-- Dependabot (`.github/dependabot.yml`) opens weekly PRs on Monday: one grouped PR for npm minor/patch bumps, one for GitHub Actions, and one PR per npm major. `.github/workflows/dependabot-auto-merge.yml` enables auto-merge on everything below a major, so those merge (and deploy) by themselves once `verify` and `e2e` pass; majors stay open for review. The Dockerfile's `NODE_VERSION` is not covered (Dependabot cannot resolve an ARG-built tag): bump it by hand.
+- Monorepo `.github/workflows/ci.yml` runs on every PR and push to `main`: `verify` (typecheck, lint, format:check, unit tests, build across affected workspaces) and `e2e-api` (the backend e2e suites against a throwaway Postgres service container, no secrets).
+- `main` is protected by the "protect main" ruleset: changes land through a PR, squash merge only, and `verify`, `e2e-api`, and `e2e-web` must pass. A merge to `main` deploys to Render when `apps/api/**` or `packages/**` change.
+- Dependabot (`.github/dependabot.yml` at repo root) opens weekly PRs on Monday covering the whole pnpm workspace (`directory: /`). `.github/workflows/dependabot-auto-merge.yml` enables auto-merge on minor/patch bumps; majors stay open for review. The Dockerfile's `NODE_VERSION`, `PNPM_VERSION`, and `TURBO_VERSION` ARGs are bumped by hand.
 
 ### Testing
 - Run all unit tests: `pnpm run test`

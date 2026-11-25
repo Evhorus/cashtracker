@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://json.schemastore.org/dependabot-2.0.json
+version: 2
+
+updates:
+  # Single root entry covers the entire pnpm workspace (root + apps/* + packages/*)
+  # via pnpm-workspace.yaml and keeps the single root pnpm-lock.yaml in sync.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Bogota
+    groups:
+      nestjs-major:
+        patterns: ["@nestjs/*"]
+        update-types: ["major"]
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      prefix-development: chore
+      include: scope
+    labels: ["dependencies"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Bogota
+    groups:
+      actions:
+        patterns: ["*"]
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: ci
+      include: scope
+    labels: ["dependencies", "github-actions"]

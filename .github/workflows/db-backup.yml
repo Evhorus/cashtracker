@@ -26,4 +26,4 @@ jobs:
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
-        run: bash scripts/backup-db-r2.sh
+        run: bash apps/api/scripts/backup-db-r2.sh

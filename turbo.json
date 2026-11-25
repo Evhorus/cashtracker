@@ -1,0 +1,62 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": ["CI", "NODE_ENV"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**"]
+    },
+    "@cashtracker/web#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "API_URL",
+        "NEXT_PUBLIC_URL",
+        "CLERK_SECRET_KEY",
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_CLERK_SIGN_IN_URL",
+        "NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL",
+        "NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "format": {
+      "cache": false
+    },
+    "format:check": {},
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "knip": {
+      "dependsOn": ["^build"]
+    },
+    "test:e2e": {
+      "cache": false,
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "MIGRATIONS_RUN_ON_BOOT",
+        "CLIENT_URL",
+        "API_URL",
+        "CLERK_SECRET_KEY",
+        "NEXT_PUBLIC_URL",
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_CLERK_SIGN_IN_URL",
+        "NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL",
+        "NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL",
+        "E2E_CLERK_USER_EMAIL"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
