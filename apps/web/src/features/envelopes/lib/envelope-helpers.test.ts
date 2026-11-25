@@ -1,0 +1,168 @@
+import { describe, expect, it } from "vitest";
+
+import en from "../messages/en.json";
+import es from "../messages/es.json";
+import type { Envelope } from "../types";
+import {
+  ENVELOPE_STATUS_TAB_VALUES,
+  EnvelopeHelpers,
+  type EnvelopeProgressStatus,
+} from "./envelope-helpers";
+
+/**
+ * Status *derivation* is no longer tested here - it isn't done here. The
+ * API reports `envelope.status`, and the threshold plus its edge cases
+ * are covered by envelope-status.spec.ts in cashtracker-backend, which
+ * also checks the SQL filter agrees with it. Neither is grouping:
+ * `matchesStatusFilter` was deleted, having had no consumer outside
+ * this file - the list page asks the API with `?status=` and the summary
+ * page's widget filters inline.
+ *
+ * What remains is this app's own business: turning a status into colour
+ * classes, and grouping envelopes already in hand. The status *words*
+ * moved to the message catalogues, so the checks that used to assert
+ * them here now assert every status and filter actually has one.
+ */
+
+// Amounts arrive from the API as decimal strings, which is how they
+// reach these helpers - so the fixtures use strings too.
+function envelope(
+  amount: string | null,
+  spent: string,
+  status: EnvelopeProgressStatus,
+): Envelope {
+  return {
+    id: "e1",
+    name: "Test",
+    amount,
+    currency: "COP",
+    spent,
+    status,
+    category: null,
+    expenses: [],
+    expenseDateRange: null,
+    createdAt: new Date("2026-08-01T00:00:00Z"),
+    updatedAt: new Date("2026-08-01T00:00:00Z"),
+  };
+}
+
+describe("amount helpers", () => {
+  it("returns null rather than a number for an unlimited envelope", () => {
+    const unlimited = envelope(null, "500", "unlimited");
+
+    expect(EnvelopeHelpers.getAmount(unlimited)).toBeNull();
+    expect(EnvelopeHelpers.getRemaining(unlimited)).toBeNull();
+    expect(EnvelopeHelpers.getPercentage(unlimited)).toBeNull();
+  });
+
+  it("computes remaining and percentage for a capped envelope", () => {
+    const capped = envelope("250000.50", "220000", "warning");
+
+    expect(EnvelopeHelpers.getRemaining(capped)).toBe(30000.5);
+    // 220000 / 250000.50 - just under 88%, which is what the UI rounds
+    // to one decimal for display ("88.0% del límite").
+    expect(EnvelopeHelpers.getPercentage(capped)).toBeCloseTo(87.9998, 3);
+    expect((EnvelopeHelpers.getPercentage(capped) ?? 0).toFixed(1)).toBe(
+      "88.0",
+    );
+  });
+
+  it("reports a negative remaining once exceeded", () => {
+    expect(
+      EnvelopeHelpers.getRemaining(envelope("100", "140", "exceeded")),
+    ).toBe(-40);
+  });
+
+  it("returns null percentage when the limit is zero or negative", () => {
+    expect(
+      EnvelopeHelpers.getPercentage(envelope("0", "50", "normal")),
+    ).toBeNull();
+    expect(
+      EnvelopeHelpers.getPercentage(envelope("-10", "50", "normal")),
+    ).toBeNull();
+  });
+});
+
+describe("status presentation helpers", () => {
+  const statuses: EnvelopeProgressStatus[] = [
+    "unlimited",
+    "normal",
+    "warning",
+    "exceeded",
+  ];
+
+  it("returns a class for every status", () => {
+    // These are exhaustive switches with no default - a new status would
+    // silently return undefined and render as blank text or no colour.
+    for (const status of statuses) {
+      expect(EnvelopeHelpers.getStatusTextColorClass(status)).toBeTruthy();
+      expect(EnvelopeHelpers.getStatusBadgeClass(status)).toBeTruthy();
+      expect(EnvelopeHelpers.getStatusBarColorClass(status)).toBeTruthy();
+      expect(
+        EnvelopeHelpers.getStatusProgressBarColorClass(status),
+      ).toBeTruthy();
+    }
+  });
+
+  // Replaces an older assertion that pinned the four Spanish words
+  // here. The words live in the catalogues now, so what's worth
+  // locking is that adding a status (or a filter tab) can't ship
+  // without the word to render it - otherwise the type compiles, the
+  // switch statements are exhaustive, and the UI renders a raw key.
+  it("has a translated word for every status, in every language", () => {
+    for (const catalogue of [es, en]) {
+      for (const status of statuses) {
+        expect(catalogue.envelopes.status).toHaveProperty(status);
+      }
+    }
+  });
+
+  // A status tab borrows that status's own word, so the tab bar and the
+  // row badges cannot disagree - that was the bug. The two tabs that
+  // aren't statuses ("all" and the warning-or-exceeded union) keep their
+  // own words instead of borrowing one they'd misrepresent.
+  //
+  // What this locks: every tab resolves to a word, from exactly one of
+  // those two places. A tab added without one renders a raw key.
+  const NON_STATUS_TABS = ["all", "alert"] as const;
+
+  it("gives every tab a word, in every language", () => {
+    for (const catalogue of [es, en]) {
+      for (const tab of ENVELOPE_STATUS_TAB_VALUES) {
+        if ((NON_STATUS_TABS as readonly string[]).includes(tab)) {
+          expect(catalogue.envelopes.filters).toHaveProperty(tab);
+        } else {
+          // Borrowed from the badge vocabulary, not duplicated.
+          expect(statuses).toContain(tab);
+          expect(catalogue.envelopes.status).toHaveProperty(tab);
+          expect(catalogue.envelopes.filters).not.toHaveProperty(tab);
+        }
+      }
+    }
+  });
+});
+
+describe("EnvelopeHelpers.formatPeriod", () => {
+  const createdAt = new Date("2026-11-16T15:00:00.000Z");
+
+  it("is the span of its expenses", () => {
+    expect(
+      EnvelopeHelpers.formatPeriod(
+        {
+          createdAt,
+          expenseDateRange: {
+            first: new Date(Date.UTC(2026, 9, 9)),
+            last: new Date(Date.UTC(2026, 10, 8)),
+          },
+        },
+        "es",
+      ),
+    ).toBe("9 oct – 8 nov 2026");
+  });
+
+  it("falls back to the creation month without expenses", () => {
+    expect(
+      EnvelopeHelpers.formatPeriod({ createdAt, expenseDateRange: null }, "es"),
+    ).toBe("nov 2026");
+  });
+});

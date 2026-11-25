@@ -1,0 +1,52 @@
+import { PageHeaderSkeleton } from "@/features/dashboard/components/page-header-skeleton";
+import { EnvelopeChartSkeleton } from "@/features/envelopes/components/envelope-chart-skeleton";
+import { ExpensesListSkeleton } from "@/features/expenses/components/expenses-list-skeleton";
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+
+export default function EnvelopeDetailLoading() {
+  return (
+    <div className="space-y-8">
+      <PageHeaderSkeleton actions="edit-delete" withBreadcrumb />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="order-2 space-y-6 lg:order-1 lg:col-span-2">
+          <div className="flex flex-row items-center justify-between">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-10 w-10 sm:w-36" />
+          </div>
+
+          <div className="flex flex-col gap-4 md:flex-row">
+            <Skeleton className="h-9 flex-1" />
+            <Skeleton className="h-9 w-52" />
+          </div>
+
+          <ExpensesListSkeleton />
+        </div>
+
+        <div className="order-1 lg:order-2">
+          <Card className="border-0 bg-card/50 shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-6 w-24" />
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <EnvelopeChartSkeleton />
+
+              <div className="divide-y divide-border/60">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                  >
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,51 @@
+{
+  "categories": {
+    "title": "Categories",
+    "new": "New category",
+    "none": "No category",
+    "summary": "{categories, plural, one {# category} other {# categories}} · {envelopes, plural, one {# classified envelope} other {# classified envelopes}}",
+    "searchPlaceholder": "Search category...",
+    "searchAria": "Search categories by name",
+    "editAria": "Edit category",
+    "deleteAria": "Delete category",
+    "envelopeCount": "{count, plural, one {# envelope} other {# envelopes}}",
+    "table": {
+      "category": "Category",
+      "envelopes": "Envelopes"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Subscriptions",
+      "icon": "Icon",
+      "color": "Color",
+      "changeIcon": "Change icon",
+      "iconSearch": "Search icon..."
+    },
+    "createDialog": {
+      "title": "Create category",
+      "description": "Pick a name, icon and color for your category"
+    },
+    "updateDialog": {
+      "title": "Edit category",
+      "description": "Change your category's name, icon or color"
+    },
+    "deleteDialog": {
+      "title": "Delete category?",
+      "description": "<name>{name}</name> will be deleted. Envelopes using it will be left without a category."
+    },
+    "picker": {
+      "create": "Create category"
+    },
+    "empty": {
+      "noResultsTitle": "No results for \"{query}\"",
+      "noResultsBody": "Try another name.",
+      "noneTitle": "No categories yet",
+      "noneBody": "Create one with the button above."
+    },
+    "toast": {
+      "created": "Category created.",
+      "updated": "Category updated.",
+      "deleted": "Category deleted."
+    }
+  }
+}
