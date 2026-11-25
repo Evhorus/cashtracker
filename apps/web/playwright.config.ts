@@ -90,7 +90,7 @@ export default defineConfig({
   ],
 
   // Reuses a dev server you already have running rather than fighting
-  // it for port 4001. Note this runs `next dev`, not a production
+  // it for port 3000. Note this runs `next dev`, not a production
   // build: these tests are about behaviour, not about performance.
   webServer: {
     command: "pnpm dev",

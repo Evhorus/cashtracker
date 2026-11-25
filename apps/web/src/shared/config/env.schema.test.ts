@@ -21,7 +21,7 @@ import { envSchema } from "./env.schema";
 const VALID = {
   API_URL: "http://localhost:4000/api",
   CLERK_SECRET_KEY: "sk_test_whatever",
-  NEXT_PUBLIC_URL: "http://localhost:4001",
+  NEXT_PUBLIC_URL: "http://localhost:3000",
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_whatever",
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in",
   NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/dashboard",

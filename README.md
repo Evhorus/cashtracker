@@ -38,7 +38,7 @@ Run apps locally:
 
 ```bash
 pnpm dev:api   # http://localhost:4000/api
-pnpm dev:web   # http://localhost:4001
+pnpm dev:web   # http://localhost:3000
 ```
 
 ## Scripts

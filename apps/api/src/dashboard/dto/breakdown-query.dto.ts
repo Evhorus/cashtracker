@@ -5,7 +5,7 @@ import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import {
   IsCalendarDate,
   IsNotBefore,
-} from 'src/common/validators/calendar-date.validators';
+} from '@/common/validators/calendar-date.validators';
 
 /** Shared filter contract for breakdown endpoints (`startDate`/`endDate` override `year`). */
 export class BreakdownQueryDto {

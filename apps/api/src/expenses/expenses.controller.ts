@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { GetExpensesFilterDto } from './dto/get-expenses-filter.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';

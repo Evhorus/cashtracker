@@ -15,7 +15,7 @@ Turborepo + pnpm (`pnpm@11.20.0`) monorepo:
 - Full gate: `pnpm check` (`turbo run typecheck lint format:check test knip`)
 - Build all: `pnpm build`
 - Individual gates: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm format`, `pnpm test`, `pnpm knip`
-- Dev servers: `pnpm dev:web` (`:4001`), `pnpm dev:api` (`:4000`), or `pnpm dev`
+- Dev servers: `pnpm dev:web` (`:3000`), `pnpm dev:api` (`:4000`), or `pnpm dev`
 - Backend e2e (local Docker Postgres only): `pnpm test:e2e:api`
 - Frontend e2e: `pnpm test:e2e:web` (signed-out), `pnpm test:e2e:web:signed-in` (requires local backend + test user)
 - Database migrations: `pnpm migration <generate|run|revert|show>`

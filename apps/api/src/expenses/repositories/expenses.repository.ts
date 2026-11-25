@@ -7,7 +7,7 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 
-import { escapeLikePattern } from 'src/common/utils/string-utils';
+import { escapeLikePattern } from '@/common/utils/string-utils';
 import { Expense } from '../entities/expense.entity';
 
 interface ExpenseFilters {

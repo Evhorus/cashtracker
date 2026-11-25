@@ -3,7 +3,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
 
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+import { ERROR_MESSAGES } from '@/common/constants/error-messages';
 import { Category } from '../categories/entities/category.entity';
 import { CategoriesRepository } from '../categories/repositories/categories.repository';
 import { Envelope } from './entities/envelope.entity';

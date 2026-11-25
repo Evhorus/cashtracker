@@ -8,8 +8,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { isUniqueViolation } from 'src/common/utils/postgres-errors';
+import { ERROR_MESSAGES } from '@/common/constants/error-messages';
+import { isUniqueViolation } from '@/common/utils/postgres-errors';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
 import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
 import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';

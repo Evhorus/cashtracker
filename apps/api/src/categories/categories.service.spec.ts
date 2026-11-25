@@ -2,7 +2,7 @@ import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { QueryFailedError } from 'typeorm';
 
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
+import { ERROR_MESSAGES } from '@/common/constants/error-messages';
 import { CategoriesService } from './categories.service';
 import { Category } from './entities/category.entity';
 import { CategoriesRepository } from './repositories/categories.repository';

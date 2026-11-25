@@ -1,7 +1,7 @@
 import {
   PaginatedResponseDto,
   PaginationMetaDto,
-} from 'src/common/dto/paginated-response.dto';
+} from '@/common/dto/paginated-response.dto';
 import { ExpenseResponseDto } from './expense-response.dto';
 
 /** Extends pagination meta with `totalAmount` summed across the entire filtered set. */

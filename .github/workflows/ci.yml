@@ -64,7 +64,7 @@ jobs:
         env:
           # Placeholders for @cashtracker/web next build (keeps verify runnable by forks).
           API_URL: http://localhost:4000/api
-          NEXT_PUBLIC_URL: http://localhost:4001
+          NEXT_PUBLIC_URL: http://localhost:3000
           CLERK_SECRET_KEY: sk_test_ci_placeholder
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_placeholder
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
@@ -113,7 +113,7 @@ jobs:
         run: |
           cat > apps/api/.env.test <<'EOF'
           NODE_ENV=test
-          CLIENT_URL=http://localhost:4001
+          CLIENT_URL=http://localhost:3000
           API_URL=http://localhost:4000/api
           DATABASE_URL=postgresql://postgres@localhost:5432/cashtracker_test
           CLERK_SECRET_KEY=sk_test_ci_placeholder
@@ -158,7 +158,7 @@ jobs:
         run: |
           cat > apps/web/.env <<EOF
           API_URL=http://localhost:4000/api
-          NEXT_PUBLIC_URL=http://localhost:4001
+          NEXT_PUBLIC_URL=http://localhost:3000
           CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
