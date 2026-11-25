@@ -24,7 +24,7 @@ git clone https://github.com/Evhorus/cashtracker.git
 cd cashtracker
 pnpm install
 cp apps/web/.env.template apps/web/.env  # then fill it in - see below
-pnpm dev:web                              # http://localhost:4001
+pnpm dev:web                              # http://localhost:3000
 ```
 
 ### Environment
@@ -48,7 +48,7 @@ naming the variable rather than erroring later on some request.
 
 | Command                             | What it does                                                    |
 | ----------------------------------- | --------------------------------------------------------------- |
-| `pnpm dev`                          | Dev server with Turbopack on **port 4001**                      |
+| `pnpm dev`                          | Dev server with Turbopack on **port 3000**                      |
 | `pnpm build` / `pnpm start`         | Production build / serve                                        |
 | `pnpm typecheck`                    | `tsc --noEmit`                                                  |
 | `pnpm lint`                         | ESLint                                                          |

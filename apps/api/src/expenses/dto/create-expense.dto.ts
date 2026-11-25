@@ -17,9 +17,9 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { normalizeString } from 'src/common/utils/string-utils';
-import { IsCalendarDate } from 'src/common/validators/calendar-date.validators';
+import { ERROR_MESSAGES } from '@/common/constants/error-messages';
+import { normalizeString } from '@/common/utils/string-utils';
+import { IsCalendarDate } from '@/common/validators/calendar-date.validators';
 
 export class CreateExpenseDto {
   @IsString()

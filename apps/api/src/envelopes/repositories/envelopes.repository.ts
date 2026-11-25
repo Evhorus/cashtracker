@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
-import { escapeLikePattern } from 'src/common/utils/string-utils';
+import { escapeLikePattern } from '@/common/utils/string-utils';
 import { Expense } from '../../expenses/entities/expense.entity';
 import type { EnvelopeSort } from '../dto/get-envelopes-filter.dto';
 import { Envelope } from '../entities/envelope.entity';

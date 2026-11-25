@@ -15,12 +15,12 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { toBoolean, toStringList } from 'src/common/utils/query-transforms';
+import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
+import { toBoolean, toStringList } from '@/common/utils/query-transforms';
 import {
   IsCalendarDate,
   IsNotBefore,
-} from 'src/common/validators/calendar-date.validators';
+} from '@/common/validators/calendar-date.validators';
 
 export class GetExpensesFilterDto extends PaginationQueryDto {
   @IsOptional()

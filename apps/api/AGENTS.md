@@ -112,6 +112,7 @@ envelopes and expenses) so it's a lighter version of this shape.
 - **Pagination**: List endpoints compose the shared `PaginationQueryDto` (`page`/`limit`, `IntersectionType`-style extension) and return a `PaginatedResponseDto`, instead of each module reimplementing offset/limit handling.
 - **Auth by Default**: `ClerkAuthGuard` is bound as the first global `APP_GUARD` in `AppModule`; routes are private unless explicitly marked `@Public()`.
 - **Environment Validation**: Config is validated at startup using Zod to ensure all required variables are present.
+- **Path Alias**: Internal cross-module imports use `@/*` → `./src/*` (matching `apps/web`), rewritten by `nest build` at compile time and mapped in Jest and TypeORM CLI (`tsconfig-paths`).
 
 ## Development Guidelines
 - **Test Alignment**: When adding new features or modifying existing ones, always review and update the corresponding unit and E2E tests to ensure they match the new implementation and requirements of the module.

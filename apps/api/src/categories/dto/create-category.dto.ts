@@ -8,7 +8,7 @@ import {
 import { Transform } from 'class-transformer';
 import { IsIn, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
-import { normalizeString } from 'src/common/utils/string-utils';
+import { normalizeString } from '@/common/utils/string-utils';
 
 export class CreateCategoryDto {
   @IsString()

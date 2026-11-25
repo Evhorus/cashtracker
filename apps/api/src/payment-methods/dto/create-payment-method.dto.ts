@@ -19,7 +19,7 @@ import {
   Min,
 } from 'class-validator';
 
-import { normalizeString } from 'src/common/utils/string-utils';
+import { normalizeString } from '@/common/utils/string-utils';
 
 export class CreatePaymentMethodDto {
   @IsString()

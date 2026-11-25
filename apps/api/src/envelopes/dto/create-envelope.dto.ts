@@ -12,8 +12,8 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { normalizeString } from 'src/common/utils/string-utils';
+import { ERROR_MESSAGES } from '@/common/constants/error-messages';
+import { normalizeString } from '@/common/utils/string-utils';
 
 export class CreateEnvelopeDto {
   @IsString()

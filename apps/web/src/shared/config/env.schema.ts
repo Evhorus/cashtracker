@@ -25,7 +25,7 @@ export const envSchema = z.object({
     "CLERK_SECRET_KEY is required. Copy it from the Clerk dashboard.",
   ),
   NEXT_PUBLIC_URL: httpUrl(
-    "NEXT_PUBLIC_URL must be this app's own public origin (e.g. http://localhost:4001). It is what sitemap.xml and robots.txt advertise.",
+    "NEXT_PUBLIC_URL must be this app's own public origin (e.g. http://localhost:3000). It is what sitemap.xml and robots.txt advertise.",
   ),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: required(
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required. Copy it from the Clerk dashboard.",

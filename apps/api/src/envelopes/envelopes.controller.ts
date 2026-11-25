@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { CreateEnvelopeDto } from './dto/create-envelope.dto';
 import { GetEnvelopesFilterDto } from './dto/get-envelopes-filter.dto';
 import { UpdateEnvelopeDto } from './dto/update-envelope.dto';

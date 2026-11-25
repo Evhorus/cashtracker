@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { isUniqueViolation } from 'src/common/utils/postgres-errors';
+import { ERROR_MESSAGES } from '@/common/constants/error-messages';
+import { isUniqueViolation } from '@/common/utils/postgres-errors';
 import { CategoryUsageDto } from './dto/category-usage-response.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
