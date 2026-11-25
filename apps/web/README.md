@@ -9,20 +9,22 @@ Ships in Spanish and English.
 ## Requirements
 
 - **Node.js 22.x** (`>=22 <25`)
-- **pnpm 11.x** — the package manager is pinned in `package.json`, and the lockfile is
-  `pnpm-lock.yaml`. Other package managers will resolve a different dependency tree, and CI
-  installs with `--frozen-lockfile`.
-- A running [cashtracker-backend](https://github.com/Evhorus/cashtracker-backend) on port 4000
+- **pnpm 11.x** — the package manager is pinned in the root `package.json`, and the single
+  workspace lockfile is `pnpm-lock.yaml`. Other package managers will resolve a different
+  dependency tree, and CI installs with `--frozen-lockfile`.
+- A running `@cashtracker/api` (`apps/api`) backend on port 4000
 - A [Clerk](https://clerk.com) development instance
 
 ## Setup
 
+Run commands from the monorepo root (or inside `apps/web` for app-local scripts):
+
 ```bash
-git clone https://github.com/Evhorus/cashtracker-frontend.git
-cd cashtracker-frontend
+git clone https://github.com/Evhorus/cashtracker.git
+cd cashtracker
 pnpm install
-cp .env.template .env      # then fill it in - see below
-pnpm dev                   # http://localhost:4001
+cp apps/web/.env.template apps/web/.env  # then fill it in - see below
+pnpm dev:web                              # http://localhost:4001
 ```
 
 ### Environment
@@ -119,15 +121,16 @@ Full conventions — form patterns, error handling, cache invalidation, i18n rul
 git checkout -b type/short-name
 git push -u origin type/short-name
 gh pr create --fill
-gh pr merge --squash --delete-branch    # once `verify` is green
+gh pr merge --squash --delete-branch    # once required CI checks are green
 ```
 
-Husky runs typecheck, lint, format:check and Vitest before each commit, and commitlint checks
-the message against Conventional Commits. CI runs the same set — a local hook is skippable
-with `--no-verify`, so CI is the gate that counts.
+Root Husky runs `pnpm check` (typecheck, lint, format:check, unit tests, knip) before each commit,
+and commitlint checks the message against Conventional Commits. CI runs the same set plus
+path-filtered e2e suites (`verify`, `e2e-api`, `e2e-web`) — a local hook is skippable with
+`--no-verify`, so CI is the gate that counts.
 
-Dependabot opens grouped minor/patch updates weekly and merges them itself once `verify`
-passes; majors wait for a human.
+Dependabot opens grouped minor/patch updates weekly and merges them itself once required checks
+pass; majors wait for a human.
 
 ## Tech
 
