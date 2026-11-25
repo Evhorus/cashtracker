@@ -11,7 +11,7 @@ import { EnvelopeMapper } from "./envelope.mapper";
  *
  * This is tested here and not left to the backend because the backend
  * has no idea it exists: `grep hasLimit` finds nothing in
- * cashtracker-backend. It's a UI-only control that decides whether
+ * apps/api. It's a UI-only control that decides whether
  * `amount` is sent as a number or as null, and the API accepts both
  * happily - its own e2e suite covers "create an envelope with
  * amount: null" precisely because that's a legitimate request.

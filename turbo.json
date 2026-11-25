@@ -33,7 +33,7 @@
     "format:check": {},
     "test": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "outputs": []
     },
     "knip": {
       "dependsOn": ["^build"]

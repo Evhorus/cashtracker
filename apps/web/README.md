@@ -8,7 +8,7 @@ Ships in Spanish and English.
 
 ## Requirements
 
-- **Node.js 22.x** (`>=22 <25`)
+- **Node.js 24.x** (`.nvmrc`; Vercel pins the same major through `engines.node`)
 - **pnpm 11.x** — the package manager is pinned in the root `package.json`, and the single
   workspace lockfile is `pnpm-lock.yaml`. Other package managers will resolve a different
   dependency tree, and CI installs with `--frozen-lockfile`.
