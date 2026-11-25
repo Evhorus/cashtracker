@@ -18,7 +18,7 @@ Run inside `apps/web` or from the repo root via `pnpm --filter @cashtracker/web 
 ## End-to-end tests
 
 `pnpm test:e2e` (Playwright, `e2e/signed-out/**/*.spec.ts`). **`signed-out` runs in CI as
-its own `e2e` job; `signed-in` is local only.**
+its own `e2e-web` job; `signed-in` is local only.**
 
 The split is what each one costs. `signed-out` needs Clerk development keys and nothing
 else — no backend, no database — so it is two repository secrets
@@ -93,7 +93,8 @@ The five commands above are the gate set, and they run in two places:
   the one check guarding something the others cannot reach: a malformed message is in
   the history the instant it lands, and removing it means rewriting history.
 - **`.husky/pre-commit`** — `pnpm check` (`typecheck`, `lint`, `format:check`, `test`, `knip`, ~6s).
-- **`.github/workflows/ci.yml`** — `pnpm check` + `pnpm build`, on every PR and every push to `main`.
+- **`.github/workflows/ci.yml`** (repo root) — the `verify` job runs the same gates plus `build`
+  through Turborepo (`--affected` on PRs, everything on pushes to `main`).
 
 CI is the gate that counts: a Husky hook is skippable with `--no-verify`, so it catches
 the distracted mistake but guarantees nothing. Keep both lists in step — if you add a
@@ -147,13 +148,14 @@ admins**. Every change goes through a pull request:
 git checkout -b type/short-name     # work, commit (hooks run)
 git push -u origin type/short-name
 gh pr create --fill                 # CI runs
-gh pr merge --squash --delete-branch # merges once `verify` and `e2e` are green
+gh pr merge --squash --delete-branch # merges once the required checks are green
 ```
 
-The required checks are named **`verify`** and **`e2e`** — that is `jobs.verify` and
-`jobs.e2e` in `ci.yml`, not the workflow's `name: CI`. Renaming either job breaks the rule
-silently: GitHub waits forever for a check that never arrives and every PR blocks. If you
-rename one, update the ruleset in the same change.
+The required checks are named **`verify`**, **`e2e-api`** and **`e2e-web`** — the job ids in
+`ci.yml`, not the workflow's `name: CI`. Renaming a job breaks the rule silently: GitHub
+waits forever for a check that never arrives and every PR blocks. If you rename one, update
+the ruleset in the same change. An e2e job skipped because its app is unaffected counts as
+passed.
 
 Other settings and why: strict status checks (the branch must be up to date with `main`
 before merging, so the checks ran against what actually lands), squash as the only allowed
@@ -162,7 +164,7 @@ deletion of `main`. Approvals are set to **0** on purpose — GitHub does not le
 approve your own PR, so requiring one would leave a solo maintainer unable to merge
 anything. The PR is the gate; the approval is not.
 
-Read it back with `gh api repos/Evhorus/cashtracker-frontend/rules/branches/main`.
+Read it back with `gh api repos/Evhorus/cashtracker/rules/branches/main`.
 
 No `lint-staged`, deliberately: the whole set runs in under ten seconds on this repo,
 which is cheaper than maintaining the machinery to run it on only the staged files.
@@ -180,8 +182,8 @@ CI's `build` step passes **placeholder** env values, not repository secrets. `en
 validates the environment at boot and `next build` boots the app to prerender `robots.txt`
 and `sitemap.xml`, so values of the right _shape_ are needed — but not real ones, since
 every route that talks to the API or to Clerk is dynamic. That also lets CI run on forks.
-Locally it is different: `pre-push` runs the same build against your real `.env`, so an
-incomplete one fails the push naming the missing variable.
+Locally it is different: `pnpm build` runs against your real `.env`, so an incomplete one
+fails naming the missing variable.
 
 - Test: `pnpm test` (Vitest, single run) / `pnpm run test:watch`
   - Mostly unit tests of pure logic in a `node` environment:

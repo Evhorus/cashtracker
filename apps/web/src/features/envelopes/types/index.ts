@@ -23,7 +23,7 @@ export interface Envelope {
   /** Fixed at creation; all expenses in this envelope inherit this currency. */
   currency: CurrencyCode;
   spent: string;
-  /** Backend-computed status (warning thresholds live in cashtracker-backend). */
+  /** Backend-computed status (warning thresholds live in apps/api). */
   status: EnvelopeProgressStatus;
   /** Embedded by the API, or `null` when unclassified. */
   category: EnvelopeCategory | null;

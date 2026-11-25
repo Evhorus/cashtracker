@@ -12,7 +12,7 @@ import {
 /**
  * Status *derivation* is no longer tested here - it isn't done here. The
  * API reports `envelope.status`, and the threshold plus its edge cases
- * are covered by envelope-status.spec.ts in cashtracker-backend, which
+ * are covered by envelope-status.spec.ts in apps/api, which
  * also checks the SQL filter agrees with it. Neither is grouping:
  * `matchesStatusFilter` was deleted, having had no consumer outside
  * this file - the list page asks the API with `?status=` and the summary
