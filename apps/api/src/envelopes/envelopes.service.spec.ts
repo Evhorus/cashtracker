@@ -1,3 +1,4 @@
+import { Currency, type CurrencyCode } from '@cashtracker/shared';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
@@ -5,7 +6,6 @@ import { DataSource, EntityManager } from 'typeorm';
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 import { Category } from '../categories/entities/category.entity';
 import { CategoriesRepository } from '../categories/repositories/categories.repository';
-import { Currency } from '../common/enums/currency.enum';
 import { Envelope } from './entities/envelope.entity';
 import { EnvelopesService } from './envelopes.service';
 import { EnvelopesRepository } from './repositories/envelopes.repository';
@@ -352,7 +352,7 @@ describe('EnvelopesService', () => {
       repository.findOwnedById.mockResolvedValue(mockEnvelope);
 
       await service.update('user-123', 'envelope-123', {
-        currency: mockEnvelope.currency as Currency,
+        currency: mockEnvelope.currency as CurrencyCode,
       });
 
       expect(dataSource.transaction).not.toHaveBeenCalled();

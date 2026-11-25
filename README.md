@@ -2,12 +2,13 @@
 
 Personal envelope-budgeting application built as a **Turborepo + pnpm** monorepo.
 
-## Apps
+## Workspaces
 
 | Workspace | Package | Stack | Hosting | Docs |
 | --- | --- | --- | --- | --- |
 | `apps/web` | `@cashtracker/web` | Next.js 16, React 19, Tailwind CSS 4, Base UI (shadcn), Clerk, next-intl, Zod 4 | Vercel | [apps/web/README.md](apps/web/README.md) |
 | `apps/api` | `@cashtracker/api` | NestJS 11, TypeORM 0.3, PostgreSQL (Neon), Clerk, Zod 4 | Render (Docker) | [apps/api/README.md](apps/api/README.md) |
+| `packages/shared` | `@cashtracker/shared` | Shared Zod 4 API schemas, constants & types (dual ESM/CJS) | Workspace lib | — |
 
 ## Quick Start
 

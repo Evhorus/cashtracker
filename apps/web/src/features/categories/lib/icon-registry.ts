@@ -1,3 +1,4 @@
+import type { IconKey } from "@cashtracker/shared";
 import {
   Activity,
   Apple,
@@ -160,7 +161,7 @@ import {
  * Maps backend ICON_KEYS to LucideIcon components.
  * Search keywords live separately in icon-keywords.ts so display-only callers don't bundle them.
  */
-const ICON_COMPONENTS: Record<string, LucideIcon> = {
+const ICON_COMPONENTS: Record<IconKey, LucideIcon> = {
   house: House,
   car: Car,
   "piggy-bank": PiggyBank,
@@ -319,5 +320,5 @@ const ICON_COMPONENTS: Record<string, LucideIcon> = {
 
 /** Resolves an icon key to its LucideIcon, falling back to Tag for unknown keys. */
 export function resolveIcon(key: string): LucideIcon {
-  return ICON_COMPONENTS[key] ?? Tag;
+  return ICON_COMPONENTS[key as IconKey] ?? Tag;
 }

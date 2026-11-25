@@ -1,3 +1,11 @@
+import {
+  ENVELOPE_SORTS,
+  MAX_PAGE_SIZE,
+  type EnvelopeProgressStatus,
+  type EnvelopeSort,
+  type EnvelopeStatusFilter,
+} from "@cashtracker/shared";
+
 import type { SupportedLocale } from "@/shared/config/i18n/config";
 import {
   formatCalendarDateRange,
@@ -5,10 +13,7 @@ import {
 } from "@/shared/utils/date-helpers";
 import type { Envelope } from "../types";
 
-export type EnvelopeProgressStatus =
-  "unlimited" | "normal" | "warning" | "exceeded";
-
-export type EnvelopeStatusFilter = "all" | EnvelopeProgressStatus | "alert";
+export type { EnvelopeProgressStatus, EnvelopeSort, EnvelopeStatusFilter };
 
 export const ENVELOPE_STATUS_TAB_VALUES = [
   "all",
@@ -21,11 +26,9 @@ export const ENVELOPE_STATUS_TAB_VALUES = [
 
 export type EnvelopeStatusTab = (typeof ENVELOPE_STATUS_TAB_VALUES)[number];
 
-/** Matches backend `PaginationQueryDto` max `limit`. */
-export const ENVELOPES_MAX_PAGE_SIZE = 100;
+export const ENVELOPES_MAX_PAGE_SIZE = MAX_PAGE_SIZE;
 
-export const ENVELOPE_SORT_VALUES = ["recent", "oldest"] as const;
-export type EnvelopeSort = (typeof ENVELOPE_SORT_VALUES)[number];
+export const ENVELOPE_SORT_VALUES = ENVELOPE_SORTS;
 
 export function parseEnvelopeSort(
   value: string | null | undefined,

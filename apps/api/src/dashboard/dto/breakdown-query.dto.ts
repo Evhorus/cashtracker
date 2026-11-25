@@ -1,7 +1,7 @@
+import { Currency, type CurrencyCode } from '@cashtracker/shared';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 
-import { Currency } from 'src/common/enums/currency.enum';
 import {
   IsCalendarDate,
   IsNotBefore,
@@ -10,7 +10,7 @@ import {
 /** Shared filter contract for breakdown endpoints (`startDate`/`endDate` override `year`). */
 export class BreakdownQueryDto {
   @IsEnum(Currency)
-  currency: Currency;
+  currency: CurrencyCode;
 
   @IsOptional()
   @Type(() => Number)

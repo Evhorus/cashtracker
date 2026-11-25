@@ -1,13 +1,14 @@
+import {
+  ENVELOPE_SORTS,
+  ENVELOPE_STATUS_FILTERS,
+  type EnvelopeSort,
+  type EnvelopeStatusFilter,
+} from '@cashtracker/shared';
 import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import {
-  ENVELOPE_STATUS_FILTERS,
-  type EnvelopeStatusFilter,
-} from '../utils/envelope-status';
 
-export const ENVELOPE_SORTS = ['recent', 'oldest'] as const;
-export type EnvelopeSort = (typeof ENVELOPE_SORTS)[number];
+export { ENVELOPE_SORTS, type EnvelopeSort };
 
 export class GetEnvelopesFilterDto extends PaginationQueryDto {
   @IsOptional()

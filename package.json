@@ -4,8 +4,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:api": "pnpm --filter @cashtracker/api dev",
-    "dev:web": "pnpm --filter @cashtracker/web dev",
+    "dev:api": "pnpm --filter @cashtracker/shared build && pnpm --filter @cashtracker/api dev",
+    "dev:web": "pnpm --filter @cashtracker/shared build && pnpm --filter @cashtracker/web dev",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "format": "turbo run format",
@@ -13,10 +13,10 @@
     "test": "turbo run test",
     "knip": "turbo run knip",
     "check": "turbo run typecheck lint format:check test knip",
-    "test:e2e:api": "pnpm --filter @cashtracker/api test:e2e",
-    "test:e2e:web": "pnpm --filter @cashtracker/web test:e2e",
-    "test:e2e:web:signed-in": "pnpm --filter @cashtracker/web test:e2e:signed-in",
-    "migration": "pnpm --filter @cashtracker/api migration",
+    "test:e2e:api": "pnpm --filter @cashtracker/shared build && pnpm --filter @cashtracker/api test:e2e",
+    "test:e2e:web": "pnpm --filter @cashtracker/shared build && pnpm --filter @cashtracker/web test:e2e",
+    "test:e2e:web:signed-in": "pnpm --filter @cashtracker/shared build && pnpm --filter @cashtracker/web test:e2e:signed-in",
+    "migration": "pnpm --filter @cashtracker/shared build && pnpm --filter @cashtracker/api migration",
     "prepare": "husky"
   },
   "devDependencies": {

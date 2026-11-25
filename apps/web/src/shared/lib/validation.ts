@@ -1,11 +1,11 @@
+import { MAX_AMOUNT } from "@cashtracker/shared";
 import type { useTranslations } from "next-intl";
+
+export { MAX_AMOUNT };
 
 export type ValidationTranslator = ReturnType<
   typeof useTranslations<"validation">
 >;
-
-/** Max value fitting backend `decimal(12, 2)` columns (`expense.amount`, `envelope.amount`). */
-export const MAX_AMOUNT = 9_999_999_999.99;
 
 const MAX_TWO_DECIMALS = /^\d+(?:\.\d{1,2})?$/;
 

@@ -1,3 +1,12 @@
+import {
+  CUT_DAY_MAX,
+  CUT_DAY_MIN,
+  PAYMENT_METHOD_NAME_MAX_LENGTH,
+  PAYMENT_METHOD_TYPES,
+  PRESET_COLORS,
+  type PaymentMethodType,
+  type PresetColor,
+} from '@cashtracker/shared';
 import { Transform, Type } from 'class-transformer';
 import {
   IsIn,
@@ -10,20 +19,12 @@ import {
   Min,
 } from 'class-validator';
 
-import {
-  PRESET_COLORS,
-  type PresetColor,
-} from 'src/categories/constants/preset-colors';
 import { normalizeString } from 'src/common/utils/string-utils';
-import {
-  PAYMENT_METHOD_TYPES,
-  type PaymentMethodType,
-} from '../constants/payment-method-types';
 
 export class CreatePaymentMethodDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(50)
+  @MaxLength(PAYMENT_METHOD_NAME_MAX_LENGTH)
   @Transform(({ value }) => normalizeString(value))
   name: string;
 
@@ -37,7 +38,7 @@ export class CreatePaymentMethodDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @Min(1)
-  @Max(31)
+  @Min(CUT_DAY_MIN)
+  @Max(CUT_DAY_MAX)
   cutDay?: number | null;
 }

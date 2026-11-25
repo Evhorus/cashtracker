@@ -1,5 +1,7 @@
+import type { IconKey } from "@cashtracker/shared";
+
 /** Spanish search keywords per icon key; kept separate from icon-registry.ts so `resolveIcon()` callers don't bundle it. */
-const ICON_KEYWORDS: Record<string, string> = {
+const ICON_KEYWORDS: Record<IconKey, string> = {
   house: "casa hogar vivienda arriendo alquiler",
   car: "carro auto coche vehiculo",
   "piggy-bank": "ahorro ahorros alcancia",
@@ -172,7 +174,7 @@ export function searchIcons(keys: readonly string[], query: string): string[] {
   if (words.length === 0) return [...keys];
 
   return keys.filter((key) => {
-    const haystack = `${key.replace(/-/g, " ")} ${ICON_KEYWORDS[key] ?? ""}`;
+    const haystack = `${key.replace(/-/g, " ")} ${ICON_KEYWORDS[key as IconKey] ?? ""}`;
     return words.every((word) => haystack.includes(word));
   });
 }
@@ -180,7 +182,7 @@ export function searchIcons(keys: readonly string[], query: string): string[] {
 /** Tooltip/sr label: first Spanish keyword for `es*` locales, otherwise hyphen-spaced key. */
 export function iconLabel(key: string, locale: string): string {
   const spanish = locale.startsWith("es")
-    ? ICON_KEYWORDS[key]?.split(" ")[0]
+    ? ICON_KEYWORDS[key as IconKey]?.split(" ")[0]
     : undefined;
   const text = spanish ?? key.replace(/-/g, " ");
   return text.charAt(0).toUpperCase() + text.slice(1);

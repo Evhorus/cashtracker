@@ -1,11 +1,9 @@
-export const PAYMENT_METHOD_TYPES = [
-  "credit_card",
-  "debit_card",
-  "cash",
-  "transfer",
-] as const;
+import {
+  PAYMENT_METHOD_TYPES,
+  type PaymentMethodType,
+} from "@cashtracker/shared";
 
-type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
+export { PAYMENT_METHOD_TYPES };
 
 export interface PaymentMethod {
   id: string;

@@ -1,41 +1,28 @@
+import {
+  EXPENSE_DESCRIPTION_MAX_LENGTH,
+  ExpenseApiSchema,
+  ExpensesApiSchema,
+  MAX_AMOUNT,
+  type CurrencyCode,
+  type ExpenseApi,
+  type ExpensesPaginationMeta,
+  type ExpensesResponseApi,
+} from "@cashtracker/shared";
 import { z } from "zod";
 
-import { ExpensePaymentMethodAPISchema } from "@/features/payment-methods/schemas/payment-method.schema";
 import {
   hasAtMostTwoDecimals,
   isPositiveAmount,
-  MAX_AMOUNT,
   type ValidationTranslator,
 } from "@/shared/lib/validation";
-import type { CurrencyCode } from "@/shared/utils/format-currency";
-import { PaginationMetaSchema } from "@/shared/utils/pagination";
 
-export const ExpenseAPIResponseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  amount: z.string(),
-  currency: z.string().default("COP"),
-  date: z.string(),
-  description: z.string().nullable().optional(),
-  paymentMethod: ExpensePaymentMethodAPISchema.nullable().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-
-export type ExpenseApi = z.infer<typeof ExpenseAPIResponseSchema>;
-
-const ExpensesPaginationMetaSchema = PaginationMetaSchema.extend({
-  totalAmount: z.coerce.number(),
-});
-
-export const ExpensesAPIResponseSchema = z.object({
-  data: z.array(ExpenseAPIResponseSchema),
-  meta: ExpensesPaginationMetaSchema,
-});
-export type ExpensesResponseApi = z.infer<typeof ExpensesAPIResponseSchema>;
-export type ExpensesPaginationMeta = z.infer<
-  typeof ExpensesPaginationMetaSchema
->;
+export {
+  ExpenseApiSchema as ExpenseAPIResponseSchema,
+  ExpensesApiSchema as ExpensesAPIResponseSchema,
+  type ExpenseApi,
+  type ExpensesPaginationMeta,
+  type ExpensesResponseApi,
+};
 
 /** Built per-envelope so currency is structurally locked to the parent envelope. */
 export const buildExpenseSchema = (
@@ -62,7 +49,7 @@ export const buildExpenseSchema = (
     date: z.coerce.date<Date>({ message: t("dateRequired") }),
     description: z
       .string()
-      .max(500, { message: t("descriptionTooLong") })
+      .max(EXPENSE_DESCRIPTION_MAX_LENGTH, { message: t("descriptionTooLong") })
       .optional(),
     /** Payment method id, or "" for none. */
     paymentMethodId: z.string(),

@@ -1,9 +1,9 @@
+import { Currency } from '@cashtracker/shared';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { Currency } from 'src/common/enums/currency.enum';
 import { Envelope } from '../envelopes/entities/envelope.entity';
 import { EnvelopesRepository } from '../envelopes/repositories/envelopes.repository';
 import { PaymentMethodsRepository } from '../payment-methods/repositories/payment-methods.repository';

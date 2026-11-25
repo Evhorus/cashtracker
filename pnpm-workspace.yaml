@@ -2,6 +2,12 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# Required by pnpm 11 `pnpm deploy` so workspace packages are materialized
+# cleanly in Docker images without dangling symlinks; synced after `build`.
+injectWorkspacePackages: true
+syncInjectedDepsAfterScripts:
+  - build
+
 allowBuilds:
   "@clerk/shared": true
   "@nestjs/core": true

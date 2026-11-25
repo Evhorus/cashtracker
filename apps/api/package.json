@@ -28,6 +28,7 @@
     "restore": "bash scripts/restore-db.sh"
   },
   "dependencies": {
+    "@cashtracker/shared": "workspace:*",
     "@clerk/backend": "^3.29.0",
     "@nestjs/common": "^11.2.10",
     "@nestjs/config": "^4.0.4",

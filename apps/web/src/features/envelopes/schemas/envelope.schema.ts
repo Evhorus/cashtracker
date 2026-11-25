@@ -1,44 +1,25 @@
+import {
+  CURRENCY_CODES,
+  EnvelopeApiSchema,
+  EnvelopesApiSchema,
+  MAX_AMOUNT,
+  type EnvelopeApi,
+  type EnvelopesResponseApi,
+} from "@cashtracker/shared";
 import { z } from "zod";
 
-import { ExpenseAPIResponseSchema } from "@/features/expenses/schemas/expense.schema";
 import {
   hasAtMostTwoDecimals,
   isPositiveAmount,
-  MAX_AMOUNT,
   type ValidationTranslator,
 } from "@/shared/lib/validation";
-import { CURRENCY_CODES } from "@/shared/utils/format-currency";
-import { paginatedSchema } from "@/shared/utils/pagination";
 
-export const EnvelopeAPIResponseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  amount: z.string().nullable(),
-  currency: z.string().default("COP"),
-  spent: z.string(),
-  status: z.enum(["unlimited", "normal", "warning", "exceeded"]),
-  category: z
-    .object({
-      id: z.string(),
-      label: z.string(),
-      color: z.string(),
-      icon: z.string(),
-    })
-    .nullable(),
-  description: z.string().nullable().optional(),
-  firstExpenseDate: z.string().nullable().optional(),
-  lastExpenseDate: z.string().nullable().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  expenses: z.array(ExpenseAPIResponseSchema).optional(),
-});
-
-export type EnvelopeApi = z.infer<typeof EnvelopeAPIResponseSchema>;
-
-export const EnvelopesAPIResponseSchema = paginatedSchema(
-  EnvelopeAPIResponseSchema,
-);
-export type EnvelopesResponseApi = z.infer<typeof EnvelopesAPIResponseSchema>;
+export {
+  EnvelopeApiSchema as EnvelopeAPIResponseSchema,
+  EnvelopesApiSchema as EnvelopesAPIResponseSchema,
+  type EnvelopeApi,
+  type EnvelopesResponseApi,
+};
 
 export const buildEnvelopeFormSchema = (t: ValidationTranslator) =>
   z
