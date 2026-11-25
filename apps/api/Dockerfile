@@ -8,7 +8,7 @@
 # contains only compiled `dist/` plus production dependencies.
 # ---------------------------------------------------------------------------
 
-ARG NODE_VERSION=22.23.2
+ARG NODE_VERSION=24.22.3
 ARG PNPM_VERSION=11.20.0
 ARG TURBO_VERSION=2.11.13
 

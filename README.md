@@ -12,7 +12,7 @@ Personal envelope-budgeting application built as a **Turborepo + pnpm** monorepo
 
 ## Quick Start
 
-**Requirements:** Node.js `>=22 <25`, `pnpm` `11.20.0`, Docker (for local PostgreSQL).
+**Requirements:** Node.js `24.x` (see `.nvmrc`), `pnpm` `11.20.0`, Docker (for local PostgreSQL).
 
 ```bash
 pnpm install

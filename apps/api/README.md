@@ -4,7 +4,7 @@ API REST construida con [NestJS](https://nestjs.org) para la gestión de presupu
 
 ## Requisitos Previos
 
-- Node.js 22.x o superior (la imagen Docker de producción está fijada a esta versión)
+- Node.js 24.x (`.nvmrc`; la imagen Docker de producción está fijada a esta versión)
 - pnpm (recomendado)
 - PostgreSQL
 
