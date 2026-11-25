@@ -10,11 +10,13 @@ API REST construida con [NestJS](https://nestjs.org) para la gestión de presupu
 
 ## Instalación
 
+Ejecuta los comandos desde la raíz del monorepo (o dentro de `apps/api` para scripts locales):
+
 1. Clona el repositorio:
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
-cd cashtracker-backend
+git clone https://github.com/Evhorus/cashtracker.git
+cd cashtracker
 ```
 
 1. Instala las dependencias:
@@ -24,8 +26,8 @@ pnpm install
 ```
 
 1. Configura las variables de entorno:
-   - Crea un archivo `.env` en la raíz del proyecto (tomar como referencia el `.env.template`)
-   - Agrega las variables necesarias
+   - Crea `apps/api/.env` tomando como referencia `apps/api/.env.template`
+   - Agrega las variables necesarias (para desarrollo local usa Postgres en Docker, nunca la DB de producción)
 
 ## Ejecutar el Proyecto
 
