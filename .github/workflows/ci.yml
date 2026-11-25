@@ -72,6 +72,9 @@ jobs:
           NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: /dashboard
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # actions/checkout fetches origin/main without a local main branch, so pass the PR range.
+            TURBO_SCM_BASE="${{ github.event.pull_request.base.sha }}" \
+            TURBO_SCM_HEAD="${{ github.event.pull_request.head.sha }}" \
             pnpm turbo run typecheck lint format:check test knip build --affected
           else
             pnpm turbo run typecheck lint format:check test knip build
