@@ -7,8 +7,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
-import { AppModule } from '../src/app.module';
-import { ClerkAuthGuard } from '../src/auth/guards/clerk-auth.guard';
+import { AppModule } from '@/app.module';
+import { ClerkAuthGuard } from '@/auth/guards/clerk-auth.guard';
 import { assertSafeTestDatabase } from './assert-safe-test-database';
 
 /**

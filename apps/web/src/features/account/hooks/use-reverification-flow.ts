@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { useSession } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 
-import type { ReverificationFactor, ReverificationRequest } from "../types";
+import type {
+  ReverificationFactor,
+  ReverificationRequest,
+} from "@/features/account/types";
 import { mapClerkError } from "./map-clerk-error";
 
 type ClerkSession = NonNullable<ReturnType<typeof useSession>["session"]>;

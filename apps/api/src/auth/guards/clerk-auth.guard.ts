@@ -10,7 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { verifyToken } from '@clerk/backend';
 import { Request } from 'express';
 
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { IS_PUBLIC_KEY } from '@/auth/decorators/public.decorator';
 
 const BEARER_HEADER_PATTERN = /^Bearer\s+(\S+)$/i;
 

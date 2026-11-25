@@ -1,4 +1,4 @@
-import { Category } from '../entities/category.entity';
+import { Category } from '@/categories/entities/category.entity';
 
 export class CategoryResponseDto {
   id: string;

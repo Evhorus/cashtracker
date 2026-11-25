@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import en from "../messages/en.json";
-import es from "../messages/es.json";
-import type { Envelope } from "../types";
+import en from "@/features/envelopes/messages/en.json";
+import es from "@/features/envelopes/messages/es.json";
+import type { Envelope } from "@/features/envelopes/types";
 import {
   ENVELOPE_STATUS_TAB_VALUES,
   EnvelopeHelpers,

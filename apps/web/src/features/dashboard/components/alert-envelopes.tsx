@@ -6,7 +6,7 @@ import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import { Heading } from "@/shared/components/common/typography";
 import { cn } from "@/shared/lib/utils";
 import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import type { AlertEnvelope } from "../lib/dashboard-summary";
+import type { AlertEnvelope } from "@/features/dashboard/lib/dashboard-summary";
 
 interface AlertEnvelopesProps {
   /** Already filtered and sorted worst-first - see getAlertEnvelopes. */

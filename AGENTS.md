@@ -20,6 +20,12 @@ Turborepo + pnpm (`pnpm@11.20.0`) monorepo:
 - Frontend e2e: `pnpm test:e2e:web` (signed-out), `pnpm test:e2e:web:signed-in` (requires local backend + test user)
 - Database migrations: `pnpm migration <generate|run|revert|show>`
 
+## Import Conventions
+
+- `./x` only for files in the same folder; anything that climbs a folder uses the `@/` alias (`@/*` → `src/*` in both apps); `@cashtracker/shared` for the shared package. Parent-relative (`../`) and `src/` imports fail lint (`no-restricted-imports`), because they would bypass the web's `@/`-based boundary rules and break when files move.
+- `@/` works at runtime because `nest build` rewrites it in `dist/`, Jest maps it (`moduleNameMapper`), and the TypeORM CLI runs with `tsconfig-paths/register`.
+- Avoid import cycles. The only one is `Envelope` ↔ `Expense` (TypeORM bidirectional relation) and it is safe: each side references the other only inside `() => Entity` callbacks, and relation fields typed as unions/arrays emit `design:type` `Object`/`Array`. Keep relation fields nullable or arrays (or wrap them in TypeORM's `Relation<T>`) so decorator metadata never reads the other class at load time.
+
 ## Production & Safety Rules
 
 - **Deploy ordering for API contract changes:** Merging to `main` triggers Vercel (~45 s) and Render (~2–3 min) simultaneously. Breaking API contract changes (new query/body fields rejected by `ValidationPipe`, or removed/changed response fields rejected by frontend Zod schemas) must still land in two PRs — backend merged and confirmed live on Render first, then frontend — or use expand/contract.

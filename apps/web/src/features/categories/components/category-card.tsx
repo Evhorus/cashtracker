@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Card, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import type { Category } from "../types";
+import type { Category } from "@/features/categories/types";
 import { CategoryIconBadge } from "./category-icon-badge";
 import type { CategoryToDelete } from "./delete-category-alert-dialog";
 import { DeleteCategoryButton } from "./delete-category-button";

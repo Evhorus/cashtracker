@@ -25,8 +25,8 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
-import { useDeleteAccount } from "../hooks/use-delete-account";
-import type { AccountUser } from "../types";
+import { useDeleteAccount } from "@/features/account/hooks/use-delete-account";
+import type { AccountUser } from "@/features/account/types";
 
 interface DeleteAccountSectionProps {
   user: AccountUser;

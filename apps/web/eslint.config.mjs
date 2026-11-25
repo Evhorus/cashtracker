@@ -4,6 +4,13 @@ import nextTs from "eslint-config-next/typescript";
 import clerkNext from "@clerk/eslint-plugin/next";
 import eslintConfigPrettier from "eslint-config-prettier";
 
+// Parent-relative imports would bypass the @/-based boundary patterns below, so every
+// no-restricted-imports block repeats this one (flat config replaces, never merges, options).
+const noParentImports = {
+  group: ["../*"],
+  message: "Use the @/ alias instead of a parent-relative import.",
+};
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -37,6 +44,12 @@ const eslintConfig = defineConfig([
     },
   },
   {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [noParentImports] }],
+    },
+  },
+  {
     files: ["src/shared/**/*.{ts,tsx}"],
     // messages.ts is the single intentional i18n aggregator that merges feature JSON catalogues.
     ignores: ["src/shared/config/i18n/messages.ts"],
@@ -45,6 +58,7 @@ const eslintConfig = defineConfig([
         "error",
         {
           patterns: [
+            noParentImports,
             {
               group: ["@/features/*", "@/app/*"],
               message:
@@ -62,6 +76,7 @@ const eslintConfig = defineConfig([
         "error",
         {
           patterns: [
+            noParentImports,
             {
               group: ["@/app/*"],
               message:

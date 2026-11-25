@@ -13,8 +13,8 @@ import {
 } from "@/shared/components/ui/popover";
 import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import { cn } from "@/shared/lib/utils";
-import { resolveIcon } from "../lib/icon-registry";
-import { withAlpha } from "../lib/with-alpha";
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
+import { withAlpha } from "@/features/categories/lib/with-alpha";
 import { CreateCategoryDialog } from "./create-category-dialog";
 
 // Minimal Controller-compatible prop shape; extra spread props from react-hook-form are ignored.

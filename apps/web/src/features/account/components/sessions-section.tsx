@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { formatRelativeTime } from "@/shared/utils/date-helpers";
-import { useSessions } from "../hooks/use-sessions";
+import { useSessions } from "@/features/account/hooks/use-sessions";
 
 export function SessionsSection() {
   const t = useTranslations("account.sessions");

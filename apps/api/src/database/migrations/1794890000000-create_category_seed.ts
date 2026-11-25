@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-import { seedExistingAccounts } from '../seed-existing-accounts';
+import { seedExistingAccounts } from '@/database/seed-existing-accounts';
 
 /**
  * The 9 predefined categories (userId IS NULL) stop being shared rows that

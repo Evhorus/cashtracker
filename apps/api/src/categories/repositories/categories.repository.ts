@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
-import { Category } from '../entities/category.entity';
+import { Category } from '@/categories/entities/category.entity';
 
 @Injectable()
 export class CategoriesRepository {

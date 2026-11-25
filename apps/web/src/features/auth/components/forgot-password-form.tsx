@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
-import { useForgotPassword } from "../hooks/use-forgot-password";
+import { useForgotPassword } from "@/features/auth/hooks/use-forgot-password";
 import {
   type CodeFormValues,
   buildCodeFormSchema,
@@ -27,7 +27,7 @@ import {
   buildEmailFormSchema,
   type NewPasswordFormValues,
   buildNewPasswordFormSchema,
-} from "../schemas/auth.schema";
+} from "@/features/auth/schemas/auth.schema";
 
 export function ForgotPasswordForm() {
   const t = useTranslations("auth.forgotPassword");

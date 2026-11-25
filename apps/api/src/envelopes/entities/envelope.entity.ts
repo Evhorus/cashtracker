@@ -10,8 +10,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Category } from '../../categories/entities/category.entity';
-import { Expense } from '../../expenses/entities/expense.entity';
+import { Category } from '@/categories/entities/category.entity';
+import { Expense } from '@/expenses/entities/expense.entity';
 
 @Entity()
 export class Envelope {

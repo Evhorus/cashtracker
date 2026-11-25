@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useSignUp as useClerkSignUp } from "@clerk/nextjs";
 
-import { navigateAfterAuth } from "../lib/navigate-after-auth";
-import { toClerkStrategy } from "../lib/oauth-strategy";
-import type { OAuthProvider } from "../types";
+import { navigateAfterAuth } from "@/features/auth/lib/navigate-after-auth";
+import { toClerkStrategy } from "@/features/auth/lib/oauth-strategy";
+import type { OAuthProvider } from "@/features/auth/types";
 
 interface SignUpWithPasswordInput {
   firstName: string;

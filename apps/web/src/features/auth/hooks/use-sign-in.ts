@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useSignIn as useClerkSignIn } from "@clerk/nextjs";
 
-import { navigateAfterAuth } from "../lib/navigate-after-auth";
-import { toClerkStrategy } from "../lib/oauth-strategy";
-import type { OAuthProvider } from "../types";
+import { navigateAfterAuth } from "@/features/auth/lib/navigate-after-auth";
+import { toClerkStrategy } from "@/features/auth/lib/oauth-strategy";
+import type { OAuthProvider } from "@/features/auth/types";
 
 // Clerk adapter for sign-in and forgot-password forms; components never touch Clerk directly.
 export function useSignIn() {

@@ -4,9 +4,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ERROR_MESSAGES } from '@/common/constants/error-messages';
-import { Envelope } from '../envelopes/entities/envelope.entity';
-import { EnvelopesRepository } from '../envelopes/repositories/envelopes.repository';
-import { PaymentMethodsRepository } from '../payment-methods/repositories/payment-methods.repository';
+import { Envelope } from '@/envelopes/entities/envelope.entity';
+import { EnvelopesRepository } from '@/envelopes/repositories/envelopes.repository';
+import { PaymentMethodsRepository } from '@/payment-methods/repositories/payment-methods.repository';
 import { Expense } from './entities/expense.entity';
 import { ExpensesService } from './expenses.service';
 import { ExpensesRepository } from './repositories/expenses.repository';

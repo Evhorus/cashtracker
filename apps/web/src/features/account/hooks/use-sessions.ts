@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession, useUser } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 
-import type { AccountSession } from "../types";
+import type { AccountSession } from "@/features/account/types";
 
 // Derived from useUser() because @clerk/nextjs does not export resource types directly.
 type ClerkUser = NonNullable<ReturnType<typeof useUser>["user"]>;

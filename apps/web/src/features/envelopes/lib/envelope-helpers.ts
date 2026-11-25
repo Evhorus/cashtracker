@@ -11,7 +11,7 @@ import {
   formatCalendarDateRange,
   formatMonthYear,
 } from "@/shared/utils/date-helpers";
-import type { Envelope } from "../types";
+import type { Envelope } from "@/features/envelopes/types";
 
 export type { EnvelopeProgressStatus, EnvelopeSort, EnvelopeStatusFilter };
 

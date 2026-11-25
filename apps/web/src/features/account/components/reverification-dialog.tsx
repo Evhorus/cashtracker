@@ -20,14 +20,14 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
-import { useReverificationFlow } from "../hooks/use-reverification-flow";
+import { useReverificationFlow } from "@/features/account/hooks/use-reverification-flow";
 import {
   type ReverificationCodeFormValues,
   buildReverificationCodeFormSchema,
   type ReverificationPasswordFormValues,
   buildReverificationPasswordFormSchema,
-} from "../schemas/account.schema";
-import type { ReverificationRequest } from "../types";
+} from "@/features/account/schemas/account.schema";
+import type { ReverificationRequest } from "@/features/account/types";
 
 interface ReverificationDialogProps {
   request: ReverificationRequest | null;

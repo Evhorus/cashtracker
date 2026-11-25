@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
-import { withAlpha } from "../lib/with-alpha";
+import { withAlpha } from "@/features/categories/lib/with-alpha";
 
 interface CategoryIconBadgeProps {
   /** Pre-resolved via resolveIcon() by the caller; calling resolveIcon() inside a component body trips react-compiler's static-components rule. */

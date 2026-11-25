@@ -6,16 +6,16 @@ import {
 import type {
   EnvelopeSort,
   EnvelopeStatusFilter,
-} from "../lib/envelope-helpers";
-import { EnvelopeMapper } from "../mappers/envelope.mapper";
+} from "@/features/envelopes/lib/envelope-helpers";
+import { EnvelopeMapper } from "@/features/envelopes/mappers/envelope.mapper";
 import {
   EnvelopeFormValues,
   EnvelopeAPIResponseSchema,
   EnvelopesAPIResponseSchema,
   EnvelopeApi,
   EnvelopesResponseApi,
-} from "../schemas/envelope.schema";
-import { Envelope, EnvelopesResponse } from "../types";
+} from "@/features/envelopes/schemas/envelope.schema";
+import { Envelope, EnvelopesResponse } from "@/features/envelopes/types";
 
 export interface GetEnvelopesParams extends PaginationParams {
   search?: string;

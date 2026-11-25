@@ -1,5 +1,5 @@
 import { Button } from "@/shared/components/ui/button";
-import type { OAuthProvider } from "../types";
+import type { OAuthProvider } from "@/features/auth/types";
 import { FacebookIcon, GoogleIcon } from "./icons";
 
 interface OAuthButtonsProps {

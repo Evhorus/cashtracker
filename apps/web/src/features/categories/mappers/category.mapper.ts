@@ -1,5 +1,5 @@
-import type { CategoryApi } from "../schemas/category.schema";
-import type { Category } from "../types";
+import type { CategoryApi } from "@/features/categories/schemas/category.schema";
+import type { Category } from "@/features/categories/types";
 
 export const CategoryMapper = {
   fromApi: (apiCategory: CategoryApi): Category => ({

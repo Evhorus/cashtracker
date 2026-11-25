@@ -1,5 +1,5 @@
 import { cn } from "@/shared/lib/utils";
-import type { ExpensePaymentMethod } from "../types";
+import type { ExpensePaymentMethod } from "@/features/payment-methods/types";
 
 interface PaymentMethodBadgeProps {
   method: ExpensePaymentMethod;

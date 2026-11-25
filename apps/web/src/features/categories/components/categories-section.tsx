@@ -9,7 +9,7 @@ import { EmptyState } from "@/shared/components/common/empty-state";
 import { ListFilterBar } from "@/shared/components/common/list-filter-bar";
 import { SearchInput } from "@/shared/components/common/search-input";
 import { Text } from "@/shared/components/common/typography";
-import { resolveIcon } from "../lib/icon-registry";
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
 import { CategoriesTable } from "./categories-table";
 import { CategoryCard } from "./category-card";
 import {

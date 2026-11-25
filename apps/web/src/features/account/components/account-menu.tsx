@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { useAccountUser } from "../hooks/use-account-user";
+import { useAccountUser } from "@/features/account/hooks/use-account-user";
 
 interface AccountMenuProps {
   /** Optional single-element trigger for Base UI's `render` prop (defaults to the avatar button). */

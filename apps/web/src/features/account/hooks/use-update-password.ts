@@ -5,7 +5,10 @@ import { useReverification, useUser } from "@clerk/nextjs";
 import { isReverificationCancelledError } from "@clerk/nextjs/errors";
 import { useTranslations } from "next-intl";
 
-import type { AccountActionResult, PasswordFieldErrors } from "../types";
+import type {
+  AccountActionResult,
+  PasswordFieldErrors,
+} from "@/features/account/types";
 import { mapClerkError } from "./map-clerk-error";
 import { useReverificationGate } from "./use-reverification-gate";
 

@@ -28,6 +28,18 @@ export default [
     rules: {
       '@typescript-eslint/no-floating-promises': 'warn',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*', 'src/*'],
+              message:
+                'Use the @/ alias instead of a parent-relative or baseUrl import.',
+            },
+          ],
+        },
+      ],
     },
   },
   {

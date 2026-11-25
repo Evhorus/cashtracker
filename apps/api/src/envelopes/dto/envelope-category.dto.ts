@@ -1,4 +1,4 @@
-import { Category } from '../../categories/entities/category.entity';
+import { Category } from '@/categories/entities/category.entity';
 
 /** Embedded in envelope responses so clients can render category chips without a second lookup. */
 export class EnvelopeCategoryDto {
