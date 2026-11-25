@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 
 import { Category } from '@/categories/entities/category.entity';
+// eslint-disable-next-line import/no-cycle -- TypeORM bidirectional relation, references stay lazy (see root AGENTS.md)
 import { Expense } from '@/expenses/entities/expense.entity';
 
 @Entity()

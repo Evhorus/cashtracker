@@ -22,9 +22,11 @@ Turborepo + pnpm (`pnpm@11.20.0`) monorepo:
 
 ## Import Conventions
 
-- `./x` only for files in the same folder; anything that climbs a folder uses the `@/` alias (`@/*` → `src/*` in both apps); `@cashtracker/shared` for the shared package. Parent-relative (`../`) and `src/` imports fail lint (`no-restricted-imports`), because they would bypass the web's `@/`-based boundary rules and break when files move.
-- `@/` works at runtime because `nest build` rewrites it in `dist/`, Jest maps it (`moduleNameMapper`), and the TypeORM CLI runs with `tsconfig-paths/register`.
-- Avoid import cycles. The only one is `Envelope` ↔ `Expense` (TypeORM bidirectional relation) and it is safe: each side references the other only inside `() => Entity` callbacks, and relation fields typed as unions/arrays emit `design:type` `Object`/`Array`. Keep relation fields nullable or arrays (or wrap them in TypeORM's `Relation<T>`) so decorator metadata never reads the other class at load time.
+All enforced by ESLint in both apps (`eslint-plugin-import`), so they are the rule, not a habit:
+
+- **Paths:** `./x` only for files in the same folder; anything that climbs a folder uses the `@/` alias (`@/*` → `src/*`); `@cashtracker/shared` for the shared package. `../` (and `src/` in the API) fail `no-restricted-imports`, because they would bypass the web's `@/`-based boundary rules and break when files move. `@/` works at runtime because `nest build` rewrites it in `dist/`, Jest maps it (`moduleNameMapper`), and the TypeORM CLI runs with `tsconfig-paths/register`.
+- **Order (`import/order`, autofixable with `eslint --fix`):** packages first (builtins, npm and `@cashtracker/shared`), one blank line, then `@/` and relative imports. Side-effect imports such as CSS are left where they are.
+- **No cycles (`import/no-cycle`, type-only imports ignored):** a runtime cycle can hand a module `undefined` while it is still loading. The one accepted exception is `Envelope` ↔ `Expense` (TypeORM bidirectional relation), marked with an `eslint-disable-next-line` that says why: each side references the other only inside `() => Entity` callbacks, and relation fields typed as unions/arrays emit `design:type` `Object`/`Array`. Keep those fields nullable or arrays (or wrap them in TypeORM's `Relation<T>`) so decorator metadata never reads the other class at load time.
 
 ## Production & Safety Rules
 

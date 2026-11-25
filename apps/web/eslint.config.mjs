@@ -47,6 +47,19 @@ const eslintConfig = defineConfig([
     files: ["src/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": ["error", { patterns: [noParentImports] }],
+      // Packages first, a blank line, then @/ and relative imports; autofixable.
+      "import/order": [
+        "error",
+        {
+          groups: [
+            ["builtin", "external"],
+            ["internal", "parent", "sibling", "index"],
+          ],
+          pathGroups: [{ pattern: "@/**", group: "internal" }],
+          "newlines-between": "always",
+        },
+      ],
+      "import/no-cycle": ["error", { ignoreExternal: true }],
     },
   },
   {

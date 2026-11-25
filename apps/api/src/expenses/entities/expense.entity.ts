@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+// eslint-disable-next-line import/no-cycle -- TypeORM bidirectional relation, references stay lazy (see root AGENTS.md)
 import { Envelope } from '@/envelopes/entities/envelope.entity';
 import { PaymentMethod } from '@/payment-methods/entities/payment-method.entity';
 

@@ -1,5 +1,6 @@
 // @ts-check
 import eslint from '@eslint/js';
+import importPlugin from 'eslint-plugin-import';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -10,6 +11,15 @@ export default [
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
+  importPlugin.flatConfigs.typescript,
+  {
+    settings: {
+      'import/resolver': {
+        typescript: { project: './tsconfig.json' },
+        node: true,
+      },
+    },
+  },
   eslintPluginPrettierRecommended,
   {
     languageOptions: {
@@ -28,6 +38,19 @@ export default [
     rules: {
       '@typescript-eslint/no-floating-promises': 'warn',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      // Packages first, a blank line, then @/ and relative imports; autofixable.
+      'import/order': [
+        'error',
+        {
+          groups: [
+            ['builtin', 'external'],
+            ['internal', 'parent', 'sibling', 'index'],
+          ],
+          pathGroups: [{ pattern: '@/**', group: 'internal' }],
+          'newlines-between': 'always',
+        },
+      ],
+      'import/no-cycle': ['error', { ignoreExternal: true }],
       'no-restricted-imports': [
         'error',
         {
