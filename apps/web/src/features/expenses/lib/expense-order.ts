@@ -1,3 +1,5 @@
+import type { ExpenseSortBy, ExpenseSortDirection } from "@cashtracker/shared";
+
 /** Maps expense sort orders to URL/API `sort` + `sortBy` params ("newest" is the default and omitted). */
 
 export const EXPENSE_ORDERS = [
@@ -9,8 +11,8 @@ export const EXPENSE_ORDERS = [
 export type ExpenseOrder = (typeof EXPENSE_ORDERS)[number];
 
 interface OrderParams {
-  sort: "ASC" | "DESC";
-  sortBy: "date" | "amount";
+  sort: ExpenseSortDirection;
+  sortBy: ExpenseSortBy;
 }
 
 const PARAMS: Record<ExpenseOrder, OrderParams> = {

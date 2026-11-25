@@ -36,7 +36,7 @@ RUN --mount=type=cache,id=cashtracker-pnpm-store,target=/pnpm/store \
 
 COPY --from=pruner /app/out/full/ ./
 RUN pnpm turbo run build --filter=@cashtracker/api...
-RUN pnpm --filter @cashtracker/api --prod --legacy deploy /prod/api
+RUN pnpm --filter @cashtracker/api --prod deploy /prod/api
 
 # ---- runtime: minimal final image ------------------------------------------
 FROM node:${NODE_VERSION}-alpine AS runtime

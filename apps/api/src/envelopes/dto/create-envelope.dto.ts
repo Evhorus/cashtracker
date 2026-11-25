@@ -1,3 +1,4 @@
+import { Currency, MAX_AMOUNT, type CurrencyCode } from '@cashtracker/shared';
 import { Transform } from 'class-transformer';
 import {
   IsEnum,
@@ -11,9 +12,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { MAX_AMOUNT } from 'src/common/constants/amounts';
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { Currency } from 'src/common/enums/currency.enum';
 import { normalizeString } from 'src/common/utils/string-utils';
 
 export class CreateEnvelopeDto {
@@ -25,7 +24,7 @@ export class CreateEnvelopeDto {
 
   @IsEnum(Currency)
   @IsNotEmpty()
-  currency: Currency;
+  currency: CurrencyCode;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })

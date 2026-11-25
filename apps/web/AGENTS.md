@@ -381,7 +381,7 @@ This is a Next.js 16 project using the App Router and TypeScript.
 
 - **Authentication**: Clerk (`@clerk/nextjs` v7, Core 3) for user management and session control. Custom UI built with Clerk's `useSignIn`/`useSignUp`/`useUser` hooks, not `@clerk/elements` (deprecated) or Clerk's prebuilt components — see `src/features/auth/`.
 - **Styling**: Tailwind 4 CSS with Base UI (`@base-ui/react`) primitives (via shadcn/ui) — not Radix.
-- **Validation**: Zod 4 is used for all schema validations and is integrated with React Hook Form 7.
+- **Validation**: Zod 4 is used for all schema validations (API response schemas and shared domain constants live in `@cashtracker/shared`; localized form schema factories live in each feature's `schemas/` folder) and is integrated with React Hook Form 7.
 - **State Management**: Primarily relies on Next.js Server Components and Server Actions for data flow.
 - **Date Handling**: `date-fns` 4 with `@date-fns/tz` for UTC-anchored calendar dates (`expense.date`) and client-mounted `<LocalDate>` (`src/shared/components/common/local-date.tsx`) for visitor-timezone timestamps (`today`, `createdAt`, `updatedAt`).
 - **Charts**: `recharts` 3 for data visualization.

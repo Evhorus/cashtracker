@@ -1,3 +1,9 @@
+import {
+  EXPENSE_SORT_BY_FIELDS,
+  EXPENSE_SORT_DIRECTIONS,
+  type ExpenseSortBy,
+  type ExpenseSortDirection,
+} from '@cashtracker/shared';
 import { Transform } from 'class-transformer';
 import {
   IsArray,
@@ -32,13 +38,13 @@ export class GetExpensesFilterDto extends PaginationQueryDto {
   search?: string;
 
   @IsOptional()
-  @IsIn(['ASC', 'DESC'])
-  sort?: 'ASC' | 'DESC';
+  @IsIn(EXPENSE_SORT_DIRECTIONS)
+  sort?: ExpenseSortDirection;
 
   /** What `sort` orders by: the expense date (default) or the amount. */
   @IsOptional()
-  @IsIn(['date', 'amount'])
-  sortBy?: 'date' | 'amount';
+  @IsIn(EXPENSE_SORT_BY_FIELDS)
+  sortBy?: ExpenseSortBy;
 
   /** Only expenses paid with one of these. With `includeUnassigned`,
    * also those without a payment method. Neither set = all expenses. */

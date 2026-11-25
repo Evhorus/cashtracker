@@ -1,22 +1,6 @@
-import { z } from "zod";
+import type { PaginationMeta } from "@cashtracker/shared";
 
-/** Mirrors backend `PaginatedResponseDto` meta shape. */
-export const PaginationMetaSchema = z.object({
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  totalPages: z.number(),
-  hasNextPage: z.boolean(),
-  hasPreviousPage: z.boolean(),
-});
-
-export type PaginationMeta = z.infer<typeof PaginationMetaSchema>;
-
-export const paginatedSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
-  z.object({
-    data: z.array(itemSchema),
-    meta: PaginationMetaSchema,
-  });
+export type { PaginationMeta };
 
 export interface PaginationParams {
   page?: number;

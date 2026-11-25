@@ -1,3 +1,4 @@
+import type { PaymentMethodType } from '@cashtracker/shared';
 import {
   Column,
   CreateDateColumn,
@@ -5,8 +6,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import type { PaymentMethodType } from '../constants/payment-method-types';
 
 @Entity()
 export class PaymentMethod {

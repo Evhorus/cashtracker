@@ -1,25 +1,15 @@
+import {
+  CUT_DAY_MAX,
+  CUT_DAY_MIN,
+  PAYMENT_METHOD_NAME_MAX_LENGTH,
+  PAYMENT_METHOD_TYPES,
+  PaymentMethodsApiSchema,
+} from "@cashtracker/shared";
 import { z } from "zod";
 
 import type { ValidationTranslator } from "@/shared/lib/validation";
-import { PAYMENT_METHOD_TYPES } from "../types";
 
-const PaymentMethodAPIResponseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  type: z.enum(PAYMENT_METHOD_TYPES),
-  color: z.string(),
-  cutDay: z.number().nullable(),
-});
-
-export const PaymentMethodsAPIResponseSchema = z.array(
-  PaymentMethodAPIResponseSchema,
-);
-
-export const ExpensePaymentMethodAPISchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  color: z.string(),
-});
+export { PaymentMethodsApiSchema as PaymentMethodsAPIResponseSchema };
 
 /** Form shape: cutDay is the raw text of a number input ("" = none). */
 export const buildPaymentMethodFormSchema = (t: ValidationTranslator) =>
@@ -28,7 +18,9 @@ export const buildPaymentMethodFormSchema = (t: ValidationTranslator) =>
       .string()
       .trim()
       .min(1, { message: t("paymentMethodNameRequired") })
-      .max(50, { message: t("paymentMethodNameTooLong") }),
+      .max(PAYMENT_METHOD_NAME_MAX_LENGTH, {
+        message: t("paymentMethodNameTooLong"),
+      }),
     type: z.enum(PAYMENT_METHOD_TYPES),
     color: z.string().min(1),
     cutDay: z
@@ -37,8 +29,8 @@ export const buildPaymentMethodFormSchema = (t: ValidationTranslator) =>
         (value) =>
           value === "" ||
           (Number.isInteger(Number(value)) &&
-            Number(value) >= 1 &&
-            Number(value) <= 31),
+            Number(value) >= CUT_DAY_MIN &&
+            Number(value) <= CUT_DAY_MAX),
         { message: t("cutDayRange") },
       ),
   });

@@ -1,4 +1,6 @@
-export class PaginationMetaDto {
+import type { PaginationMeta } from '@cashtracker/shared';
+
+export class PaginationMetaDto implements PaginationMeta {
   total: number;
   page: number;
   limit: number;

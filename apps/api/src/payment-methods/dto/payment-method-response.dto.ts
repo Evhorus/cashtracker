@@ -1,4 +1,5 @@
-import type { PaymentMethodType } from '../constants/payment-method-types';
+import type { PaymentMethodType } from '@cashtracker/shared';
+
 import { PaymentMethod } from '../entities/payment-method.entity';
 
 export class PaymentMethodResponseDto {

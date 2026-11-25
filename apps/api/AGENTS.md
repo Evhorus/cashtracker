@@ -94,7 +94,7 @@ envelopes and expenses) so it's a lighter version of this shape.
 - **Authentication**: Clerk (`@clerk/backend` 3) verified directly in `ClerkAuthGuard` (no Passport dependency).
 - **Database ORM**: TypeORM 0.3 (Object-relational mapping and schema management via migrations).
 - **Database**: PostgreSQL (via `pg` 8) (Primary persistent data store, with explicit `connectionTimeoutMillis` and `statement_timeout`).
-- **Validation**: Zod 4 (Environment variable validation) and `class-validator` (DTO-level request validation).
+- **Validation**: Zod 4 (Environment variable validation + shared API schemas in `@cashtracker/shared`) and `class-validator` (DTO-level request validation using shared constants/enums from `@cashtracker/shared`).
 - **Testing**: Jest 30 and Supertest 7 (Unit and end-to-end testing).
 - **Scheduling**: `@nestjs/schedule` (`@Cron`) drives the production-only health-check keep-alive ping.
 - **Rate Limiting**: `@nestjs/throttler` with `UserThrottlerGuard` (`src/common/guards/user-throttler.guard.ts`), registered as `APP_GUARD` in `AppModule` right after `ClerkAuthGuard`. Keys limits per endpoint on `user:${req.user.id}` (falling back to normalized IP on public routes) so users sharing the Next.js server IP do not throttle each other. Configured with burst (`20 req/s`) and sustained (`120 req/min`) tiers; skipped in `NODE_ENV === 'test'` and on `/api/health-check` (`@SkipThrottle()`).

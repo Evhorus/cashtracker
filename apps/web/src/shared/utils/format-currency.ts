@@ -1,5 +1,6 @@
-export const CURRENCY_CODES = ["COP", "USD", "EUR"] as const;
-export type CurrencyCode = (typeof CURRENCY_CODES)[number];
+import type { CurrencyCode } from "@cashtracker/shared";
+
+export type { CurrencyCode };
 
 export interface CurrencyConfig {
   locale: string;

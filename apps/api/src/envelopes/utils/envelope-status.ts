@@ -1,28 +1,20 @@
 /** Single source of truth for envelope spending status and its matching SQL filters. */
 
+import {
+  ENVELOPE_PROGRESS_STATUSES,
+  ENVELOPE_STATUS_FILTERS,
+  type EnvelopeProgressStatus,
+  type EnvelopeStatusFilter,
+} from '@cashtracker/shared';
+
+export {
+  ENVELOPE_PROGRESS_STATUSES,
+  ENVELOPE_STATUS_FILTERS,
+  type EnvelopeProgressStatus,
+  type EnvelopeStatusFilter,
+};
+
 export const ENVELOPE_WARNING_THRESHOLD = 0.8;
-
-export const ENVELOPE_PROGRESS_STATUSES = [
-  'unlimited',
-  'normal',
-  'warning',
-  'exceeded',
-] as const;
-
-export type EnvelopeProgressStatus =
-  (typeof ENVELOPE_PROGRESS_STATUSES)[number];
-
-/** List filter values: each status plus `all` and `alert` (warning + exceeded). */
-export const ENVELOPE_STATUS_FILTERS = [
-  'all',
-  'normal',
-  'warning',
-  'alert',
-  'exceeded',
-  'unlimited',
-] as const;
-
-export type EnvelopeStatusFilter = (typeof ENVELOPE_STATUS_FILTERS)[number];
 
 /** TypeORM returns `decimal` columns as strings at runtime. */
 function toNumber(value: number | string): number {

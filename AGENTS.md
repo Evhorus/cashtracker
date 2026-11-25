@@ -8,7 +8,7 @@ Turborepo + pnpm (`pnpm@11.20.0`) monorepo:
 
 - `apps/web` (`@cashtracker/web`) — Next.js 16 frontend deployed on Vercel (Root Directory `apps/web`). See [apps/web/AGENTS.md](apps/web/AGENTS.md).
 - `apps/api` (`@cashtracker/api`) — NestJS 11 + TypeORM + PostgreSQL REST API deployed on Render via Docker (Root Directory `.`, Dockerfile `apps/api/Dockerfile`). See [apps/api/AGENTS.md](apps/api/AGENTS.md).
-- `packages/` — Reserved for shared workspace packages (e.g. `packages/shared`).
+- `packages/shared` (`@cashtracker/shared`) — Shared Zod 4 API response schemas, domain constants (`CURRENCY_CODES`, `MAX_AMOUNT`, `MAX_PAGE_SIZE`, `ICON_KEYS`, `PRESET_COLORS`, `PAYMENT_METHOD_TYPES`, envelope/expense statuses and sorts), and inferred TypeScript types consumed by both `@cashtracker/api` and `@cashtracker/web`. Built as dual ESM/CJS (`dist/esm`, `dist/cjs`).
 
 ## Common Commands (Run From Repo Root)
 

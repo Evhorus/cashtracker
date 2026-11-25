@@ -1,3 +1,4 @@
+import { ICON_KEYS, PRESET_COLORS } from '@cashtracker/shared';
 import {
   ConflictException,
   Injectable,
@@ -6,8 +7,6 @@ import {
 
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
 import { isUniqueViolation } from 'src/common/utils/postgres-errors';
-import { ICON_KEYS } from './constants/icon-keys';
-import { PRESET_COLORS } from './constants/preset-colors';
 import { CategoryUsageDto } from './dto/category-usage-response.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';

@@ -1,9 +1,10 @@
+import { MAX_PAGE_SIZE } from "@cashtracker/shared";
+
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import type { Envelope } from "@/features/envelopes/types";
 import type { Expense } from "../types";
 
-/** Matches backend `PaginationQueryDto` max `limit`. */
-export const EXPENSES_MAX_PAGE_SIZE = 100;
+export const EXPENSES_MAX_PAGE_SIZE = MAX_PAGE_SIZE;
 export const EXPENSES_DEFAULT_PAGE_SIZE = 10;
 
 export const EXPENSES_PAGE_SIZE_OPTIONS = [

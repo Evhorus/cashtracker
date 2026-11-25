@@ -1,3 +1,9 @@
+import {
+  Currency,
+  EXPENSE_DESCRIPTION_MAX_LENGTH,
+  MAX_AMOUNT,
+  type CurrencyCode,
+} from '@cashtracker/shared';
 import { Transform } from 'class-transformer';
 import {
   IsEnum,
@@ -11,9 +17,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { MAX_AMOUNT } from 'src/common/constants/amounts';
 import { ERROR_MESSAGES } from 'src/common/constants/error-messages';
-import { Currency } from 'src/common/enums/currency.enum';
 import { normalizeString } from 'src/common/utils/string-utils';
 import { IsCalendarDate } from 'src/common/validators/calendar-date.validators';
 
@@ -26,7 +30,7 @@ export class CreateExpenseDto {
 
   @IsEnum(Currency)
   @IsNotEmpty()
-  currency: Currency;
+  currency: CurrencyCode;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsNotEmpty()
@@ -36,7 +40,7 @@ export class CreateExpenseDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(EXPENSE_DESCRIPTION_MAX_LENGTH)
   @Transform(({ value }) => normalizeString(value))
   description?: string;
 

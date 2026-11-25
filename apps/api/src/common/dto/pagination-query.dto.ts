@@ -1,3 +1,4 @@
+import { MAX_PAGE_SIZE } from '@cashtracker/shared';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
@@ -12,6 +13,6 @@ export class PaginationQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(MAX_PAGE_SIZE)
   limit: number = 20;
 }
