@@ -21,6 +21,12 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # eslint 10 waits for eslint-plugin-import and eslint-config-next (react, jsx-a11y) to support it;
+      # @eslint/js must stay on the same major as eslint.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/js"
+        update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore
