@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Controller, Get, type ExecutionContext } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
@@ -12,7 +13,7 @@ import request from 'supertest';
 import { UserThrottlerGuard } from './user-throttler.guard';
 
 function makeContext(req: Record<string, unknown>): ExecutionContext {
-  const res = { header: jest.fn() };
+  const res = { header: vi.fn() };
   return {
     getHandler: () => function handler() {},
     getClass: () => class DummyController {},
@@ -30,7 +31,7 @@ describe('UserThrottlerGuard', () => {
   beforeEach(async () => {
     storage = new ThrottlerStorageService();
     const reflector = {
-      getAllAndOverride: jest.fn().mockReturnValue(undefined),
+      getAllAndOverride: vi.fn().mockReturnValue(undefined),
     } as unknown as Reflector;
 
     guard = new UserThrottlerGuard(

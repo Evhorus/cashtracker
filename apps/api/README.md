@@ -141,6 +141,7 @@ Este proyecto utiliza TypeORM con un flujo basado en migraciones para gestionar 
 
 ```bash
 # Generar una nueva migración basada en los cambios de las entidades
+# (después, añade su clase a src/database/migrations/index.ts)
 pnpm migration generate AddNewField
 
 # Ejecutar todas las migraciones pendientes
@@ -259,7 +260,7 @@ y pide una confirmación extra (`SI`) si el destino es el host de producción de
 - **Base de Datos:** PostgreSQL con TypeORM
 - **Migraciones:** Gestión de esquema mediante TypeORM CLI
 - **Validación:** class-validator, class-transformer, Zod
-- **Testing:** Jest, Supertest
+- **Testing:** Vitest, Supertest
 - **Seguridad y confiabilidad:** Helmet (cabeceras HTTP), `@nestjs/throttler`
   con límite por usuario (`UserThrottlerGuard`, 20 req/s burst y 120 req/min
   sostenido por endpoint) y `@nestjs/schedule` + `fetch` nativo de Node (ping

@@ -1,4 +1,13 @@
 import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+} from 'vitest';
+import {
   type ExecutionContext,
   INestApplication,
   ValidationPipe,

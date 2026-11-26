@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { Currency } from '@cashtracker/shared';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -13,10 +14,10 @@ import { ExpensesRepository } from './repositories/expenses.repository';
 
 describe('ExpensesService', () => {
   let service: ExpensesService;
-  let expensesRepository: jest.Mocked<ExpensesRepository>;
-  let envelopesRepository: jest.Mocked<EnvelopesRepository>;
-  let paymentMethodsRepository: jest.Mocked<PaymentMethodsRepository>;
-  let dataSource: jest.Mocked<DataSource>;
+  let expensesRepository: Mocked<ExpensesRepository>;
+  let envelopesRepository: Mocked<EnvelopesRepository>;
+  let paymentMethodsRepository: Mocked<PaymentMethodsRepository>;
+  let dataSource: Mocked<DataSource>;
   let entityManager: EntityManager;
 
   const mockEnvelope: Envelope = {
@@ -45,27 +46,27 @@ describe('ExpensesService', () => {
 
   beforeEach(async () => {
     const mockExpensesRepo = {
-      create: jest.fn(),
-      findInEnvelopeById: jest.fn(),
-      findOwnedInEnvelope: jest.fn(),
-      findPage: jest.fn(),
-      getFilteredAggregate: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
+      create: vi.fn(),
+      findInEnvelopeById: vi.fn(),
+      findOwnedInEnvelope: vi.fn(),
+      findPage: vi.fn(),
+      getFilteredAggregate: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
     };
 
     const mockEnvelopesRepo = {
-      findOwnedByIdForUpdate: jest.fn(),
-      existsOwnedById: jest.fn(),
-      recalculateSpent: jest.fn(),
+      findOwnedByIdForUpdate: vi.fn(),
+      existsOwnedById: vi.fn(),
+      recalculateSpent: vi.fn(),
     };
 
     const mockEntityManager = {
-      getRepository: jest.fn(),
+      getRepository: vi.fn(),
     } as unknown as EntityManager;
 
     const mockDataSource = {
-      transaction: jest.fn((cb: (manager: EntityManager) => Promise<any>) =>
+      transaction: vi.fn((cb: (manager: EntityManager) => Promise<any>) =>
         cb(mockEntityManager),
       ),
     };
@@ -77,7 +78,7 @@ describe('ExpensesService', () => {
         { provide: EnvelopesRepository, useValue: mockEnvelopesRepo },
         {
           provide: PaymentMethodsRepository,
-          useValue: { findForUserById: jest.fn() },
+          useValue: { findForUserById: vi.fn() },
         },
         { provide: DataSource, useValue: mockDataSource },
       ],

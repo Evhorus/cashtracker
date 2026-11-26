@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { QueryFailedError } from 'typeorm';
@@ -9,7 +10,7 @@ import { CategoriesRepository } from './repositories/categories.repository';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
-  let repository: jest.Mocked<CategoriesRepository>;
+  let repository: Mocked<CategoriesRepository>;
 
   const mockCategory: Category = {
     id: 'cat-1',
@@ -24,15 +25,15 @@ describe('CategoriesService', () => {
 
   beforeEach(async () => {
     const mockRepo = {
-      hasBeenSeeded: jest.fn().mockResolvedValue(true),
-      seedDefaultsFor: jest.fn(),
-      findAllOwned: jest.fn(),
-      countEnvelopesByCategory: jest.fn(),
-      findOwnedByLabel: jest.fn(),
-      findOwnedById: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      remove: jest.fn(),
+      hasBeenSeeded: vi.fn().mockResolvedValue(true),
+      seedDefaultsFor: vi.fn(),
+      findAllOwned: vi.fn(),
+      countEnvelopesByCategory: vi.fn(),
+      findOwnedByLabel: vi.fn(),
+      findOwnedById: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      remove: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

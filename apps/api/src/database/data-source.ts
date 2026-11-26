@@ -1,6 +1,13 @@
 import { config } from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
+import { CategorySeed } from '@/categories/entities/category-seed.entity';
+import { Category } from '@/categories/entities/category.entity';
+import { Envelope } from '@/envelopes/entities/envelope.entity';
+import { Expense } from '@/expenses/entities/expense.entity';
+import { PaymentMethod } from '@/payment-methods/entities/payment-method.entity';
+import { migrations } from './migrations';
+
 // Must match app-config.module.ts: this module evaluates at import time before ConfigModule.
 const envFilePath = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 config({ path: envFilePath });
@@ -33,8 +40,9 @@ export const dataSourceOptions: DataSourceOptions = {
   url: dbUrl.toString(),
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/migrations/*{.ts,.js}'],
+  // Classes, not globs, so the app, the TypeORM CLI and the tests share one copy of each entity.
+  entities: [Category, CategorySeed, Envelope, Expense, PaymentMethod],
+  migrations,
   // Set MIGRATIONS_RUN_ON_BOOT=false and run migrations as a release step when scaling past 1 replica.
   migrationsRun: process.env.MIGRATIONS_RUN_ON_BOOT !== 'false',
   subscribers: [],

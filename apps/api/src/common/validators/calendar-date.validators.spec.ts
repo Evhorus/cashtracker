@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { validate } from 'class-validator';
 
 import { IsCalendarDate, IsNotBefore } from './calendar-date.validators';

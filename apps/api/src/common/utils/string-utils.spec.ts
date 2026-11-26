@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { escapeLikePattern, normalizeString } from './string-utils';
 
 describe('normalizeString', () => {
