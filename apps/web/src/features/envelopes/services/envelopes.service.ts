@@ -8,14 +8,16 @@ import type {
   EnvelopeStatusFilter,
 } from "@/features/envelopes/lib/envelope-helpers";
 import { EnvelopeMapper } from "@/features/envelopes/mappers/envelope.mapper";
-import {
+import type {
   EnvelopeFormValues,
-  EnvelopeAPIResponseSchema,
-  EnvelopesAPIResponseSchema,
   EnvelopeApi,
   EnvelopesResponseApi,
 } from "@/features/envelopes/schemas/envelope.schema";
-import { Envelope, EnvelopesResponse } from "@/features/envelopes/types";
+import {
+  EnvelopeAPIResponseSchema,
+  EnvelopesAPIResponseSchema,
+} from "@/features/envelopes/schemas/envelope.schema";
+import type { Envelope, EnvelopesResponse } from "@/features/envelopes/types";
 
 export interface GetEnvelopesParams extends PaginationParams {
   search?: string;

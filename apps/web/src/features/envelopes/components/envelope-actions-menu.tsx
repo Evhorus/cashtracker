@@ -4,11 +4,9 @@ import { useState } from "react";
 import { Edit, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { EditableEnvelope } from "@/features/envelopes/types";
-import {
-  ActionsDrawer,
-  ActionItem,
-} from "@/shared/components/common/actions-drawer";
+import type { EditableEnvelope } from "@/features/envelopes/types";
+import type { ActionItem } from "@/shared/components/common/actions-drawer";
+import { ActionsDrawer } from "@/shared/components/common/actions-drawer";
 import { DeleteEnvelopeAlertDialog } from "./delete-envelope-alert-dialog";
 import { UpdateEnvelopeDialog } from "./update-envelope-dialog";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { useReverification } from "@clerk/nextjs";
+import type { useReverification } from "@clerk/nextjs";
 
 import type { ReverificationRequest } from "@/features/account/types";
 

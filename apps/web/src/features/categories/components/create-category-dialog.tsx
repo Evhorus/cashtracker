@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { createCategoryAction } from "@/features/categories/actions/create-category.action";
-import { CategoryFormValues } from "@/features/categories/schemas/category.schema";
+import type { CategoryFormValues } from "@/features/categories/schemas/category.schema";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { Button } from "@/shared/components/ui/button";
 import { useActionDialog } from "@/shared/hooks/use-action-dialog";

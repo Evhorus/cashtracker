@@ -44,6 +44,12 @@ const eslintConfig = defineConfig([
     },
   },
   {
+    // Type-only imports say so (`import type`), so a reader knows what exists at runtime.
+    rules: {
+      "@typescript-eslint/consistent-type-imports": "error",
+    },
+  },
+  {
     files: ["src/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": ["error", { patterns: [noParentImports] }],

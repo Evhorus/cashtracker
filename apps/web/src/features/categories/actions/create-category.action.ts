@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 import { createSafeAction } from "@/shared/lib/safe-action";
-import { CategoryFormValues } from "@/features/categories/schemas/category.schema";
+import type { CategoryFormValues } from "@/features/categories/schemas/category.schema";
 import { CategoriesService } from "@/features/categories/services/categories.service";
 
 // Toast wording is resolved here via getTranslations because backend messages are hardcoded in Spanish.

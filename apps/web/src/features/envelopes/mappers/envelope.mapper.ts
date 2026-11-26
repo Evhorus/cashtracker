@@ -2,9 +2,9 @@ import { ExpenseMapper } from "@/features/expenses/mappers/expense.mapper";
 import type { Expense } from "@/features/expenses/types";
 import { parseCalendarDate } from "@/shared/utils/date-helpers";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
-import { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
-import { EnvelopeApi } from "@/features/envelopes/schemas/envelope.schema";
-import { Envelope } from "@/features/envelopes/types";
+import type { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
+import type { EnvelopeApi } from "@/features/envelopes/schemas/envelope.schema";
+import type { Envelope } from "@/features/envelopes/types";
 
 /** List endpoint reports the range; detail endpoint embeds expenses so derive it from them. */
 function expenseDateRange(

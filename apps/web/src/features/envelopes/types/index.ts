@@ -1,6 +1,6 @@
 import type { EnvelopeProgressStatus } from "@cashtracker/shared";
 
-import { Expense } from "@/features/expenses/types";
+import type { Expense } from "@/features/expenses/types";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 import type { PaginationMeta } from "@/shared/utils/pagination";
 

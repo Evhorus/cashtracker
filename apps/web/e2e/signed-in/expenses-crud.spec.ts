@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 import {
   appears,
@@ -32,7 +33,7 @@ const AMOUNT = "25000";
 const REDUCED = "10000";
 
 /** The detail page of the envelope these expenses belong to. */
-async function openEnvelope(page: import("@playwright/test").Page) {
+async function openEnvelope(page: Page) {
   await page.goto(
     `/dashboard/envelopes?search=${encodeURIComponent(ENVELOPE)}`,
   );
