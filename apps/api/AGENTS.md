@@ -29,6 +29,7 @@ Run inside `apps/api` or from the repo root via `pnpm --filter @cashtracker/api 
 
 ### Database Migrations
 - Generate migration: `pnpm migration generate <name>`, then add its class to `src/database/migrations/index.ts`. Entities and migrations are listed as classes in `data-source.ts`, never as globs: a glob makes TypeORM `require()` raw `.ts` files, which fails outside a TS loader such as Vitest. `migrations/index.spec.ts` fails when a migration file is missing from the list, and a new entity must be added to `entities` in `data-source.ts`.
+- Entities must match the migrated schema, so generate reports "No changes" on a migrated DB (dry run: `pnpm typeorm migration:generate src/database/migrations/X -d src/database/data-source.ts --dryrun`). A hand-written migration that names an index, FK or CHECK declares that name on the entity (`@Index(name, ...)`, `foreignKeyConstraintName`, `@Check(name, ...)`); an index `@Index` cannot express (expressions such as `LOWER(...)`, `DESC` columns) is declared as `@Index(name, { synchronize: false })` and stays owned by its migration.
 - Run pending migrations: `pnpm migration run`
 - Revert last migration: `pnpm migration revert`
 - Show migration status: `pnpm migration show`

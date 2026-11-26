@@ -1,13 +1,21 @@
 import type { PaymentMethodType } from '@cashtracker/shared';
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
+@Check(
+  'CHK_payment_method_cutDay',
+  '"cutDay" IS NULL OR ("cutDay" BETWEEN 1 AND 31)',
+)
+// ("userId", LOWER("name")): an expression index, owned by migrations.
+@Index('UQ_payment_method_userId_name', { synchronize: false })
 export class PaymentMethod {
   @PrimaryGeneratedColumn('uuid')
   id: string;
