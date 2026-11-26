@@ -253,7 +253,7 @@ y pide una confirmación extra (`SI`) si el destino es el host de producción de
 
 ## Tecnologías
 
-- **Framework:** NestJS 11
+- **Framework:** NestJS 12
 - **Node.js:** Runtime JavaScript
 - **TypeScript:** Lenguaje de programación
 - **Autenticación:** Clerk (`@clerk/backend`), guard global con opt-out vía `@Public()`

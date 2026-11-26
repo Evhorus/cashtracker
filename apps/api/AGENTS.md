@@ -90,7 +90,8 @@ envelopes and expenses) so it's a lighter version of this shape.
 - `src/health-check`: Provides `/api/health-check` (marked `@Public()` and `@SkipThrottle()`) for system monitoring. Also runs a production-only `@Cron` keep-alive ping to stop Render's free tier from hibernating the instance.
 
 ### Key Technical Choices
-- **Framework**: NestJS 11 (Core framework for building the REST API).
+- **Framework**: NestJS 12 (Core framework for building the REST API). Nest 12 packages are ESM-only; the API stays CommonJS and loads them through Node's `require(esm)` (Node >= 20.19 / 22.12).
+- **TypeScript**: 6.0 in `apps/api` only (`@nestjs/schematics` 12 requires it; `web` and `shared` stay on 5.9). TS 6 changed defaults, so `tsconfig.json` pins the old ones explicitly (`strict: false`, `types: ["node"]`, no `baseUrl`) and `tsconfig.build.json` sets `rootDir: ./src` to keep the output at `dist/main.js`.
 - **Authentication**: Clerk (`@clerk/backend` 3) verified directly in `ClerkAuthGuard` (no Passport dependency).
 - **Database ORM**: TypeORM 1.1 (Object-relational mapping and schema management via migrations).
 - **Database**: PostgreSQL (via `pg` 8) (Primary persistent data store, with explicit `connectionTimeoutMillis` and `statement_timeout`).
