@@ -1,5 +1,5 @@
-import { ExpensePaymentMethodDto } from '../../payment-methods/dto/payment-method-response.dto';
-import { Expense } from '../entities/expense.entity';
+import { ExpensePaymentMethodDto } from '@/payment-methods/dto/payment-method-response.dto';
+import { Expense } from '@/expenses/entities/expense.entity';
 
 export class ExpenseResponseDto {
   id: string;

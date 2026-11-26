@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 import {
   parseDateInput,
@@ -6,9 +6,9 @@ import {
   formatCalendarDateForApi,
   toFormCalendarDate,
 } from "@/shared/utils/date-helpers";
-import { ExpenseFormValues } from "../schemas/expense.schema";
-import { ExpenseAPIResponseSchema } from "../schemas/expense.schema";
-import { Expense } from "../types";
+import type { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
+import type { ExpenseAPIResponseSchema } from "@/features/expenses/schemas/expense.schema";
+import type { Expense } from "@/features/expenses/types";
 
 type ApiExpense = z.infer<typeof ExpenseAPIResponseSchema>;
 

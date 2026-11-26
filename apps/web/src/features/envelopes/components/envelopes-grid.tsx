@@ -5,7 +5,7 @@ import { SearchX, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { type EnvelopeStatusTab } from "@/features/envelopes/lib/envelope-helpers";
-import { EditableEnvelope, Envelope } from "@/features/envelopes/types";
+import type { EditableEnvelope, Envelope } from "@/features/envelopes/types";
 import { EmptyState } from "@/shared/components/common/empty-state";
 import { CreateEnvelopeDialog } from "./create-envelope-dialog";
 import { DeleteEnvelopeAlertDialog } from "./delete-envelope-alert-dialog";

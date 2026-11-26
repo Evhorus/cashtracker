@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 
-import type { AccountActionResult, ProfileFieldErrors } from "../types";
+import type {
+  AccountActionResult,
+  ProfileFieldErrors,
+} from "@/features/account/types";
 import { mapClerkError } from "./map-clerk-error";
 
 // Write boundary for Clerk profile updates (name/photo); read-only display uses use-account-user.ts.

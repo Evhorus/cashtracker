@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
 
-import type { AccountUser } from "../types";
+import type { AccountUser } from "@/features/account/types";
 
 type ClerkUser = NonNullable<ReturnType<typeof useUser>["user"]>;
 

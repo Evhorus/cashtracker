@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { useReverification } from "@clerk/nextjs";
+import type { useReverification } from "@clerk/nextjs";
 
-import type { ReverificationRequest } from "../types";
+import type { ReverificationRequest } from "@/features/account/types";
 
 // Derived from useReverification because Clerk does not export this option type directly.
 type ReverificationOptions = NonNullable<

@@ -8,7 +8,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import { ERROR_MESSAGES } from '@/common/constants/error-messages';
 import { Envelope } from '@/envelopes/entities/envelope.entity';
 import { EnvelopesRepository } from '@/envelopes/repositories/envelopes.repository';
-import { PaymentMethodsRepository } from '../payment-methods/repositories/payment-methods.repository';
+import { PaymentMethodsRepository } from '@/payment-methods/repositories/payment-methods.repository';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { ExpenseResponseDto } from './dto/expense-response.dto';
 import { ExpensesPaginatedResponseDto } from './dto/expenses-paginated-response.dto';

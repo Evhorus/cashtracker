@@ -3,8 +3,8 @@ import {
   PaymentMethodsAPIResponseSchema,
   toPaymentMethodRequest,
   type PaymentMethodFormValues,
-} from "../schemas/payment-method.schema";
-import type { PaymentMethod } from "../types";
+} from "@/features/payment-methods/schemas/payment-method.schema";
+import type { PaymentMethod } from "@/features/payment-methods/types";
 
 export const PaymentMethodsService = {
   getAll: (): Promise<PaymentMethod[]> =>

@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 
 import { toClerkStrategy } from "@/features/auth/lib/oauth-strategy";
 import type { OAuthProvider } from "@/features/auth/types";
-import type { ConnectedAccount } from "../types";
+import type { ConnectedAccount } from "@/features/account/types";
 import { useReverificationGate } from "./use-reverification-gate";
 
 export function useConnectedAccounts() {

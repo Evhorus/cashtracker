@@ -5,10 +5,8 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { CategoryPicker } from "@/features/categories/components/category-picker";
 import { CurrencySelector } from "@/features/envelopes/components/currency-selector";
-import {
-  buildEnvelopeFormSchema,
-  EnvelopeFormValues,
-} from "@/features/envelopes/schemas/envelope.schema";
+import type { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
+import { buildEnvelopeFormSchema } from "@/features/envelopes/schemas/envelope.schema";
 import { FormInput } from "@/shared/components/common/form-input";
 import { PriceInput } from "@/shared/components/common/price-input";
 import { SubmitButton } from "@/shared/components/common/submit-button";

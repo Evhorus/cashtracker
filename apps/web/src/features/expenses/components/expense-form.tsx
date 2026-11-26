@@ -5,10 +5,8 @@ import { CalendarIcon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 
-import {
-  ExpenseFormValues,
-  buildExpenseSchema,
-} from "@/features/expenses/schemas/expense.schema";
+import type { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
+import { buildExpenseSchema } from "@/features/expenses/schemas/expense.schema";
 import { PaymentMethodPicker } from "@/features/payment-methods/components/payment-method-picker";
 import { FormInput } from "@/shared/components/common/form-input";
 import { PriceInput } from "@/shared/components/common/price-input";

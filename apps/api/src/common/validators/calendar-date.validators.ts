@@ -7,7 +7,7 @@ import {
   type ValidationOptions,
 } from 'class-validator';
 
-import { ERROR_MESSAGES } from '../constants/error-messages';
+import { ERROR_MESSAGES } from '@/common/constants/error-messages';
 
 const CALENDAR_DATE = /^\d{4}-\d{2}-\d{2}$/;
 

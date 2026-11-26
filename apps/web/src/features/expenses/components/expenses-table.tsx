@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Edit, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Expense } from "@/features/expenses/types";
+import type { Expense } from "@/features/expenses/types";
 import { PaymentMethodBadge } from "@/features/payment-methods/components/payment-method-badge";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { CardHoverActions } from "@/shared/components/common/card-hover-actions";

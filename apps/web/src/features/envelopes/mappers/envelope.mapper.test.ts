@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { MAX_AMOUNT } from "@/shared/lib/validation";
 import type { ValidationTranslator } from "@/shared/lib/validation";
-import { buildEnvelopeFormSchema } from "../schemas/envelope.schema";
-import type { EnvelopeApi } from "../schemas/envelope.schema";
+import { buildEnvelopeFormSchema } from "@/features/envelopes/schemas/envelope.schema";
+import type { EnvelopeApi } from "@/features/envelopes/schemas/envelope.schema";
 import { EnvelopeMapper } from "./envelope.mapper";
 
 /**

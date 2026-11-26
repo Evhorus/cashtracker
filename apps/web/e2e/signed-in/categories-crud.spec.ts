@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 import {
   appears,
@@ -24,7 +25,7 @@ const NAME = uniqueName("cat");
 const RENAMED = `${NAME}-edit`;
 
 async function deleteCategory(
-  page: import("@playwright/test").Page,
+  page: Page,
   name: string,
   options?: { expectToast?: boolean },
 ) {

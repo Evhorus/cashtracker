@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import type { ChartConfig } from "@/shared/components/ui/chart";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,

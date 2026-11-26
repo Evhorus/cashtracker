@@ -1,4 +1,4 @@
-import type { OAuthProvider } from "../types";
+import type { OAuthProvider } from "@/features/auth/types";
 
 // The only place that knows Clerk's "oauth_google" naming - hooks call
 // this instead of hardcoding Clerk strategy strings themselves.

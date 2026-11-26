@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 /**
  * Flows more than one spec needs, in one place.
@@ -98,7 +98,7 @@ export async function deleteEnvelope(page: Page, name: string): Promise<void> {
  * (ActionsDrawer, named e.g. "Opciones de Sobre") on narrow screens.
  */
 export async function openRowAction(
-  scope: import("@playwright/test").Locator,
+  scope: Locator,
   menuName: RegExp,
   actionName: RegExp,
 ): Promise<void> {
@@ -123,7 +123,7 @@ export async function openRowAction(
  * worth guessing: a fill() against it waits the full timeout and then
  * fails with "element is not visible" rather than saying why.
  */
-export const onScreen = (locator: import("@playwright/test").Locator) =>
+export const onScreen = (locator: Locator) =>
   locator.filter({ visible: true }).first();
 
 /**
@@ -136,7 +136,7 @@ export const onScreen = (locator: import("@playwright/test").Locator) =>
  * work - a cleanup helper that deletes nothing and reports success.
  */
 export async function appears(
-  locator: import("@playwright/test").Locator,
+  locator: Locator,
   timeout = 5_000,
 ): Promise<boolean> {
   return locator

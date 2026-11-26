@@ -36,13 +36,13 @@ import {
   EXPENSES_MAX_PAGE_SIZE,
   EXPENSES_DEFAULT_PAGE_SIZE,
   EXPENSES_PAGE_SIZE_OPTIONS,
-} from "../lib/expense-helpers";
+} from "@/features/expenses/lib/expense-helpers";
 import {
   EXPENSE_ORDERS,
   parseExpenseOrder,
   writeExpenseOrder,
   type ExpenseOrder,
-} from "../lib/expense-order";
+} from "@/features/expenses/lib/expense-order";
 
 interface ExpensesFilterProps {
   /** Payment methods used in this envelope (from `methodOptionsFor`); empty hides the section. */

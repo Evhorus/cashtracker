@@ -10,8 +10,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Category } from '../../categories/entities/category.entity';
-import { Expense } from '../../expenses/entities/expense.entity';
+import { Category } from '@/categories/entities/category.entity';
+import type { Expense } from '@/expenses/entities/expense.entity';
 
 @Entity()
 export class Envelope {
@@ -46,7 +46,7 @@ export class Envelope {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @OneToMany(() => Expense, (expense) => expense.envelope, {
+  @OneToMany('Expense', (expense: Expense) => expense.envelope, {
     cascade: true,
   })
   expenses: Expense[];

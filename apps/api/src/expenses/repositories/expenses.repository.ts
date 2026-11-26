@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 import { escapeLikePattern } from '@/common/utils/string-utils';
-import { Expense } from '../entities/expense.entity';
+import { Expense } from '@/expenses/entities/expense.entity';
 
 interface ExpenseFilters {
   startDate?: string;

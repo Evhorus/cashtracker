@@ -1,4 +1,4 @@
-import { EnvelopeCategoryDto } from '../../envelopes/dto/envelope-category.dto';
+import { EnvelopeCategoryDto } from '@/envelopes/dto/envelope-category.dto';
 
 export class DashboardCategoryBreakdownDto {
   /** `null` for expenses whose envelope has no category. */

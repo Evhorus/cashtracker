@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { refreshDashboard } from "@/features/dashboard/lib/refresh-dashboard";
 import { createSafeAction } from "@/shared/lib/safe-action";
-import { CategoriesService } from "../services/categories.service";
+import { CategoriesService } from "@/features/categories/services/categories.service";
 
 // Toast wording is resolved here via getTranslations because backend messages are hardcoded in Spanish.
 // eslint-disable-next-line @clerk/next/require-auth-protection -- Protected inside createSafeAction wrapper by calling auth.protect() in the handler.

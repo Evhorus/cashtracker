@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 
 import { updateExpenseAction } from "@/features/expenses/actions/update-expense.action";
 import { ExpenseMapper } from "@/features/expenses/mappers/expense.mapper";
-import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
-import { Expense } from "@/features/expenses/types";
+import type { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
+import type { Expense } from "@/features/expenses/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { useActionDialog } from "@/shared/hooks/use-action-dialog";

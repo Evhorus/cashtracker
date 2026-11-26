@@ -4,10 +4,10 @@ import { useTranslations } from "next-intl";
 
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { useActionDialog } from "@/shared/hooks/use-action-dialog";
-import { createPaymentMethodAction } from "../actions/create-payment-method.action";
-import { updatePaymentMethodAction } from "../actions/update-payment-method.action";
-import type { PaymentMethodFormValues } from "../schemas/payment-method.schema";
-import type { PaymentMethod } from "../types";
+import { createPaymentMethodAction } from "@/features/payment-methods/actions/create-payment-method.action";
+import { updatePaymentMethodAction } from "@/features/payment-methods/actions/update-payment-method.action";
+import type { PaymentMethodFormValues } from "@/features/payment-methods/schemas/payment-method.schema";
+import type { PaymentMethod } from "@/features/payment-methods/types";
 import { PaymentMethodForm } from "./payment-method-form";
 
 interface PaymentMethodDialogProps {

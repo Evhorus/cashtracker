@@ -29,8 +29,8 @@ import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import {
   buildPaymentMethodFormSchema,
   type PaymentMethodFormValues,
-} from "../schemas/payment-method.schema";
-import { PAYMENT_METHOD_TYPES } from "../types";
+} from "@/features/payment-methods/schemas/payment-method.schema";
+import { PAYMENT_METHOD_TYPES } from "@/features/payment-methods/types";
 
 interface PaymentMethodFormProps {
   defaultValues?: Partial<PaymentMethodFormValues>;

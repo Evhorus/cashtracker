@@ -7,8 +7,11 @@ import { Text } from "@/shared/components/common/typography";
 import { Input } from "@/shared/components/ui/input";
 import { useIsDesktop } from "@/shared/hooks/use-media-query";
 import { cn } from "@/shared/lib/utils";
-import { iconLabel, searchIcons } from "../lib/icon-keywords";
-import { resolveIcon } from "../lib/icon-registry";
+import {
+  iconLabel,
+  searchIcons,
+} from "@/features/categories/lib/icon-keywords";
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
 
 interface CategoryIconPickerGridProps {
   value: string;

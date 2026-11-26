@@ -2,8 +2,8 @@ import { Wallet } from "lucide-react";
 
 import type { EnvelopeCategory } from "@/features/envelopes/types";
 import { cn } from "@/shared/lib/utils";
-import { resolveIcon } from "../lib/icon-registry";
-import { withAlpha } from "../lib/with-alpha";
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
+import { withAlpha } from "@/features/categories/lib/with-alpha";
 
 interface CategoryIconProps {
   category?: EnvelopeCategory | null;

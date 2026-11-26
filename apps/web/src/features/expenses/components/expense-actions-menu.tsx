@@ -4,11 +4,9 @@ import { useState } from "react";
 import { Edit, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Expense } from "@/features/expenses/types";
-import {
-  ActionsDrawer,
-  ActionItem,
-} from "@/shared/components/common/actions-drawer";
+import type { Expense } from "@/features/expenses/types";
+import type { ActionItem } from "@/shared/components/common/actions-drawer";
+import { ActionsDrawer } from "@/shared/components/common/actions-drawer";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 import { DeleteExpenseAlertDialog } from "./delete-expense-alert-dialog";
 import { UpdateExpenseDialog } from "./update-expense-dialog";

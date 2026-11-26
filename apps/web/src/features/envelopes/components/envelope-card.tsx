@@ -12,7 +12,7 @@ import {
   CategoryLabel,
 } from "@/features/categories/components/category-badge";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
-import { Envelope } from "@/features/envelopes/types";
+import type { Envelope } from "@/features/envelopes/types";
 import {
   ActionsDrawer,
   type ActionItem,

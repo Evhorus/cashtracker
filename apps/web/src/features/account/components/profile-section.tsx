@@ -22,12 +22,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { useUpdateProfile } from "../hooks/use-update-profile";
+import { useUpdateProfile } from "@/features/account/hooks/use-update-profile";
 import {
   type ProfileFormValues,
   buildProfileFormSchema,
-} from "../schemas/account.schema";
-import type { AccountUser } from "../types";
+} from "@/features/account/schemas/account.schema";
+import type { AccountUser } from "@/features/account/types";
 
 interface ProfileSectionProps {
   user: AccountUser;

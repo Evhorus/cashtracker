@@ -8,7 +8,7 @@ import {
   formatCurrency,
   type CurrencyCode,
 } from "@/shared/utils/format-currency";
-import { resolveIcon } from "../lib/icon-registry";
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
 
 interface CategoryBreakdownProps {
   rows: DashboardCategoryBreakdownRow[];

@@ -9,8 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { resolveIcon } from "../lib/icon-registry";
-import type { Category } from "../types";
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
+import type { Category } from "@/features/categories/types";
 import { CategoryIconBadge } from "./category-icon-badge";
 import type { CategoryToDelete } from "./delete-category-alert-dialog";
 import { DeleteCategoryButton } from "./delete-category-button";

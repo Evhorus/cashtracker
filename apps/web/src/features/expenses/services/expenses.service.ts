@@ -7,14 +7,14 @@ import {
 import {
   ExpenseMapper,
   type ExpenseActionPayload,
-} from "../mappers/expense.mapper";
+} from "@/features/expenses/mappers/expense.mapper";
 import {
   ExpenseAPIResponseSchema,
   ExpensesAPIResponseSchema,
   type ExpenseApi,
   type ExpensesPaginationMeta,
   type ExpensesResponseApi,
-} from "../schemas/expense.schema";
+} from "@/features/expenses/schemas/expense.schema";
 
 export interface GetExpensesParams extends PaginationParams {
   startDate?: string;

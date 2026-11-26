@@ -20,7 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { useConnectedAccounts } from "../hooks/use-connected-accounts";
+import { useConnectedAccounts } from "@/features/account/hooks/use-connected-accounts";
 
 const OAUTH_PROVIDERS: OAuthProvider[] = ["google", "facebook"];
 

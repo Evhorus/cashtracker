@@ -28,7 +28,7 @@ import {
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
 import { cn } from "@/shared/lib/utils";
-import { useAccountUser } from "../hooks/use-account-user";
+import { useAccountUser } from "@/features/account/hooks/use-account-user";
 import { ConnectedAccountsSection } from "./connected-accounts-section";
 import { DeleteAccountSection } from "./delete-account-section";
 import { PasswordSection } from "./password-section";

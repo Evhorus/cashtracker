@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Category } from '../../categories/entities/category.entity';
-import { Envelope } from '../entities/envelope.entity';
-import { ENVELOPE_WARNING_THRESHOLD } from '../utils/envelope-status';
+import { Category } from '@/categories/entities/category.entity';
+import { Envelope } from '@/envelopes/entities/envelope.entity';
+import { ENVELOPE_WARNING_THRESHOLD } from '@/envelopes/utils/envelope-status';
 import { EnvelopesRepository } from './envelopes.repository';
 
 describe('EnvelopesRepository', () => {

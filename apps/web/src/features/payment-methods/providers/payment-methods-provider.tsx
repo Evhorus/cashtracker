@@ -2,7 +2,7 @@
 
 import { createContext, use } from "react";
 
-import type { PaymentMethod } from "../types";
+import type { PaymentMethod } from "@/features/payment-methods/types";
 
 const PaymentMethodsContext = createContext<Promise<PaymentMethod[]> | null>(
   null,

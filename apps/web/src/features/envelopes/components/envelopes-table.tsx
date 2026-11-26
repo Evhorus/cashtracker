@@ -7,7 +7,7 @@ import {
   CategoryLabel,
 } from "@/features/categories/components/category-badge";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
-import { Envelope } from "@/features/envelopes/types";
+import type { Envelope } from "@/features/envelopes/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
 import { LocalDate } from "@/shared/components/common/local-date";

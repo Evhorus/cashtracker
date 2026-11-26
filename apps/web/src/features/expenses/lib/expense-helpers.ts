@@ -2,7 +2,7 @@ import { MAX_PAGE_SIZE } from "@cashtracker/shared";
 
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import type { Envelope } from "@/features/envelopes/types";
-import type { Expense } from "../types";
+import type { Expense } from "@/features/expenses/types";
 
 export const EXPENSES_MAX_PAGE_SIZE = MAX_PAGE_SIZE;
 export const EXPENSES_DEFAULT_PAGE_SIZE = 10;

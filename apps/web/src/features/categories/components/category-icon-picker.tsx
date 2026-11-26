@@ -11,8 +11,8 @@ import {
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { resolveIcon } from "../lib/icon-registry";
-import { withAlpha } from "../lib/with-alpha";
+import { resolveIcon } from "@/features/categories/lib/icon-registry";
+import { withAlpha } from "@/features/categories/lib/with-alpha";
 
 const CategoryIconPickerGrid = dynamic(
   () =>

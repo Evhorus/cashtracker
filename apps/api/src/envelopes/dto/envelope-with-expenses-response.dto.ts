@@ -1,9 +1,9 @@
-import { ExpenseResponseDto } from '../../expenses/dto/expense-response.dto';
-import { Envelope } from '../entities/envelope.entity';
+import { ExpenseResponseDto } from '@/expenses/dto/expense-response.dto';
+import { Envelope } from '@/envelopes/entities/envelope.entity';
 import {
   deriveEnvelopeStatus,
   type EnvelopeProgressStatus,
-} from '../utils/envelope-status';
+} from '@/envelopes/utils/envelope-status';
 import { EnvelopeCategoryDto } from './envelope-category.dto';
 
 export class EnvelopeWithExpensesResponseDto {

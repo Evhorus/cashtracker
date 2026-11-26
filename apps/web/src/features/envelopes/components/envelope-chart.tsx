@@ -3,8 +3,8 @@ import { useTranslations } from "next-intl";
 import { Cell, Label, Pie, PieChart } from "recharts";
 
 import type { EnvelopeProgressStatus } from "@/features/envelopes/lib/envelope-helpers";
+import type { ChartConfig } from "@/shared/components/ui/chart";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,

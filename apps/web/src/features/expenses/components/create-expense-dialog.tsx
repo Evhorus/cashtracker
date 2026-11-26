@@ -7,7 +7,7 @@ import { resolveIcon } from "@/features/categories/lib/icon-registry";
 import { withAlpha } from "@/features/categories/lib/with-alpha";
 import type { EnvelopeCategory } from "@/features/envelopes/types";
 import { createExpenseAction } from "@/features/expenses/actions/create-expense.action";
-import { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
+import type { ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { Button } from "@/shared/components/ui/button";
 import { useActionDialog } from "@/shared/hooks/use-action-dialog";

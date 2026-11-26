@@ -5,7 +5,7 @@ import { Heading } from "@/shared/components/common/typography";
 import { cn } from "@/shared/lib/utils";
 import { formatCalendarDateShort } from "@/shared/utils/date-helpers";
 import { CURRENCY_MAP, formatCurrency } from "@/shared/utils/format-currency";
-import type { DashboardRecentExpense } from "../types";
+import type { DashboardRecentExpense } from "@/features/dashboard/types";
 
 interface RecentActivityProps {
   expenses: DashboardRecentExpense[];

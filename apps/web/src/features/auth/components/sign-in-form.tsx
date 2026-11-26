@@ -28,7 +28,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import { useSignIn } from "../hooks/use-sign-in";
+import { useSignIn } from "@/features/auth/hooks/use-sign-in";
 import {
   type CodeFormValues,
   buildCodeFormSchema,
@@ -36,7 +36,7 @@ import {
   buildEmailFormSchema,
   type SignInPasswordFormValues,
   buildSignInPasswordFormSchema,
-} from "../schemas/auth.schema";
+} from "@/features/auth/schemas/auth.schema";
 import { OAuthButtons } from "./oauth-buttons";
 
 type Method = "password" | "code";

@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from "react";
 
-import { ReverificationGateContext } from "../hooks/use-reverification-gate";
-import type { ReverificationRequest } from "../types";
+import { ReverificationGateContext } from "@/features/account/hooks/use-reverification-gate";
+import type { ReverificationRequest } from "@/features/account/types";
 import { ReverificationDialog } from "./reverification-dialog";
 
 interface ReverificationProviderProps {

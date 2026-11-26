@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useSignIn as useClerkSignIn } from "@clerk/nextjs";
 
-import { navigateAfterAuth } from "../lib/navigate-after-auth";
+import { navigateAfterAuth } from "@/features/auth/lib/navigate-after-auth";
 
 // Wraps Clerk's signIn resource (which handles password resets) behind a provider-agnostic hook.
 export function useForgotPassword() {

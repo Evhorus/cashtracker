@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { FieldLabel } from "@/shared/components/ui/field";
 import { Switch } from "@/shared/components/ui/switch";
 import { cn } from "@/shared/lib/utils";
-import { usePaymentMethods } from "../providers/payment-methods-provider";
+import { usePaymentMethods } from "@/features/payment-methods/providers/payment-methods-provider";
 import { PaymentMethodDialog } from "./payment-method-dialog";
 
 interface PaymentMethodPickerProps {

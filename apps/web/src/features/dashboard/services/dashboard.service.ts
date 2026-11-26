@@ -1,5 +1,5 @@
 import { fetchApi } from "@/shared/lib/api-client";
-import { DashboardMapper } from "../mappers/dashboard.mapper";
+import { DashboardMapper } from "@/features/dashboard/mappers/dashboard.mapper";
 import {
   DashboardBreakdownTotalAPIResponseSchema,
   DashboardCategoryBreakdownAPIResponseSchema,
@@ -14,8 +14,8 @@ import {
   type DashboardNameBreakdownRow,
   type DashboardRecentExpenseApi,
   type DashboardSummary,
-} from "../schemas/dashboard.schema";
-import type { DashboardRecentExpense } from "../types";
+} from "@/features/dashboard/schemas/dashboard.schema";
+import type { DashboardRecentExpense } from "@/features/dashboard/types";
 
 const breakdownQueryString = ({
   currency,

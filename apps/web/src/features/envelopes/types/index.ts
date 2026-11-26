@@ -1,7 +1,8 @@
-import { Expense } from "@/features/expenses/types";
+import type { EnvelopeProgressStatus } from "@cashtracker/shared";
+
+import type { Expense } from "@/features/expenses/types";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 import type { PaginationMeta } from "@/shared/utils/pagination";
-import type { EnvelopeProgressStatus } from "../lib/envelope-helpers";
 
 export interface EnvelopesResponse {
   data: Envelope[];

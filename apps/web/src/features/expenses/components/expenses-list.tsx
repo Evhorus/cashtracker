@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { Receipt, SearchX } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Expense } from "@/features/expenses/types";
+import type { Expense } from "@/features/expenses/types";
 import { EmptyState } from "@/shared/components/common/empty-state";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 import { DeleteExpenseAlertDialog } from "./delete-expense-alert-dialog";

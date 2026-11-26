@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Envelope } from '../envelopes/entities/envelope.entity';
-import { Expense } from '../expenses/entities/expense.entity';
+import { Envelope } from '@/envelopes/entities/envelope.entity';
+import { Expense } from '@/expenses/entities/expense.entity';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 import { DashboardRepository } from './repositories/dashboard.repository';

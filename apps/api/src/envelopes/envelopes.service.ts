@@ -7,7 +7,7 @@ import { DataSource } from 'typeorm';
 
 import { ERROR_MESSAGES } from '@/common/constants/error-messages';
 import { PaginatedResponseDto } from '@/common/dto/paginated-response.dto';
-import { CategoriesRepository } from '../categories/repositories/categories.repository';
+import { CategoriesRepository } from '@/categories/repositories/categories.repository';
 import { CreateEnvelopeDto } from './dto/create-envelope.dto';
 import { EnvelopeResponseDto } from './dto/envelope-response.dto';
 import { EnvelopeWithExpensesResponseDto } from './dto/envelope-with-expenses-response.dto';

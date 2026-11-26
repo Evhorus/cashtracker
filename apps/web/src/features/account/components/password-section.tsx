@@ -15,11 +15,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { useUpdatePassword } from "../hooks/use-update-password";
+import { useUpdatePassword } from "@/features/account/hooks/use-update-password";
 import {
   type PasswordFormValues,
   buildPasswordFormSchema,
-} from "../schemas/account.schema";
+} from "@/features/account/schemas/account.schema";
 
 export function PasswordSection() {
   const t = useTranslations("account.password");

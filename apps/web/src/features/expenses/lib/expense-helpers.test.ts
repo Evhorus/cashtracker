@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Envelope } from "@/features/envelopes/types";
-import type { Expense } from "../types";
+import type { Expense } from "@/features/expenses/types";
 import { ExpenseHelpers } from "./expense-helpers";
 
 function expense(amount: string): Expense {

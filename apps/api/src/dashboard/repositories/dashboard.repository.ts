@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Envelope } from '../../envelopes/entities/envelope.entity';
-import { Expense } from '../../expenses/entities/expense.entity';
+import { Envelope } from '@/envelopes/entities/envelope.entity';
+import { Expense } from '@/expenses/entities/expense.entity';
 
 interface SummaryAggregateRow {
   currency: string;

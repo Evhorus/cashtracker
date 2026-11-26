@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ExpenseApi } from "../schemas/expense.schema";
+import type { ExpenseApi } from "@/features/expenses/schemas/expense.schema";
 import { ExpenseMapper } from "./expense.mapper";
 
 // Runs under TZ=America/Bogota (UTC-5) - see vitest.config.mts. That is

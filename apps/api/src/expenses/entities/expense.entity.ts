@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Envelope } from '../../envelopes/entities/envelope.entity';
-import { PaymentMethod } from '../../payment-methods/entities/payment-method.entity';
+import type { Envelope } from '@/envelopes/entities/envelope.entity';
+import { PaymentMethod } from '@/payment-methods/entities/payment-method.entity';
 
 @Entity()
 export class Expense {
@@ -32,7 +32,7 @@ export class Expense {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @ManyToOne(() => Envelope, (envelope) => envelope.expenses, {
+  @ManyToOne('Envelope', (envelope: Envelope) => envelope.expenses, {
     onDelete: 'CASCADE',
   })
   envelope: Envelope | null;

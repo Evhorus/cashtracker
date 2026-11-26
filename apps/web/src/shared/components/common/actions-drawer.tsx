@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { LucideIcon, MoreVertical } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import {

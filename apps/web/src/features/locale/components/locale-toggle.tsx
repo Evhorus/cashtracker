@@ -17,7 +17,7 @@ import {
   type SupportedLocale,
 } from "@/shared/config/i18n/config";
 import { cn } from "@/shared/lib/utils";
-import { setLocaleAction } from "../actions/set-locale.action";
+import { setLocaleAction } from "@/features/locale/actions/set-locale.action";
 
 /** Locale switcher; option labels stay in their native language so they remain readable regardless of active locale. */
 export function LocaleToggle({ className }: { className?: string }) {

@@ -7,9 +7,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
-import { AppModule } from '../src/app.module';
-import { ClerkAuthGuard } from '../src/auth/guards/clerk-auth.guard';
-import { seedExistingAccounts } from '../src/database/seed-existing-accounts';
+import { AppModule } from '@/app.module';
+import { ClerkAuthGuard } from '@/auth/guards/clerk-auth.guard';
+import { seedExistingAccounts } from '@/database/seed-existing-accounts';
 import { assertSafeTestDatabase } from './assert-safe-test-database';
 
 interface CategoryBody {

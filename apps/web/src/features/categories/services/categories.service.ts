@@ -1,5 +1,5 @@
 import { fetchApi } from "@/shared/lib/api-client";
-import { CategoryMapper } from "../mappers/category.mapper";
+import { CategoryMapper } from "@/features/categories/mappers/category.mapper";
 import {
   CategoriesAPIResponseSchema,
   CategoryOptionsAPIResponseSchema,
@@ -8,8 +8,8 @@ import {
   type CategoryFormValues,
   type CategoryOptionsApi,
   type CategoryUsageApi,
-} from "../schemas/category.schema";
-import type { Category, CategoryOptions } from "../types";
+} from "@/features/categories/schemas/category.schema";
+import type { Category, CategoryOptions } from "@/features/categories/types";
 
 export const CategoriesService = {
   getAll: async (): Promise<Category[]> => {

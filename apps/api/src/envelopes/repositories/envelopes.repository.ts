@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
 import { escapeLikePattern } from '@/common/utils/string-utils';
-import { Expense } from '../../expenses/entities/expense.entity';
-import type { EnvelopeSort } from '../dto/get-envelopes-filter.dto';
-import { Envelope } from '../entities/envelope.entity';
+import { Expense } from '@/expenses/entities/expense.entity';
+import type { EnvelopeSort } from '@/envelopes/dto/get-envelopes-filter.dto';
+import { Envelope } from '@/envelopes/entities/envelope.entity';
 import {
   buildEnvelopeStatusPredicate,
   type EnvelopeStatusFilter,
-} from '../utils/envelope-status';
+} from '@/envelopes/utils/envelope-status';
 
 export interface EnvelopeListFilters {
   search?: string;

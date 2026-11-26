@@ -268,6 +268,8 @@ This is a Next.js 16 project using the App Router and TypeScript.
 - **One path alias, `@/*` → `./src/*`.** The five folder-specific aliases that used to
   exist (`@/lib/*`, `@/hooks/*`, …) were removed deliberately: they would have let stale
   imports keep resolving through a move like this one instead of failing.
+  Parent-relative imports (`../`) are a lint error for the same reason, and because
+  `no-restricted-imports` matches `@/features/*`, not the relative path to it.
 
 #### Environment
 

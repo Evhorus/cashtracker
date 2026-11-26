@@ -20,13 +20,13 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
-import { useSignUp } from "../hooks/use-sign-up";
+import { useSignUp } from "@/features/auth/hooks/use-sign-up";
 import {
   type CodeFormValues,
   buildCodeFormSchema,
   type SignUpFormValues,
   buildSignUpFormSchema,
-} from "../schemas/auth.schema";
+} from "@/features/auth/schemas/auth.schema";
 import { OAuthButtons } from "./oauth-buttons";
 
 // Delegates Clerk state to useSignUp(); already-authenticated redirects happen in (auth)/layout.tsx.

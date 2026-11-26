@@ -4,8 +4,8 @@ import { Edit } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { updateEnvelopeAction } from "@/features/envelopes/actions/update-envelope.action";
-import { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
-import { EditableEnvelope } from "@/features/envelopes/types";
+import type { EnvelopeFormValues } from "@/features/envelopes/schemas/envelope.schema";
+import type { EditableEnvelope } from "@/features/envelopes/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { ResponsiveFormSheet } from "@/shared/components/common/responsive-form-sheet";
 import { useActionDialog } from "@/shared/hooks/use-action-dialog";
