@@ -1,3 +1,12 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type Mocked,
+} from 'vitest';
 import { Currency, type CurrencyCode } from '@cashtracker/shared';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -12,8 +21,8 @@ import { EnvelopesRepository } from './repositories/envelopes.repository';
 
 describe('EnvelopesService', () => {
   let service: EnvelopesService;
-  let repository: jest.Mocked<EnvelopesRepository>;
-  let dataSource: jest.Mocked<DataSource>;
+  let repository: Mocked<EnvelopesRepository>;
+  let dataSource: Mocked<DataSource>;
   let entityManager: EntityManager;
 
   const mockCategory: Category = {
@@ -45,24 +54,24 @@ describe('EnvelopesService', () => {
   beforeEach(async () => {
     // Create mock repository
     const mockRepo = {
-      create: jest.fn(),
-      findByUserIdLight: jest.fn(),
+      create: vi.fn(),
+      findByUserIdLight: vi.fn(),
       // No expenses unless a test says otherwise.
-      findExpenseDateRanges: jest.fn().mockResolvedValue(new Map()),
-      findOwnedById: jest.fn(),
-      findOwnedByIdForUpdate: jest.fn(),
-      findOwnedByIdWithExpenses: jest.fn(),
-      update: jest.fn(),
-      remove: jest.fn(),
-      hasExpenses: jest.fn(),
+      findExpenseDateRanges: vi.fn().mockResolvedValue(new Map()),
+      findOwnedById: vi.fn(),
+      findOwnedByIdForUpdate: vi.fn(),
+      findOwnedByIdWithExpenses: vi.fn(),
+      update: vi.fn(),
+      remove: vi.fn(),
+      hasExpenses: vi.fn(),
     };
 
     const mockEntityManager = {
-      getRepository: jest.fn(),
+      getRepository: vi.fn(),
     } as unknown as EntityManager;
 
     const mockDataSource = {
-      transaction: jest.fn((cb: (manager: EntityManager) => Promise<any>) =>
+      transaction: vi.fn((cb: (manager: EntityManager) => Promise<any>) =>
         cb(mockEntityManager),
       ),
     };
@@ -75,7 +84,7 @@ describe('EnvelopesService', () => {
           useValue: {
             // Envelopes validate the category id against what the user
             // may see - see EnvelopesService.assertCategoryIsUsable.
-            findOwnedById: jest.fn().mockResolvedValue(mockCategory),
+            findOwnedById: vi.fn().mockResolvedValue(mockCategory),
           },
         },
         {
@@ -96,7 +105,7 @@ describe('EnvelopesService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('create', () => {

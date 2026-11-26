@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { type ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
@@ -6,11 +7,11 @@ import type { Request } from 'express';
 
 import { ClerkAuthGuard } from './clerk-auth.guard';
 
-jest.mock('@clerk/backend', () => ({
-  verifyToken: jest.fn(),
+vi.mock('@clerk/backend', () => ({
+  verifyToken: vi.fn(),
 }));
 
-const mockedVerifyToken = jest.mocked(verifyToken);
+const mockedVerifyToken = vi.mocked(verifyToken);
 
 function makeContext(authorization?: string): {
   context: ExecutionContext;
@@ -31,13 +32,13 @@ function makeContext(authorization?: string): {
 
 describe('ClerkAuthGuard', () => {
   let guard: ClerkAuthGuard;
-  let reflector: { getAllAndOverride: jest.Mock };
-  let configService: { getOrThrow: jest.Mock };
+  let reflector: { getAllAndOverride: Mock };
+  let configService: { getOrThrow: Mock };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    reflector = { getAllAndOverride: jest.fn().mockReturnValue(false) };
-    configService = { getOrThrow: jest.fn().mockReturnValue('sk_test_secret') };
+    vi.clearAllMocks();
+    reflector = { getAllAndOverride: vi.fn().mockReturnValue(false) };
+    configService = { getOrThrow: vi.fn().mockReturnValue('sk_test_secret') };
     guard = new ClerkAuthGuard(
       reflector as unknown as Reflector,
       configService as unknown as ConfigService,

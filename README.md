@@ -7,7 +7,7 @@ Personal envelope-budgeting application built as a **Turborepo + pnpm** monorepo
 | Workspace | Package | Stack | Hosting | Docs |
 | --- | --- | --- | --- | --- |
 | `apps/web` | `@cashtracker/web` | Next.js 16, React 19, Tailwind CSS 4, Base UI (shadcn), Clerk, next-intl, Zod 4 | Vercel | [apps/web/README.md](apps/web/README.md) |
-| `apps/api` | `@cashtracker/api` | NestJS 11, TypeORM 0.3, PostgreSQL (Neon), Clerk, Zod 4 | Render (Docker) | [apps/api/README.md](apps/api/README.md) |
+| `apps/api` | `@cashtracker/api` | NestJS 11, TypeORM 1.1, PostgreSQL (Neon), Clerk, Zod 4 | Render (Docker) | [apps/api/README.md](apps/api/README.md) |
 | `packages/shared` | `@cashtracker/shared` | Shared Zod 4 API schemas, constants & types (dual ESM/CJS) | Workspace lib | — |
 
 ## Quick Start
@@ -47,7 +47,7 @@ pnpm dev:web   # http://localhost:3000
 | --- | --- |
 | `pnpm check` | Typecheck, lint, format check, unit tests, and Knip across workspaces |
 | `pnpm build` | Production build for all apps via Turborepo |
-| `pnpm test` | Unit tests (Jest for API, Vitest for Web) |
+| `pnpm test` | Unit tests (Vitest) |
 | `pnpm test:e2e:api` | Backend e2e tests against local throwaway PostgreSQL |
 | `pnpm test:e2e:web` | Frontend signed-out Playwright suite |
 | `pnpm test:e2e:web:signed-in` | Frontend signed-in Playwright suite (needs running local API) |

@@ -28,7 +28,7 @@ Run inside `apps/api` or from the repo root via `pnpm --filter @cashtracker/api 
 - Run a single test: `pnpm run test <path-to-file>`
 
 ### Database Migrations
-- Generate migration: `pnpm migration generate <name>`
+- Generate migration: `pnpm migration generate <name>`, then add its class to `src/database/migrations/index.ts`. Entities and migrations are listed as classes in `data-source.ts`, never as globs: a glob makes TypeORM `require()` raw `.ts` files, which fails outside a TS loader such as Vitest. `migrations/index.spec.ts` fails when a migration file is missing from the list, and a new entity must be added to `entities` in `data-source.ts`.
 - Run pending migrations: `pnpm migration run`
 - Revert last migration: `pnpm migration revert`
 - Show migration status: `pnpm migration show`
@@ -92,10 +92,10 @@ envelopes and expenses) so it's a lighter version of this shape.
 ### Key Technical Choices
 - **Framework**: NestJS 11 (Core framework for building the REST API).
 - **Authentication**: Clerk (`@clerk/backend` 3) verified directly in `ClerkAuthGuard` (no Passport dependency).
-- **Database ORM**: TypeORM 0.3 (Object-relational mapping and schema management via migrations).
+- **Database ORM**: TypeORM 1.1 (Object-relational mapping and schema management via migrations).
 - **Database**: PostgreSQL (via `pg` 8) (Primary persistent data store, with explicit `connectionTimeoutMillis` and `statement_timeout`).
 - **Validation**: Zod 4 (Environment variable validation + shared API schemas in `@cashtracker/shared`) and `class-validator` (DTO-level request validation using shared constants/enums from `@cashtracker/shared`).
-- **Testing**: Jest 30 and Supertest 7 (Unit and end-to-end testing).
+- **Testing**: Vitest 5 and Supertest 7 (Unit and end-to-end testing; `vitest.config.mts` and `vitest.config.e2e.mts`). No SWC plugin: Vitest's oxc transform honours `emitDecoratorMetadata`, which Nest DI and TypeORM need.
 - **Scheduling**: `@nestjs/schedule` (`@Cron`) drives the production-only health-check keep-alive ping.
 - **Rate Limiting**: `@nestjs/throttler` with `UserThrottlerGuard` (`src/common/guards/user-throttler.guard.ts`), registered as `APP_GUARD` in `AppModule` right after `ClerkAuthGuard`. Keys limits per endpoint on `user:${req.user.id}` (falling back to normalized IP on public routes) so users sharing the Next.js server IP do not throttle each other. Configured with burst (`20 req/s`) and sustained (`120 req/min`) tiers; skipped in `NODE_ENV === 'test'` and on `/api/health-check` (`@SkipThrottle()`).
 - **Outbound HTTP**: Node's built-in `fetch` (no HTTP client dependency), used only by the health-check self-ping.
@@ -112,7 +112,7 @@ envelopes and expenses) so it's a lighter version of this shape.
 - **Pagination**: List endpoints compose the shared `PaginationQueryDto` (`page`/`limit`, `IntersectionType`-style extension) and return a `PaginatedResponseDto`, instead of each module reimplementing offset/limit handling.
 - **Auth by Default**: `ClerkAuthGuard` is bound as the first global `APP_GUARD` in `AppModule`; routes are private unless explicitly marked `@Public()`.
 - **Environment Validation**: Config is validated at startup using Zod to ensure all required variables are present.
-- **Path Alias**: Internal cross-module imports use `@/*` → `./src/*` (matching `apps/web`), rewritten by `nest build` at compile time and mapped in Jest and TypeORM CLI (`tsconfig-paths`).
+- **Path Alias**: Internal cross-module imports use `@/*` → `./src/*` (matching `apps/web`), rewritten by `nest build` at compile time and resolved by Vitest (`resolve.tsconfigPaths`) and by the TypeORM CLI (`tsconfig-paths`).
 
 ## Development Guidelines
 - **Test Alignment**: When adding new features or modifying existing ones, always review and update the corresponding unit and E2E tests to ensure they match the new implementation and requirements of the module.

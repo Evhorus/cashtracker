@@ -1,3 +1,13 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type Mock,
+  type Mocked,
+} from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -9,7 +19,7 @@ import { EnvelopesRepository } from './envelopes.repository';
 
 describe('EnvelopesRepository', () => {
   let repository: EnvelopesRepository;
-  let mockRepository: jest.Mocked<Repository<Envelope>>;
+  let mockRepository: Mocked<Repository<Envelope>>;
 
   const mockCategory: Category = {
     id: 'cat-1',
@@ -40,45 +50,45 @@ describe('EnvelopesRepository', () => {
   // Chainable createQueryBuilder mock - each method returns `this` like the
   // real QueryBuilder, so findByUserIdLight's chained calls resolve to it.
   let mockQueryBuilder: {
-    where: jest.Mock;
-    leftJoin: jest.Mock;
-    andWhere: jest.Mock;
-    select: jest.Mock;
-    addSelect: jest.Mock;
-    orderBy: jest.Mock;
-    addOrderBy: jest.Mock;
-    offset: jest.Mock;
-    limit: jest.Mock;
-    getManyAndCount: jest.Mock;
+    where: Mock;
+    leftJoin: Mock;
+    andWhere: Mock;
+    select: Mock;
+    addSelect: Mock;
+    orderBy: Mock;
+    addOrderBy: Mock;
+    offset: Mock;
+    limit: Mock;
+    getManyAndCount: Mock;
   };
 
   beforeEach(async () => {
     mockQueryBuilder = {
-      where: jest.fn().mockReturnThis(),
-      leftJoin: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      addSelect: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      addOrderBy: jest.fn().mockReturnThis(),
-      offset: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      getManyAndCount: jest.fn(),
+      where: vi.fn().mockReturnThis(),
+      leftJoin: vi.fn().mockReturnThis(),
+      andWhere: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      addSelect: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      addOrderBy: vi.fn().mockReturnThis(),
+      offset: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      getManyAndCount: vi.fn(),
     };
 
     // Create mock repository
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     mockRepository = {
-      findAndCount: jest.fn(),
-      createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
-      findOneBy: jest.fn(),
-      findOne: jest.fn(),
-      create: jest.fn(),
-      save: jest.fn(),
-      update: jest.fn(),
-      remove: jest.fn(),
-      increment: jest.fn(),
-      decrement: jest.fn(),
+      findAndCount: vi.fn(),
+      createQueryBuilder: vi.fn().mockReturnValue(mockQueryBuilder),
+      findOneBy: vi.fn(),
+      findOne: vi.fn(),
+      create: vi.fn(),
+      save: vi.fn(),
+      update: vi.fn(),
+      remove: vi.fn(),
+      increment: vi.fn(),
+      decrement: vi.fn(),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -95,7 +105,7 @@ describe('EnvelopesRepository', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('findByUserIdLight', () => {

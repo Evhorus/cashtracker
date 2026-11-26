@@ -1,3 +1,12 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type Mocked,
+} from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { DashboardService } from './dashboard.service';
@@ -5,18 +14,18 @@ import { DashboardRepository } from './repositories/dashboard.repository';
 
 describe('DashboardService', () => {
   let service: DashboardService;
-  let repository: jest.Mocked<DashboardRepository>;
+  let repository: Mocked<DashboardRepository>;
 
   beforeEach(async () => {
     const mockRepo = {
-      getSummaryAggregate: jest.fn(),
-      getMonthlySpending: jest.fn(),
-      getAvailableYears: jest.fn(),
-      getRecentExpenses: jest.fn(),
-      getCategoryBreakdown: jest.fn(),
-      getEnvelopeBreakdown: jest.fn(),
-      getNameBreakdown: jest.fn(),
-      getBreakdownTotal: jest.fn(),
+      getSummaryAggregate: vi.fn(),
+      getMonthlySpending: vi.fn(),
+      getAvailableYears: vi.fn(),
+      getRecentExpenses: vi.fn(),
+      getCategoryBreakdown: vi.fn(),
+      getEnvelopeBreakdown: vi.fn(),
+      getNameBreakdown: vi.fn(),
+      getBreakdownTotal: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -34,7 +43,7 @@ describe('DashboardService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getSummary', () => {

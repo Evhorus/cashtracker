@@ -2,7 +2,7 @@ import { QueryRunner } from 'typeorm';
 
 /**
  * Idempotently copies predefined categories to every existing account and re-points their envelopes.
- * Kept outside `migrations/` because TypeORM instantiates every export in that folder as a migration.
+ * Kept outside `migrations/` so that folder holds only migration classes (see `migrations/index.ts`).
  */
 export async function seedExistingAccounts(
   queryRunner: QueryRunner,
