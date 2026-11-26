@@ -21,7 +21,7 @@ export class Envelope {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ default: 'COP' })
   currency: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
@@ -30,17 +30,21 @@ export class Envelope {
   @Column({ type: 'decimal', precision: 14, scale: 2 })
   spent: number;
 
+  // Generated name kept from when the table was called "budget".
   @Column()
-  @Index()
+  @Index('IDX_8ed65c868c97a5fb471d85efb0')
   userId: string;
 
   // `SET NULL` on delete so an envelope outlives a deleted category as unclassified.
   @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({
+    name: 'categoryId',
+    foreignKeyConstraintName: 'FK_envelope_category',
+  })
   category?: Category | null;
 
   @Column({ type: 'uuid', nullable: true })
-  @Index()
+  @Index('IDX_envelope_categoryId')
   categoryId?: string | null;
 
   @Column({ type: 'text', nullable: true })

@@ -2,11 +2,18 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
+@Index('UQ_category_global_label', ['label'], {
+  unique: true,
+  where: '"userId" IS NULL',
+})
+// ("userId", LOWER("label")) WHERE "userId" IS NOT NULL: an expression index, owned by migrations.
+@Index('UQ_category_userId_label', { synchronize: false })
 export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
