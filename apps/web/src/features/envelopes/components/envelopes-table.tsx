@@ -10,6 +10,7 @@ import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import type { Envelope } from "@/features/envelopes/types";
 import { CardActionButton } from "@/shared/components/common/card-action-button";
 import { CardHoverActions } from "@/shared/components/common/card-hover-actions";
+import { LinkPendingIndicator } from "@/shared/components/common/link-pending-indicator";
 import { LocalDate } from "@/shared/components/common/local-date";
 import {
   Table,
@@ -87,8 +88,9 @@ export function EnvelopesTable({
                     />
                     {/* Show period under name since recurring envelopes can share names. */}
                     <span className="min-w-0">
-                      <span className="block truncate font-medium hover:text-primary">
-                        {envelope.name}
+                      <span className="flex items-center gap-2 font-medium hover:text-primary">
+                        <span className="truncate">{envelope.name}</span>
+                        <LinkPendingIndicator />
                       </span>
                       <span className="block text-xs text-muted-foreground">
                         {envelope.expenseDateRange ? (

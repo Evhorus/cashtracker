@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -40,12 +41,14 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 type PaginationLinkProps = {
   isActive?: boolean;
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
-  React.ComponentProps<"a">;
+  React.ComponentProps<typeof Link>;
 
 function PaginationLink({
   className,
   isActive,
   size = "icon",
+  prefetch = false,
+  scroll = false,
   ...props
 }: PaginationLinkProps) {
   return (
@@ -55,14 +58,16 @@ function PaginationLink({
       className={cn(className)}
       nativeButton={false}
       // Deviates from the shadcn-generated file: no data-slot here. Button
-      // (nativeButton={false}, render={<a/>}) sets its own data-slot="button"
+      // (nativeButton={false}, render={<Link/>}) sets its own data-slot="button"
       // on this same element - having a second, different data-slot value
       // here caused a real hydration mismatch (Base UI's client-side render
       // pass re-applies data-slot="button", but the SSR pass had kept this
       // one), since nothing in the app actually styles off
       // [data-slot=pagination-link] anyway.
       render={
-        <a
+        <Link
+          prefetch={prefetch}
+          scroll={scroll}
           aria-current={isActive ? "page" : undefined}
           data-active={isActive}
           {...props}

@@ -10,6 +10,7 @@ import { DashboardSidebar } from "@/features/dashboard/components/dashboard-side
 import { MobileNav } from "@/features/dashboard/components/mobile-nav";
 import { getPaymentMethods } from "@/features/payment-methods/data/get-payment-methods";
 import { PaymentMethodsProvider } from "@/features/payment-methods/providers/payment-methods-provider";
+import { APP_SCROLL_CONTAINER_ID } from "@/shared/components/common/scroll-to-top";
 import { getClerkLocalization } from "@/shared/config/i18n/clerk-localization";
 
 // Authenticated area: opt out of crawler indexing.
@@ -40,7 +41,10 @@ export default async function DashboardLayout({
           <div className="fixed inset-0 flex overflow-hidden bg-background">
             <DashboardSidebar />
             {/* min-w-0 lets wide children (e.g. tables) scroll internally inside the fixed-height flex shell. */}
-            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+            <div
+              id={APP_SCROLL_CONTAINER_ID}
+              className="flex min-w-0 flex-1 flex-col overflow-y-auto"
+            >
               <CustomHeader />
               <main className="container mx-auto px-4 py-6 pb-24 md:pb-6">
                 {children}

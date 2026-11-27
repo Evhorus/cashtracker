@@ -1,15 +1,25 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import {
+  EXPENSES_DEFAULT_PAGE_SIZE,
+  EXPENSES_MAX_PAGE_SIZE,
+  EXPENSES_PAGE_SIZE_OPTIONS,
+} from "@/features/expenses/lib/expense-helpers";
+import {
+  EXPENSE_ORDERS,
+  parseExpenseOrder,
+  writeExpenseOrder,
+  type ExpenseOrder,
+} from "@/features/expenses/lib/expense-order";
 import {
   parseMethodFilter,
   toggleMethod,
   type MethodOption,
 } from "@/features/payment-methods/lib/method-filter";
+import { useFilterPending } from "@/shared/components/common/filter-pending";
 import { SearchInput } from "@/shared/components/common/search-input";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -32,17 +42,6 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { useDebouncedSearchParam } from "@/shared/hooks/use-debounced-search-param";
-import {
-  EXPENSES_MAX_PAGE_SIZE,
-  EXPENSES_DEFAULT_PAGE_SIZE,
-  EXPENSES_PAGE_SIZE_OPTIONS,
-} from "@/features/expenses/lib/expense-helpers";
-import {
-  EXPENSE_ORDERS,
-  parseExpenseOrder,
-  writeExpenseOrder,
-  type ExpenseOrder,
-} from "@/features/expenses/lib/expense-order";
 
 interface ExpensesFilterProps {
   /** Payment methods used in this envelope (from `methodOptionsFor`); empty hides the section. */
@@ -86,11 +85,8 @@ function writeState(params: URLSearchParams, state: FilterState) {
 export const ExpensesFilter = ({ methodOptions }: ExpensesFilterProps) => {
   const t = useTranslations("expenses");
   const tMethods = useTranslations("paymentMethods.filter");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
-  const [state, setOptimisticState] = useOptimistic(readState(searchParams));
+  const { effectiveSearchParams, updateParams, flush } = useFilterPending();
+  const state = readState(effectiveSearchParams);
 
   // `applyTo` carries an in-flight debounced search into filter navigations instead of dropping it.
   const {
@@ -99,18 +95,27 @@ export const ExpensesFilter = ({ methodOptions }: ExpensesFilterProps) => {
     applyTo: applyPendingSearch,
   } = useDebouncedSearchParam();
 
-  // Reset to page 1 because changing a filter can shrink the result set.
   const update = (changes: Partial<FilterState>) => {
-    const next = { ...state, ...changes };
-    const params = new URLSearchParams(searchParams);
-    applyPendingSearch(params);
-    writeState(params, next);
-    params.delete("page");
-    const query = params.toString();
-    startTransition(() => {
-      setOptimisticState(next);
-      router.replace(`${pathname}${query ? `?${query}` : ""}`);
+    updateParams((params) => {
+      applyPendingSearch(params);
+      const current = readState(params);
+      writeState(params, { ...current, ...changes });
     });
+  };
+
+  // Batch rapid checkbox ticks into one navigation, flushing immediately if the menu closes.
+  const togglePaymentMethod = (id: string) => {
+    updateParams(
+      (params) => {
+        applyPendingSearch(params);
+        const current = readState(params);
+        writeState(params, {
+          ...current,
+          methods: toggleMethod(current.methods, id),
+        });
+      },
+      { debounceMs: 250 },
+    );
   };
 
   const activeCount =
@@ -150,7 +155,11 @@ export const ExpensesFilter = ({ methodOptions }: ExpensesFilterProps) => {
         </SelectContent>
       </Select>
 
-      <DropdownMenu>
+      <DropdownMenu
+        onOpenChange={(open) => {
+          if (!open) flush();
+        }}
+      >
         <DropdownMenuTrigger
           render={
             <Button
@@ -177,11 +186,7 @@ export const ExpensesFilter = ({ methodOptions }: ExpensesFilterProps) => {
                   <DropdownMenuCheckboxItem
                     key={option.id}
                     checked={state.methods.includes(option.id)}
-                    onCheckedChange={() =>
-                      update({
-                        methods: toggleMethod(state.methods, option.id),
-                      })
-                    }
+                    onCheckedChange={() => togglePaymentMethod(option.id)}
                   >
                     <span
                       aria-hidden

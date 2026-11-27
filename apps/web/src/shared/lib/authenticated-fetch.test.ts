@@ -56,4 +56,20 @@ describe("authenticatedFetch", () => {
 
     expect(lastInit().cache).toBe("force-cache");
   });
+
+  it("attaches a default timeout AbortSignal", async () => {
+    await authenticatedFetch("/envelopes");
+
+    expect(lastInit().signal).toBeInstanceOf(AbortSignal);
+    expect(lastInit().signal?.aborted).toBe(false);
+  });
+
+  it("propagates caller AbortController cancellation through the combined signal", async () => {
+    const controller = new AbortController();
+    await authenticatedFetch("/envelopes", { signal: controller.signal });
+
+    expect(lastInit().signal?.aborted).toBe(false);
+    controller.abort();
+    expect(lastInit().signal?.aborted).toBe(true);
+  });
 });

@@ -6,8 +6,11 @@ import { ChevronRightIcon, CheckIcon } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 
-function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
-  return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
+// Non-modal by default so closing/navigating never leaves Base UI's inert backdrop or scroll lock stuck.
+function DropdownMenu({ modal = false, ...props }: MenuPrimitive.Root.Props) {
+  return (
+    <MenuPrimitive.Root data-slot="dropdown-menu" modal={modal} {...props} />
+  );
 }
 
 function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {

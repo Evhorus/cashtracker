@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { useFilterPending } from "@/shared/components/common/filter-pending";
 import {
   Select,
   SelectContent,
@@ -24,19 +24,26 @@ export const CurrencyFilterSelect = ({
 }: CurrencyFilterSelectProps) => {
   const t = useTranslations("statistics");
   const tCurrency = useTranslations("currencies");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { isPending, effectiveSearchParams, updateParams } = useFilterPending();
+
+  const optimistic = effectiveSearchParams.get("currency");
+  const currentCurrency =
+    isPending && optimistic && currencies.includes(optimistic as CurrencyCode)
+      ? (optimistic as CurrencyCode)
+      : selectedCurrency;
 
   function handleChange(value: string | null) {
     if (!value) return;
-    const params = new URLSearchParams(searchParams);
-    params.set("currency", value);
-    router.push(`${pathname}?${params.toString()}`);
+    updateParams(
+      (params) => {
+        params.set("currency", value);
+      },
+      { resetPage: false },
+    );
   }
 
   return (
-    <Select value={selectedCurrency} onValueChange={handleChange}>
+    <Select value={currentCurrency} onValueChange={handleChange}>
       <SelectTrigger
         size="sm"
         className="w-auto gap-1.5 font-medium"
