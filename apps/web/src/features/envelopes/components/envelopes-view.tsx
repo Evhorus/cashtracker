@@ -15,6 +15,10 @@ import {
   type EnvelopeStatusTab,
 } from "@/features/envelopes/lib/envelope-helpers";
 import { EnvelopesService } from "@/features/envelopes/services/envelopes.service";
+import {
+  FilterPendingProvider,
+  FilterResultsSlot,
+} from "@/shared/components/common/filter-pending";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { Text } from "@/shared/components/common/typography";
 
@@ -53,34 +57,40 @@ export async function EnvelopesView({ searchParams }: EnvelopesViewProps) {
     ? limitValue
     : ENVELOPES_DEFAULT_PAGE_SIZE;
 
-  return (
+  const skeletonFallback = (
     <div className="space-y-6">
-      <PageHeader
-        title={t("title")}
-        backUrl="/dashboard"
-        mobileActions={<CreateEnvelopeDialog />}
-      />
-
-      <EnvelopesFilter actions={<CreateEnvelopeDialog />} />
-
-      {/* Key remounts on filter change so the skeleton shows immediately while refetching. */}
-      <Suspense
-        key={`${page}-${search ?? ""}-${status}-${sort}-${limit}`}
-        fallback={
-          <div className="space-y-6">
-            <EnvelopesResultsSkeleton />
-          </div>
-        }
-      >
-        <EnvelopesResults
-          page={page}
-          search={search}
-          status={status}
-          sort={sort}
-          limit={limit}
-        />
-      </Suspense>
+      <EnvelopesResultsSkeleton />
     </div>
+  );
+
+  return (
+    <FilterPendingProvider>
+      <div className="space-y-6">
+        <PageHeader
+          title={t("title")}
+          backUrl="/dashboard"
+          mobileActions={<CreateEnvelopeDialog />}
+        />
+
+        <EnvelopesFilter actions={<CreateEnvelopeDialog />} />
+
+        {/* Key remounts on filter change so the skeleton shows immediately while refetching. */}
+        <FilterResultsSlot fallback={skeletonFallback}>
+          <Suspense
+            key={`${page}-${search ?? ""}-${status}-${sort}-${limit}`}
+            fallback={skeletonFallback}
+          >
+            <EnvelopesResults
+              page={page}
+              search={search}
+              status={status}
+              sort={sort}
+              limit={limit}
+            />
+          </Suspense>
+        </FilterResultsSlot>
+      </div>
+    </FilterPendingProvider>
   );
 }
 

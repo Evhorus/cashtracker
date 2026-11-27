@@ -1,7 +1,5 @@
 "use client";
 
-import { useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import {
@@ -14,6 +12,7 @@ import {
   type EnvelopeSort,
   type EnvelopeStatusTab,
 } from "@/features/envelopes/lib/envelope-helpers";
+import { useFilterPending } from "@/shared/components/common/filter-pending";
 import { FilterSelect } from "@/shared/components/common/filter-select";
 import { ListFilterBar } from "@/shared/components/common/list-filter-bar";
 import { SearchInput } from "@/shared/components/common/search-input";
@@ -30,27 +29,19 @@ export function statusFilterLabel(
 
 /** Updates a single URL query param and resets pagination back to page 1. */
 function useUrlFilterParam(key: string, defaultValue: string) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const { effectiveSearchParams, updateParams } = useFilterPending();
 
   const update = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === defaultValue) {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
-    params.delete("page");
-
-    startTransition(() => {
-      const query = params.toString();
-      router.replace(`${pathname}${query ? `?${query}` : ""}`);
+    updateParams((params) => {
+      if (value === defaultValue) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
     });
   };
 
-  return { rawValue: searchParams.get(key), update };
+  return { rawValue: effectiveSearchParams.get(key), update };
 }
 
 const EnvelopesSearch = ({ className }: { className?: string }) => {

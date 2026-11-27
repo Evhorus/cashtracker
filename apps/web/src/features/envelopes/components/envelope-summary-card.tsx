@@ -4,6 +4,12 @@ import { Infinity as InfinityIcon, TriangleAlert } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { EnvelopeChartSkeleton } from "@/features/envelopes/components/envelope-chart-skeleton";
+import {
+  FilteredSummaryHalfSkeleton,
+  FilteredSummaryLineSkeleton,
+  FilteredSummaryLineSlot,
+  UnlimitedSummaryGrid,
+} from "@/features/envelopes/components/filtered-summary-slot";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import type { Envelope } from "@/features/envelopes/types";
 import {
@@ -65,47 +71,54 @@ export async function EnvelopeSummaryCard({
       </CardHeader>
       <CardContent className="space-y-5">
         {status === "unlimited" ? (
-          <div
-            className={cn(
-              "grid min-h-24 overflow-hidden rounded-lg bg-secondary/40 md:min-h-36",
-              hasActiveFilter ? "grid-cols-2" : "grid-cols-1",
-            )}
-          >
-            <div className="flex flex-col justify-center gap-0.5 px-3 py-3 md:px-4 md:py-5">
-              <p className="text-xs text-muted-foreground">
-                {tEnvelope("detail.spentTotal")}
-              </p>
-              <p className="font-mono text-base font-bold tabular-nums md:text-lg">
-                {formatCurrency(+envelope.spent, currencyConfig)}
-              </p>
-              <p className="flex items-center gap-1 text-xs whitespace-nowrap text-muted-foreground">
-                <InfinityIcon className="h-3.5 w-3.5 shrink-0" />
-                {tEnvelope("detail.noLimitShort")}
-              </p>
-            </div>
-            {hasActiveFilter && (
-              <Suspense key={filterKey} fallback={<div />}>
-                <FilteredSummary
-                  layout="half"
-                  currency={envelope.currency}
-                  methodOptions={methodOptions}
-                  {...filterQuery}
-                />
-              </Suspense>
-            )}
-          </div>
+          <UnlimitedSummaryGrid
+            totalSlot={
+              <div className="flex flex-col justify-center gap-0.5 px-3 py-3 md:px-4 md:py-5">
+                <p className="text-xs text-muted-foreground">
+                  {tEnvelope("detail.spentTotal")}
+                </p>
+                <p className="font-mono text-base font-bold tabular-nums md:text-lg">
+                  {formatCurrency(+envelope.spent, currencyConfig)}
+                </p>
+                <p className="flex items-center gap-1 text-xs whitespace-nowrap text-muted-foreground">
+                  <InfinityIcon className="h-3.5 w-3.5 shrink-0" />
+                  {tEnvelope("detail.noLimitShort")}
+                </p>
+              </div>
+            }
+            filteredSlot={
+              hasActiveFilter ? (
+                <Suspense
+                  key={filterKey}
+                  fallback={<FilteredSummaryHalfSkeleton />}
+                >
+                  <FilteredSummary
+                    layout="half"
+                    currency={envelope.currency}
+                    methodOptions={methodOptions}
+                    {...filterQuery}
+                  />
+                </Suspense>
+              ) : null
+            }
+          />
         ) : (
           <>
-            {hasActiveFilter && (
-              <Suspense key={filterKey} fallback={null}>
-                <FilteredSummary
-                  layout="line"
-                  currency={envelope.currency}
-                  methodOptions={methodOptions}
-                  {...filterQuery}
-                />
-              </Suspense>
-            )}
+            <FilteredSummaryLineSlot>
+              {hasActiveFilter && (
+                <Suspense
+                  key={filterKey}
+                  fallback={<FilteredSummaryLineSkeleton />}
+                >
+                  <FilteredSummary
+                    layout="line"
+                    currency={envelope.currency}
+                    methodOptions={methodOptions}
+                    {...filterQuery}
+                  />
+                </Suspense>
+              )}
+            </FilteredSummaryLineSlot>
             <EnvelopeChart
               spent={+envelope.spent}
               total={+envelope.amount!}

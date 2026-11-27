@@ -11,6 +11,7 @@ import {
   MAIN_NAV_ITEMS,
   isNavItemActive,
 } from "@/features/dashboard/constants/nav-items";
+import { LinkPendingIndicator } from "@/shared/components/common/link-pending-indicator";
 import { Logo } from "@/shared/components/common/logo";
 import {
   Avatar,
@@ -48,6 +49,7 @@ export function DashboardSidebar() {
             >
               <item.icon className="h-4 w-4" />
               {t(item.key)}
+              <LinkPendingIndicator className="ml-auto" />
             </Link>
           );
         })}

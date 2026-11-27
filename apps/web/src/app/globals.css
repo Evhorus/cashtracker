@@ -245,6 +245,47 @@
   }
 }
 
+@keyframes link-pending-fade {
+  to {
+    opacity: 0.75;
+  }
+}
+
+@keyframes link-pending-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.link-pending-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0;
+  visibility: hidden;
+  flex-shrink: 0;
+}
+
+.link-pending-dot[data-pending="true"] {
+  visibility: visible;
+  animation-name: link-pending-fade, link-pending-pulse;
+  animation-duration: 200ms, 1s;
+  animation-delay: 100ms, 100ms;
+  animation-timing-function: ease, ease-in-out;
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: forwards, none;
+}
+
+.link-pending-pulse[data-pending="true"] {
+  animation-name: link-pending-pulse;
+  animation-duration: 1s;
+  animation-delay: 100ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

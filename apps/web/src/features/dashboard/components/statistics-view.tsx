@@ -13,6 +13,10 @@ import type {
   DashboardSummary,
 } from "@/features/dashboard/schemas/dashboard.schema";
 import { DashboardService } from "@/features/dashboard/services/dashboard.service";
+import {
+  FilterPendingProvider,
+  FilterResultsSlot,
+} from "@/shared/components/common/filter-pending";
 import { Heading } from "@/shared/components/common/typography";
 import {
   Card,
@@ -117,69 +121,83 @@ export async function StatisticsView({ searchParams }: StatisticsViewProps) {
     Boolean(markedStart && markedEnd) || Boolean(year) || Boolean(period);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <Heading as="h1" size="lg">
-            {t("title")}
-          </Heading>
-          <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
-        </div>
+    <FilterPendingProvider>
+      <div className="space-y-6">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <Heading as="h1" size="lg">
+              {t("title")}
+            </Heading>
+            <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
+          </div>
 
-        <div className="flex items-center gap-4">
-          {(summary.availableYears.length > 0 || hasMultipleCurrencies) && (
-            <div className="flex flex-wrap items-center gap-2">
-              <DateRangeFilter
-                startDate={startDate}
-                endDate={endDate}
-                markedStart={markedStart}
-                markedEnd={markedEnd}
-              />
-              {canShowPeriodFilter && (
-                <PeriodFilterSelect
-                  years={summary.availableYears}
-                  selectedYear={year}
-                  period={period}
-                  periodValue={periodValue}
+          <div className="flex items-center gap-4">
+            {(summary.availableYears.length > 0 || hasMultipleCurrencies) && (
+              <div className="flex flex-wrap items-center gap-2">
+                <DateRangeFilter
                   startDate={startDate}
                   endDate={endDate}
                   markedStart={markedStart}
                   markedEnd={markedEnd}
                 />
-              )}
-              {hasMultipleCurrencies && (
-                <CurrencyFilterSelect
-                  currencies={totals.map((total) => total.currency)}
-                  selectedCurrency={chartCurrency}
-                />
-              )}
-            </div>
-          )}
+                {canShowPeriodFilter && (
+                  <PeriodFilterSelect
+                    years={summary.availableYears}
+                    selectedYear={year}
+                    period={period}
+                    periodValue={periodValue}
+                    startDate={startDate}
+                    endDate={endDate}
+                    markedStart={markedStart}
+                    markedEnd={markedEnd}
+                  />
+                )}
+                {hasMultipleCurrencies && (
+                  <CurrencyFilterSelect
+                    currencies={totals.map((total) => total.currency)}
+                    selectedCurrency={chartCurrency}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
+
+        <FilterResultsSlot
+          className="space-y-6"
+          fallback={
+            <div className="space-y-6">
+              <MonthlySpendingChartSkeleton />
+              <BreakdownSkeleton multiCurrency={hasMultipleCurrencies} />
+            </div>
+          }
+        >
+          <MonthlySpendingChart
+            chartData={chartData}
+            totalEnvelopes={summary.totalEnvelopes}
+            currency={chartCurrency}
+            hasOtherCurrencies={hasMultipleCurrencies}
+          />
+
+          <Suspense
+            key={`${year ?? ""}-${chartCurrency}-${startDate ?? ""}-${endDate ?? ""}`}
+            fallback={
+              <BreakdownSkeleton multiCurrency={hasMultipleCurrencies} />
+            }
+          >
+            <BreakdownSection
+              totals={totals}
+              chartCurrency={chartCurrency}
+              hasMultipleCurrencies={hasMultipleCurrencies}
+              year={periodFilters.year}
+              startDate={periodFilters.startDate}
+              endDate={periodFilters.endDate}
+              breakdownsPromise={matchingBreakdownsPromise}
+            />
+          </Suspense>
+        </FilterResultsSlot>
       </div>
-
-      <MonthlySpendingChart
-        chartData={chartData}
-        totalEnvelopes={summary.totalEnvelopes}
-        currency={chartCurrency}
-        hasOtherCurrencies={hasMultipleCurrencies}
-      />
-
-      <Suspense
-        key={`${year ?? ""}-${chartCurrency}-${startDate ?? ""}-${endDate ?? ""}`}
-        fallback={<BreakdownSkeleton multiCurrency={hasMultipleCurrencies} />}
-      >
-        <BreakdownSection
-          totals={totals}
-          chartCurrency={chartCurrency}
-          hasMultipleCurrencies={hasMultipleCurrencies}
-          year={periodFilters.year}
-          startDate={periodFilters.startDate}
-          endDate={periodFilters.endDate}
-          breakdownsPromise={matchingBreakdownsPromise}
-        />
-      </Suspense>
-    </div>
+    </FilterPendingProvider>
   );
 }
 

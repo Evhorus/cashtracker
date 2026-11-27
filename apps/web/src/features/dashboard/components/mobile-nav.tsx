@@ -8,6 +8,7 @@ import {
   MAIN_NAV_ITEMS,
   isNavItemActive,
 } from "@/features/dashboard/constants/nav-items";
+import { LinkPendingPulse } from "@/shared/components/common/link-pending-indicator";
 import { cn } from "@/shared/lib/utils";
 
 export const MobileNav = () => {
@@ -29,28 +30,30 @@ export const MobileNav = () => {
             aria-current={isActive ? "page" : undefined}
             className="flex flex-1 flex-col items-center justify-center gap-1"
           >
-            <span
-              className={cn(
-                "flex h-7.5 w-7.5 items-center justify-center rounded-full",
-                isActive && "bg-primary/15",
-              )}
-            >
-              <item.icon
+            <LinkPendingPulse>
+              <span
                 className={cn(
-                  "h-4.5 w-4.5",
+                  "flex h-7.5 w-7.5 items-center justify-center rounded-full",
+                  isActive && "bg-primary/15",
+                )}
+              >
+                <item.icon
+                  className={cn(
+                    "h-4.5 w-4.5",
+                    isActive ? "text-primary" : "text-muted-foreground",
+                  )}
+                  strokeWidth={isActive ? 2.25 : 1.9}
+                />
+              </span>
+              <span
+                className={cn(
+                  "text-[10px] font-semibold",
                   isActive ? "text-primary" : "text-muted-foreground",
                 )}
-                strokeWidth={isActive ? 2.25 : 1.9}
-              />
-            </span>
-            <span
-              className={cn(
-                "text-[10px] font-semibold",
-                isActive ? "text-primary" : "text-muted-foreground",
-              )}
-            >
-              {t(item.key)}
-            </span>
+              >
+                {t(item.key)}
+              </span>
+            </LinkPendingPulse>
           </Link>
         );
       })}

@@ -390,7 +390,8 @@ This is a Next.js 16 project using the App Router and TypeScript.
 - **Date Handling**: `date-fns` 4 with `@date-fns/tz` for UTC-anchored calendar dates (`expense.date`) and client-mounted `<LocalDate>` (`src/shared/components/common/local-date.tsx`) for visitor-timezone timestamps (`today`, `createdAt`, `updatedAt`).
 - **Charts**: `recharts` 3 for data visualization.
 - **UI Feedback**: `sonner` 2 for toast notifications.
-- **UI Components**: Drawers (`src/shared/components/ui/drawer.tsx`) use Base UI's own `Drawer` primitive, not `vaul`.
+- **UI Components**: Drawers (`src/shared/components/ui/drawer.tsx`) use Base UI's own `Drawer` primitive, not `vaul`. `Select` and `DropdownMenu` default to `modal={false}` so fast filter/navigation transitions never leave Base UI's inert backdrop or scroll lock stuck.
+- **Filter & Scroll Responsiveness**: Listing filters and soft pagination (`PaginationControls` via `next/link` `prefetch={false}` `scroll={false}`) coordinate through `FilterPendingProvider` / `FilterResultsSlot` (`src/shared/components/common/filter-pending.tsx`), showing skeletons on frame 0, batching rapid toggles, and preserving scroll unless changing routes or pages (which scroll `#app-scroll-container` via `scrollAppToTop()`). `authenticatedFetch` attaches a 15s `AbortSignal.timeout`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

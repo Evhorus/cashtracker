@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+import { useOptionalFilterPending } from "@/shared/components/common/filter-pending";
 
 interface UseDebouncedSearchParamOptions {
   param?: string;
@@ -23,10 +25,13 @@ export function useDebouncedSearchParam({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const filterPending = useOptionalFilterPending();
 
   const timeoutRef = useRef<number | null>(null);
-  const urlValue = searchParams.get(param) ?? "";
+  const urlValue =
+    (filterPending
+      ? filterPending.effectiveSearchParams.get(param)
+      : searchParams.get(param)) ?? "";
   const [value, setValue] = useState(urlValue);
   const [syncedUrlValue, setSyncedUrlValue] = useState(urlValue);
   const [committedValue, setCommittedValue] = useState(urlValue);
@@ -42,11 +47,13 @@ export function useDebouncedSearchParam({
     setExternalSyncToken((token) => token + 1);
   }
 
-  // Keep latest searchParams in a ref so delayed writes never revert concurrent filter changes.
+  // Keep latest searchParams and filterPending in refs so delayed writes never revert concurrent filter changes.
   const searchParamsRef = useRef(searchParams);
+  const filterPendingRef = useRef(filterPending);
   useEffect(() => {
     searchParamsRef.current = searchParams;
-  }, [searchParams]);
+    filterPendingRef.current = filterPending;
+  }, [searchParams, filterPending]);
 
   const cancelPending = () => {
     if (timeoutRef.current !== null) {
@@ -79,12 +86,16 @@ export function useDebouncedSearchParam({
     timeoutRef.current = window.setTimeout(() => {
       timeoutRef.current = null;
       setCommittedValue(next);
+      const pending = filterPendingRef.current;
+      if (pending) {
+        pending.updateParams((params) => writeParam(params, next));
+        return;
+      }
       const params = new URLSearchParams(searchParamsRef.current);
       writeParam(params, next);
-
-      startTransition(() => {
-        const query = params.toString();
-        router.replace(`${pathname}${query ? `?${query}` : ""}`);
+      const query = params.toString();
+      router.replace(`${pathname}${query ? `?${query}` : ""}`, {
+        scroll: false,
       });
     }, delayMs);
   };

@@ -1,22 +1,31 @@
+import { getTranslations } from "next-intl/server";
+
 import { ExpensesList } from "@/features/expenses/components/expenses-list";
-import { FilteredExpensesBanner } from "@/features/expenses/components/filtered-expenses-banner";
 import {
-  buildFilterBanner,
   getFilteredExpenses,
   type ExpensesListParams,
   type FilteredExpensesQuery,
 } from "@/features/expenses/lib/build-filter-banner";
 import { EXPENSES_DEFAULT_PAGE_SIZE } from "@/features/expenses/lib/expense-helpers";
-import type { MethodOption } from "@/features/payment-methods/lib/method-filter";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import type { CurrencyCode } from "@/shared/utils/format-currency";
 
+export async function FilteredExpensesCount({
+  total,
+  ...query
+}: FilteredExpensesQuery & { total: number }) {
+  const t = await getTranslations("expenses.filteredBanner");
+  const { meta } = await getFilteredExpenses(query);
+
+  return (
+    <p className="shrink-0 text-xs font-medium sm:text-sm">
+      {t("showing", { shown: meta.total, total })}
+    </p>
+  );
+}
+
 interface EnvelopeExpensesResultsProps extends FilteredExpensesQuery {
   currency: CurrencyCode;
-  filterBanner?: {
-    envelopeExpenseCount: number;
-    methodOptions: MethodOption[];
-  };
 }
 
 export async function EnvelopeExpensesResults({
@@ -29,7 +38,6 @@ export async function EnvelopeExpensesResults({
   order,
   page,
   limit,
-  filterBanner,
 }: EnvelopeExpensesResultsProps) {
   const expensesResult = await getFilteredExpenses({
     envelopeId,
@@ -52,24 +60,8 @@ export async function EnvelopeExpensesResults({
     limit: limit === EXPENSES_DEFAULT_PAGE_SIZE ? undefined : String(limit),
   };
 
-  const banner = filterBanner
-    ? await buildFilterBanner({
-        envelopeId,
-        methodOptions: filterBanner.methodOptions,
-        params: sharedParams,
-      })
-    : null;
-
   return (
     <>
-      {filterBanner && (
-        <FilteredExpensesBanner
-          shown={expensesResult.meta.total}
-          total={filterBanner.envelopeExpenseCount}
-          chips={banner?.chips ?? []}
-          clearHref={banner?.clearHref ?? `/dashboard/envelope/${envelopeId}`}
-        />
-      )}
       <ExpensesList expenses={expensesResult.data} currency={currency} />
       <PaginationControls
         page={expensesResult.meta.page}

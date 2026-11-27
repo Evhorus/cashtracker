@@ -17,6 +17,7 @@ import {
   ActionsDrawer,
   type ActionItem,
 } from "@/shared/components/common/actions-drawer";
+import { LinkPendingIndicator } from "@/shared/components/common/link-pending-indicator";
 import { LocalDate } from "@/shared/components/common/local-date";
 import { Text } from "@/shared/components/common/typography";
 import { Button } from "@/shared/components/ui/button";
@@ -181,6 +182,7 @@ export const EnvelopeCard = ({
           className="group/btn h-auto w-full justify-end gap-1 px-0 py-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-primary"
           render={
             <Link href={`/dashboard/envelope/${envelopeId}`}>
+              <LinkPendingIndicator />
               {t("seeDetails")}
               <ArrowRight className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5" />
             </Link>

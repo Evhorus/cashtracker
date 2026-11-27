@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
 import {
@@ -11,6 +10,7 @@ import {
   type PeriodInstance,
   type PeriodType,
 } from "@/features/dashboard/lib/period-ranges";
+import { useFilterPending } from "@/shared/components/common/filter-pending";
 import {
   Select,
   SelectContent,
@@ -25,6 +25,7 @@ import {
   getToday,
   parseCalendarDate,
 } from "@/shared/utils/date-helpers";
+import { parseIsoDateParam, parseYearParam } from "@/shared/utils/url-params";
 
 const ALL_VALUE = "all";
 const YEAR_VALUE = "year";
@@ -63,24 +64,44 @@ export const PeriodFilterSelect = ({
 }: PeriodFilterSelectProps) => {
   const t = useTranslations("statistics");
   const locale = useLocale() as SupportedLocale;
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { isPending, effectiveSearchParams, updateParams } = useFilterPending();
 
-  const selectedType = resolveSelectedType(period, selectedYear);
+  const activeYear = isPending
+    ? parseYearParam(effectiveSearchParams.get("year") ?? undefined)
+    : selectedYear;
+  const activePeriod = isPending
+    ? (effectiveSearchParams.get("period") ?? undefined)
+    : period;
+  const activePeriodValue = isPending
+    ? (effectiveSearchParams.get("periodValue") ?? undefined)
+    : periodValue;
+  const activeStartDate = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("startDate") ?? undefined)
+    : startDate;
+  const activeEndDate = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("endDate") ?? undefined)
+    : endDate;
+  const activeMarkedStart = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("markedStart") ?? undefined)
+    : markedStart;
+  const activeMarkedEnd = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("markedEnd") ?? undefined)
+    : markedEnd;
+
+  const selectedType = resolveSelectedType(activePeriod, activeYear);
   const effectiveYears = collectEffectiveYears(
     years,
-    markedStart,
-    markedEnd,
-    startDate,
-    endDate,
+    activeMarkedStart,
+    activeMarkedEnd,
+    activeStartDate,
+    activeEndDate,
   );
 
   const getInstancesForType = (type: PeriodType) =>
     clipToMarkedRange(
       getPeriodInstances(type, effectiveYears),
-      markedStart,
-      markedEnd,
+      activeMarkedStart,
+      activeMarkedEnd,
     );
 
   const instances =
@@ -89,70 +110,75 @@ export const PeriodFilterSelect = ({
       : [];
 
   const typeFits = (type: PeriodType) =>
-    !markedStart ||
-    !markedEnd ||
+    !activeMarkedStart ||
+    !activeMarkedEnd ||
     type === selectedType ||
-    typeFitsWithinRange(type, effectiveYears, markedStart, markedEnd);
+    typeFitsWithinRange(
+      type,
+      effectiveYears,
+      activeMarkedStart,
+      activeMarkedEnd,
+    );
   const availableTypes = PERIOD_TYPES.filter(typeFits);
 
   const yearFits = (year: number) =>
-    !markedStart ||
-    !markedEnd ||
-    year === selectedYear ||
-    yearFitsWithinRange(year, markedStart, markedEnd);
+    !activeMarkedStart ||
+    !activeMarkedEnd ||
+    year === activeYear ||
+    yearFitsWithinRange(year, activeMarkedStart, activeMarkedEnd);
   const yearOptionAvailable =
     effectiveYears.length > 0 && effectiveYears.some(yearFits);
 
-  const navigate = (params: URLSearchParams) => {
-    const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
-  };
-
   function handleTypeChange(value: string | null) {
     if (!value) return;
-    const params = clearPeriodParams(new URLSearchParams(searchParams));
-    const anchor = resolveAnchorDate(startDate, selectedYear);
+    updateParams(
+      (params) => {
+        clearPeriodParams(params);
+        const anchor = resolveAnchorDate(activeStartDate, activeYear);
 
-    if (value === YEAR_VALUE) {
-      const targetYear = pickDefaultYear(effectiveYears, anchor);
-      if (targetYear) params.set("year", String(targetYear));
-      navigate(params);
-      return;
-    }
+        if (value === YEAR_VALUE) {
+          const targetYear = pickDefaultYear(effectiveYears, anchor);
+          if (targetYear) params.set("year", String(targetYear));
+          return;
+        }
 
-    const candidates = getInstancesForType(value as PeriodType);
-    const defaultInstance =
-      candidates.find((i) => i.startDate <= anchor && anchor <= i.endDate) ??
-      candidates[candidates.length - 1];
-    if (defaultInstance) {
-      applyPeriodInstance(params, value, defaultInstance);
-    }
-    navigate(params);
+        const candidates = getInstancesForType(value as PeriodType);
+        const defaultInstance =
+          candidates.find(
+            (i) => i.startDate <= anchor && anchor <= i.endDate,
+          ) ?? candidates[candidates.length - 1];
+        if (defaultInstance) {
+          applyPeriodInstance(params, value, defaultInstance);
+        }
+      },
+      { resetPage: false },
+    );
   }
 
   function handleInstanceChange(value: string | null) {
     if (!value || selectedType === ALL_VALUE) return;
-    const params = new URLSearchParams(searchParams);
+    updateParams(
+      (params) => {
+        if (selectedType === YEAR_VALUE) {
+          params.set("year", value);
+          params.delete("startDate");
+          params.delete("endDate");
+          return;
+        }
 
-    if (selectedType === YEAR_VALUE) {
-      params.set("year", value);
-      params.delete("startDate");
-      params.delete("endDate");
-      navigate(params);
-      return;
-    }
-
-    const instance = instances.find((i) => i.value === value);
-    if (!instance) return;
-    applyPeriodInstance(params, selectedType, instance);
-    params.delete("year");
-    navigate(params);
+        const instance = instances.find((i) => i.value === value);
+        if (!instance) return;
+        applyPeriodInstance(params, selectedType, instance);
+        params.delete("year");
+      },
+      { resetPage: false },
+    );
   }
 
   const instanceValue =
     selectedType === YEAR_VALUE
-      ? String(selectedYear ?? "")
-      : (periodValue ?? "");
+      ? String(activeYear ?? "")
+      : (activePeriodValue ?? "");
 
   const instanceOptions =
     selectedType === YEAR_VALUE

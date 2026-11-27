@@ -15,9 +15,14 @@ import { getEnvelopeById } from "@/features/envelopes/data/get-envelope-by-id";
 import { EnvelopeHelpers } from "@/features/envelopes/lib/envelope-helpers";
 import type { EditableEnvelope } from "@/features/envelopes/types";
 import { CreateExpenseDialog } from "@/features/expenses/components/create-expense-dialog";
-import { EnvelopeExpensesResults } from "@/features/expenses/components/envelope-expenses-results";
+import {
+  EnvelopeExpensesResults,
+  FilteredExpensesCount,
+} from "@/features/expenses/components/envelope-expenses-results";
 import { ExpensesFilter } from "@/features/expenses/components/expenses-filter";
 import { ExpensesListSkeleton } from "@/features/expenses/components/expenses-list-skeleton";
+import { FilteredExpensesBanner } from "@/features/expenses/components/filtered-expenses-banner";
+import { getFilteredExpenses } from "@/features/expenses/lib/build-filter-banner";
 import {
   EXPENSES_DEFAULT_PAGE_SIZE,
   EXPENSES_PAGE_SIZE_OPTIONS,
@@ -30,8 +35,14 @@ import {
   methodOptionsFor,
   UNASSIGNED_METHOD,
 } from "@/features/payment-methods/lib/method-filter";
-import { Heading } from "@/shared/components/common/typography";
 import {
+  FilterPendingProvider,
+  FilterResultsSlot,
+} from "@/shared/components/common/filter-pending";
+import { Heading } from "@/shared/components/common/typography";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  isValidUuid,
   parseIsoDateParam,
   sanitizeUuidListParam,
 } from "@/shared/utils/url-params";
@@ -81,6 +92,22 @@ export async function EnvelopeDetailView({
     ? Number(limitParam)
     : EXPENSES_DEFAULT_PAGE_SIZE;
 
+  const filterQuery = {
+    envelopeId,
+    startDate,
+    endDate,
+    search,
+    methods,
+    order,
+    page,
+    limit,
+  };
+
+  // Start filtered expenses fetch in parallel with envelope metadata before awaiting either.
+  if (isValidUuid(envelopeId)) {
+    void getFilteredExpenses(filterQuery).catch(() => undefined);
+  }
+
   const envelope = await getEnvelopeById(envelopeId);
   const hasActiveFilter = Boolean(search || startDate || endDate || methods);
   const methodOptions = methodOptionsFor(envelope.expenses);
@@ -92,102 +119,104 @@ export async function EnvelopeDetailView({
     spent: envelope.spent,
     category: envelope.category,
   };
-  const filterQuery = {
-    envelopeId,
-    startDate,
-    endDate,
-    search,
-    methods,
-    order,
-    page,
-    limit,
-  };
   const filterKey = `${page}-${limit}-${search ?? ""}-${order.sortBy}-${order.sort}-${startDate ?? ""}-${endDate ?? ""}-${methods ?? ""}`;
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title={envelope.name}
-        backUrl="/dashboard/envelopes"
-        icon={
-          <CategoryIcon
-            category={envelope.category}
-            className="h-11 w-11 rounded-xl"
-          />
-        }
-        description={
-          <p className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
-            {EnvelopeHelpers.formatPeriod(envelope, locale)}
-            {envelope.category && (
-              <>
-                <span aria-hidden="true">·</span>
-                <CategoryLabel category={envelope.category} />
-              </>
-            )}
-            <span aria-hidden="true">·</span>
-            <span className="rounded-sm bg-secondary px-1 py-0.5 font-mono text-xs text-secondary-foreground">
-              {envelope.currency}
-            </span>
-          </p>
-        }
-        actions={
-          <>
-            <UpdateEnvelopeDialog
-              envelope={editableEnvelope}
-              label={t("edit")}
-              showLabelOnDesktop
+    <FilterPendingProvider>
+      <div className="space-y-8">
+        <PageHeader
+          title={envelope.name}
+          backUrl="/dashboard/envelopes"
+          icon={
+            <CategoryIcon
+              category={envelope.category}
+              className="h-11 w-11 rounded-xl"
             />
-            <DeleteEnvelopeAlertDialog
-              id={envelopeId}
-              name={envelope.name}
-              label={t("delete")}
-              showLabelOnDesktop
-            />
-          </>
-        }
-        mobileActions={<EnvelopeActionsMenu envelope={editableEnvelope} />}
-      />
+          }
+          description={
+            <p className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
+              {EnvelopeHelpers.formatPeriod(envelope, locale)}
+              {envelope.category && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <CategoryLabel category={envelope.category} />
+                </>
+              )}
+              <span aria-hidden="true">·</span>
+              <span className="rounded-sm bg-secondary px-1 py-0.5 font-mono text-xs text-secondary-foreground">
+                {envelope.currency}
+              </span>
+            </p>
+          }
+          actions={
+            <>
+              <UpdateEnvelopeDialog
+                envelope={editableEnvelope}
+                label={t("edit")}
+                showLabelOnDesktop
+              />
+              <DeleteEnvelopeAlertDialog
+                id={envelopeId}
+                name={envelope.name}
+                label={t("delete")}
+                showLabelOnDesktop
+              />
+            </>
+          }
+          mobileActions={<EnvelopeActionsMenu envelope={editableEnvelope} />}
+        />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="order-2 space-y-6 lg:order-1 lg:col-span-2">
-          <div className="flex flex-row items-center justify-between">
-            <Heading icon={DollarSign}>{tEnvelope("detail.history")}</Heading>
-            <CreateExpenseDialog
-              envelopeId={envelope.id}
-              currency={envelope.currency}
-              envelopeName={envelope.name}
-              envelopePeriod={EnvelopeHelpers.formatPeriod(envelope, locale)}
-              envelopeCategory={envelope.category}
-            />
-          </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="order-2 space-y-6 lg:order-1 lg:col-span-2">
+            <div className="flex flex-row items-center justify-between">
+              <Heading icon={DollarSign}>{tEnvelope("detail.history")}</Heading>
+              <CreateExpenseDialog
+                envelopeId={envelope.id}
+                currency={envelope.currency}
+                envelopeName={envelope.name}
+                envelopePeriod={EnvelopeHelpers.formatPeriod(envelope, locale)}
+                envelopeCategory={envelope.category}
+              />
+            </div>
 
-          <ExpensesFilter methodOptions={methodOptions} />
-          <Suspense key={filterKey} fallback={<ExpensesListSkeleton />}>
-            <EnvelopeExpensesResults
-              {...filterQuery}
-              currency={envelope.currency}
-              filterBanner={
-                hasActiveFilter
-                  ? {
-                      envelopeExpenseCount: envelope.expenses.length,
-                      methodOptions,
-                    }
-                  : undefined
+            <ExpensesFilter methodOptions={methodOptions} />
+            <FilteredExpensesBanner
+              methodOptions={methodOptions}
+              countSlot={
+                hasActiveFilter ? (
+                  <Suspense
+                    key={filterKey}
+                    fallback={<Skeleton className="h-4 w-36 sm:h-5 sm:w-44" />}
+                  >
+                    <FilteredExpensesCount
+                      {...filterQuery}
+                      total={envelope.expenses.length}
+                    />
+                  </Suspense>
+                ) : null
               }
             />
-          </Suspense>
-        </div>
+            <FilterResultsSlot fallback={<ExpensesListSkeleton />}>
+              <Suspense key={filterKey} fallback={<ExpensesListSkeleton />}>
+                <EnvelopeExpensesResults
+                  {...filterQuery}
+                  currency={envelope.currency}
+                />
+              </Suspense>
+            </FilterResultsSlot>
+          </div>
 
-        <div className="order-1 lg:sticky lg:top-20 lg:order-2 lg:self-start">
-          <EnvelopeSummaryCard
-            envelope={envelope}
-            hasActiveFilter={hasActiveFilter}
-            filterKey={filterKey}
-            filterQuery={filterQuery}
-            methodOptions={methodOptions}
-          />
+          <div className="order-1 lg:sticky lg:top-20 lg:order-2 lg:self-start">
+            <EnvelopeSummaryCard
+              envelope={envelope}
+              hasActiveFilter={hasActiveFilter}
+              filterKey={filterKey}
+              filterQuery={filterQuery}
+              methodOptions={methodOptions}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </FilterPendingProvider>
   );
 }

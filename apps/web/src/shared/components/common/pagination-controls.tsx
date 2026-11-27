@@ -1,13 +1,15 @@
 import { getTranslations } from "next-intl/server";
 
 import {
+  PaginationNavLink,
+  PaginationNavNext,
+  PaginationNavPrevious,
+} from "@/shared/components/common/pagination-nav-link";
+import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/shared/components/ui/pagination";
 
 interface PaginationControlsProps {
@@ -63,7 +65,7 @@ export const PaginationControls = async ({
       <PaginationContent>
         <PaginationItem>
           {/* Use `inert` instead of `tabIndex`: Base UI manages tabIndex on non-native buttons and would mismatch on hydration. */}
-          <PaginationPrevious
+          <PaginationNavPrevious
             href={buildHref(basePath, Math.max(1, page - 1), searchParams)}
             text={t("previous")}
             aria-label={t("goToPrevious")}
@@ -82,19 +84,19 @@ export const PaginationControls = async ({
             </PaginationItem>
           ) : (
             <PaginationItem key={entry}>
-              <PaginationLink
+              <PaginationNavLink
                 href={buildHref(basePath, entry, searchParams)}
                 isActive={entry === page}
                 aria-label={t("goToPage", { page: entry })}
               >
                 {entry}
-              </PaginationLink>
+              </PaginationNavLink>
             </PaginationItem>
           ),
         )}
 
         <PaginationItem>
-          <PaginationNext
+          <PaginationNavNext
             href={buildHref(
               basePath,
               Math.min(totalPages, page + 1),

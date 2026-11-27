@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CalendarIcon, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { DateRange } from "react-day-picker";
 
+import { useFilterPending } from "@/shared/components/common/filter-pending";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
 import {
@@ -22,6 +22,7 @@ import {
   parseCalendarDate,
   toFormCalendarDate,
 } from "@/shared/utils/date-helpers";
+import { parseIsoDateParam } from "@/shared/utils/url-params";
 
 interface DateRangeFilterProps {
   startDate?: string;
@@ -42,14 +43,25 @@ export const DateRangeFilter = ({
   const t = useTranslations("statistics");
   const tCommon = useTranslations("common");
   const locale = useLocale() as SupportedLocale;
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { isPending, effectiveSearchParams, updateParams } = useFilterPending();
   const [open, setOpen] = useState(false);
 
+  const activeStartDate = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("startDate") ?? undefined)
+    : startDate;
+  const activeEndDate = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("endDate") ?? undefined)
+    : endDate;
+  const activeMarkedStart = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("markedStart") ?? undefined)
+    : markedStart;
+  const activeMarkedEnd = isPending
+    ? parseIsoDateParam(effectiveSearchParams.get("markedEnd") ?? undefined)
+    : markedEnd;
+
   // Prefer marked boundary so PeriodFilterSelect narrowing doesn't overwrite the displayed range.
-  const shownStart = markedStart ?? startDate;
-  const shownEnd = markedEnd ?? endDate;
+  const shownStart = activeMarkedStart ?? activeStartDate;
+  const shownEnd = activeMarkedEnd ?? activeEndDate;
 
   // UTC-anchored for label formatting; Calendar widgets require browser-local Dates (see below).
   const appliedRange: DateRange | undefined =
@@ -74,38 +86,39 @@ export const DateRangeFilter = ({
     setOpen(next);
   };
 
-  const navigate = (params: URLSearchParams) => {
-    const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
-  };
-
   const handleApply = () => {
     if (!draftRange?.from || !draftRange?.to) return;
-    const params = new URLSearchParams(searchParams);
-    params.delete("year");
-    // Clear period params so PeriodFilterSelect resets to all-time.
-    params.delete("period");
-    params.delete("periodValue");
     const start = formatCalendarDateForApi(draftRange.from);
     const end = formatCalendarDateForApi(draftRange.to);
-    params.set("startDate", start);
-    params.set("endDate", end);
-    // Persist the drawn boundary separately so PeriodFilterSelect keeps clipping to it.
-    params.set("markedStart", start);
-    params.set("markedEnd", end);
-    navigate(params);
+    updateParams(
+      (params) => {
+        params.delete("year");
+        // Clear period params so PeriodFilterSelect resets to all-time.
+        params.delete("period");
+        params.delete("periodValue");
+        params.set("startDate", start);
+        params.set("endDate", end);
+        // Persist the drawn boundary separately so PeriodFilterSelect keeps clipping to it.
+        params.set("markedStart", start);
+        params.set("markedEnd", end);
+      },
+      { resetPage: false },
+    );
     setOpen(false);
   };
 
   const handleClear = () => {
-    const params = new URLSearchParams(searchParams);
-    params.delete("startDate");
-    params.delete("endDate");
-    params.delete("period");
-    params.delete("periodValue");
-    params.delete("markedStart");
-    params.delete("markedEnd");
-    navigate(params);
+    updateParams(
+      (params) => {
+        params.delete("startDate");
+        params.delete("endDate");
+        params.delete("period");
+        params.delete("periodValue");
+        params.delete("markedStart");
+        params.delete("markedEnd");
+      },
+      { resetPage: false },
+    );
     setOpen(false);
   };
 
